@@ -1,0 +1,57 @@
+/*@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');*/
+
+@font-face {
+  font-family: 'chlorinap';
+  src: url('../assets/web/super-mario-256/SuperMario256.ttf') format('truetype');
+}
+
+.Titulo{
+    font-family: 'chlorinap';
+    text-shadow: 
+    -1.2px -1.2px 0 black,
+     1.2px -1.2px 0 black,
+    -1.2px  1.2px 0 black,
+     1.2px  1.2px 0 black;
+}
+
+.Subtitulo {
+  font-family:Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+  font-style: bold;
+}
+
+body{
+    background: url("../assets/web/Background.png") repeat center center fixed;
+    background-size: 10%;
+}
+
+.icon{
+  width: 10%;
+  height: 10%;
+  border-radius: 90%;
+  text-align: left;
+}
+.Descripcion{
+  text-align: justify;
+  margin-inline-start: 15%;
+  margin-inline-end: 15%;
+}
+.Separador{
+  width: 75%;
+  border: 1px dashed;
+}
+ul{
+  padding-left: 17%;
+}
+li{
+  text-align: left;
+}
+.Caja{
+  width: auto;
+  height: 50%;
+  margin-left: 20%;
+  margin-right: 20%;
+  text-align: center;
+  background-color: rgb(228, 150, 150);
+  overflow-y: auto;
+}
+
