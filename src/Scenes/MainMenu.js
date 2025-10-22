@@ -69,19 +69,19 @@ class PlaySceneTest extends Phaser.Scene
       repeat: -1
     });
 
-    this.mario = this.add.sprite(this.cameras.main.width - 50, this.cameras.main.width - 50, 'mario');
+    this.mario = this.add.sprite(this.cameras.main.width - 50, this.cameras.main.height - 50, 'mario_walk');
     this.mario.play('mario_Walk');
 
-    this.mario2 = this.add.sprite(70, this.cameras.main.width - 50, 'mario');
+    this.mario2 = this.add.sprite(this.cameras.main.width - 100, this.cameras.main.height - 50, 'mario_run');
     this.mario2.play('mario_Run');
 
-    this.mario3 = this.add.sprite(this.cameras.main.width - 90, this.cameras.main.width - 50, 'mario');
+    this.mario3 = this.add.sprite(this.cameras.main.width - 150, this.cameras.main.height - 50, 'mario_jump');
     this.mario3.play('mario_Jump');
 
-    this.mario4 = this.add.sprite(this.cameras.main.width - 120, this.cameras.main.width - 50, 'mario');
+    this.mario4 = this.add.sprite(this.cameras.main.width - 200, this.cameras.main.height - 50, 'mario_hurt');
     this.mario4.play('mario_Hurt');
 
-    this.mario5 = this.add.sprite(this.cameras.main.width - 150, this.cameras.main.width - 50, 'mario');
+    this.mario5 = this.add.sprite(this.cameras.main.width - 250, this.cameras.main.height - 50, 'mario_throw');
     this.mario5.play('mario_Throw');
 
 
