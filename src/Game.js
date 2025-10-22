@@ -6,12 +6,13 @@ import PlaySceneTest from './Scenes/MainMenu.js';
  */
 let config = {
 	type: Phaser.AUTO,
-	width:  800,
-	height: 600,
 	pixelArt: true,
 	parent: 'game',
 	scale: {
-		autoCenter: Phaser.Scale.CENTER_HORIZONTALLY
+		autoCenter: Phaser.Scale.CENTER_BOTH,
+		mode: Phaser.Scale.FIT,
+		width: window.innerWidth,
+		height: window.innerHeight
 	},
 	scene:[PlaySceneTest],	// Decimos a Phaser cual es nuestra escena
 	physics: { 

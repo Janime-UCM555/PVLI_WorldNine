@@ -45,9 +45,8 @@ ul{
 li{
   text-align: left;
 }
+
 .Caja{
-  width: fit-content;
-  height: 50%;
   margin-left: 20%;
   margin-right: 20%;
   text-align: center;
@@ -55,3 +54,7 @@ li{
   overflow-y: auto;
 }
 
+#game{
+  height: 100%;
+  width: 100%;
+}
