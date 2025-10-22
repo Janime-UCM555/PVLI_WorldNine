@@ -1,4 +1,5 @@
-import PlaySceneTest from './Scenes/MainMenu.js';
+import MainMenu from './Scenes/MainMenu.js';
+import MapScene from './Scenes/Map.js';
 
 /**
  * Inicio del juego en Phaser. Creamos el archivo de configuración del juego y creamos
@@ -12,7 +13,7 @@ let config = {
 		autoCenter: Phaser.Scale.CENTER_BOTH,
 		mode: Phaser.Scale.FIT,
 	},
-	scene:[PlaySceneTest],	// Decimos a Phaser cual es nuestra escena
+	scene:[MainMenu, MapScene],	// Decimos a Phaser cual es nuestra escena
 	physics: { 
 		default: 'arcade', 
 		arcade: { 
