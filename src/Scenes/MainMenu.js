@@ -53,7 +53,7 @@ class PlaySceneTest extends Phaser.Scene
     this.anims.create({
       key: 'mario_Jump',
       frames: this.anims.generateFrameNumbers('mario_jump', { start: 0, end: 1 }),
-      frameRate: 4,
+      frameRate: 6,
       repeat: -1
     });
     this.anims.create({

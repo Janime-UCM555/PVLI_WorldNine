@@ -11,8 +11,6 @@ let config = {
 	scale: {
 		autoCenter: Phaser.Scale.CENTER_BOTH,
 		mode: Phaser.Scale.FIT,
-		width: window.innerWidth,
-		height: window.innerHeight
 	},
 	scene:[PlaySceneTest],	// Decimos a Phaser cual es nuestra escena
 	physics: { 
