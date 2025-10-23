@@ -1,3 +1,4 @@
+import PreloadScene from './Scenes/PreloadScene.js';
 import MainMenu from './Scenes/MainMenu.js';
 import MapScene from './Scenes/Map.js';
 
@@ -13,7 +14,7 @@ let config = {
 		autoCenter: Phaser.Scale.CENTER_BOTH,
 		mode: Phaser.Scale.FIT,
 	},
-	scene:[MainMenu, MapScene],	// Decimos a Phaser cual es nuestra escena
+	scene:[PreloadScene, MainMenu, MapScene],	// Decimos a Phaser cual es nuestra escena
 	physics: { 
 		default: 'arcade', 
 		arcade: { 
