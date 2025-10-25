@@ -43,7 +43,7 @@
         {
          "columns":8,
          "firstgid":1,
-         "image":"..\/..\/..\/Curso2\/PVLI\/SpritesMario\/Tileset_Mario.png",
+         "image":"../../../assets/GameSprites/Tilesets/base_tileset.png",
          "imageheight":2560,
          "imagewidth":256,
          "margin":0,

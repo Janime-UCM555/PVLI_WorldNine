@@ -18,24 +18,32 @@ class NivelScene extends Phaser.Scene
         });
 
         
-        this.load.tilemapTiledJSON('map', '../../../src/Scenes/maps/desert.tmj');
-        this.load.image('tiles', '../../../src/Scenes/maps/tmw_desert_spacing.png'); // Patrones
+        // Lo comentado es la prueba del desierto
+        // this.load.tilemapTiledJSON('map', '../../../src/Scenes/maps/desert.tmj');
+        // this.load.image('tiles', '../../../src/Scenes/maps/tmw_desert_spacing.png'); // Patrones
+
+        this.load.tilemapTiledJSON('map1', '../../../TestMapaTiled/ElMapa.json');
+        this.load.image('tiles1', '../../../assets/GameSprites/Tilesets/base_tileset.png'); // Patrones
     }
 
     create(){
-    this.map = this.make.tilemap({ 
-        key: 'map', 
-        tileWidth: 32, 
-        tileHeight: 32 
-    });
-    const tileset1 = this.map.addTilesetImage('Desert', 'tiles');
+    // this.map = this.make.tilemap({ 
+    //     key: 'map', 
+    //     tileWidth: 32, 
+    //     tileHeight: 32 
+    // });
+    // const tileset1 = this.map.addTilesetImage('Desert', 'tiles');
     // this.ground = this.map.createLayer('Ground', tileset1);
 
-    // const tileset = map.addTilesetImage('MapaTiles', 'tiles', 16, 16);
-    // const backgroundLayer = map.createLayer('CapaSuelo', tileset);
 
 
-
+    this.map1 = this.make.tilemap({ 
+    key: 'map1', 
+    tileWidth: 32, 
+    tileHeight: 32 
+    });
+    const tileset2 = this.map1.addTilesetImage('MapaTiles', 'tiles1');
+    this.ground2 = this.map1.createLayer('CapaSuelo', tileset2);
 
 
 
@@ -45,7 +53,7 @@ class NivelScene extends Phaser.Scene
       frameRate: 8,
       repeat: -1
     });
-    this.mario = this.add.sprite(this.cameras.main.width - 50, this.cameras.main.height - 50, 'mario_run');
+    this.mario = this.add.sprite(this.cameras.main.width - 550, this.cameras.main.height - 550, 'mario_run');
     this.mario.play('mario_run');
 
 
