@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="2" nextobjectid="1">
+ <editorsettings>
+  <export target="ElMapa.json" format="json"/>
+ </editorsettings>
+ <tileset firstgid="1" name="MapaTiles" tilewidth="32" tileheight="32" tilecount="640" columns="8">
+  <image source="../../../Curso2/PVLI/SpritesMario/Tileset_Mario.png" width="256" height="2560"/>
+  <wangsets>
+   <wangset name="TierraSuelo" type="corner" tile="9">
+    <wangcolor name="" color="#ff0000" tile="9" probability="1"/>
+    <wangtile tileid="0" wangid="0,0,0,1,0,0,0,0"/>
+    <wangtile tileid="1" wangid="0,0,0,0,0,1,0,0"/>
+    <wangtile tileid="2" wangid="0,1,0,1,0,0,0,0"/>
+    <wangtile tileid="3" wangid="0,0,0,0,0,1,0,1"/>
+    <wangtile tileid="4" wangid="0,1,0,0,0,0,0,0"/>
+    <wangtile tileid="5" wangid="0,0,0,0,0,0,0,1"/>
+    <wangtile tileid="9" wangid="0,0,0,1,0,1,0,0"/>
+    <wangtile tileid="14" wangid="0,1,0,1,0,1,0,1"/>
+    <wangtile tileid="17" wangid="0,1,0,0,0,0,0,1"/>
+    <wangtile tileid="94" wangid="0,1,0,0,0,1,0,1"/>
+    <wangtile tileid="95" wangid="0,1,0,1,0,0,0,1"/>
+    <wangtile tileid="118" wangid="0,0,0,1,0,1,0,1"/>
+    <wangtile tileid="119" wangid="0,1,0,1,0,1,0,0"/>
+   </wangset>
+   <wangset name="PiedraSuelo" type="corner" tile="193">
+    <wangcolor name="" color="#ff0000" tile="193" probability="1"/>
+    <wangtile tileid="184" wangid="0,0,0,1,0,0,0,0"/>
+    <wangtile tileid="185" wangid="0,0,0,0,0,1,0,0"/>
+    <wangtile tileid="186" wangid="0,1,0,1,0,0,0,0"/>
+    <wangtile tileid="187" wangid="0,0,0,0,0,1,0,1"/>
+    <wangtile tileid="188" wangid="0,1,0,0,0,0,0,0"/>
+    <wangtile tileid="189" wangid="0,0,0,0,0,0,0,1"/>
+    <wangtile tileid="193" wangid="0,0,0,1,0,1,0,0"/>
+    <wangtile tileid="198" wangid="0,1,0,1,0,1,0,1"/>
+    <wangtile tileid="201" wangid="0,1,0,0,0,0,0,1"/>
+    <wangtile tileid="278" wangid="0,1,0,0,0,1,0,1"/>
+    <wangtile tileid="279" wangid="0,1,0,1,0,0,0,1"/>
+    <wangtile tileid="302" wangid="0,0,0,1,0,1,0,1"/>
+    <wangtile tileid="303" wangid="0,1,0,1,0,1,0,0"/>
+   </wangset>
+   <wangset name="ArenaSuelo" type="corner" tile="386">
+    <wangcolor name="" color="#ff0000" tile="386" probability="1"/>
+    <wangtile tileid="376" wangid="0,0,0,1,0,0,0,0"/>
+    <wangtile tileid="377" wangid="0,0,0,0,0,1,0,0"/>
+    <wangtile tileid="378" wangid="0,1,0,1,0,0,0,0"/>
+    <wangtile tileid="379" wangid="0,0,0,0,0,1,0,1"/>
+    <wangtile tileid="380" wangid="0,1,0,0,0,0,0,0"/>
+    <wangtile tileid="381" wangid="0,0,0,0,0,0,0,1"/>
+    <wangtile tileid="385" wangid="0,0,0,1,0,1,0,0"/>
+    <wangtile tileid="386" wangid="0,0,0,1,0,1,0,0"/>
+    <wangtile tileid="390" wangid="0,1,0,1,0,1,0,1"/>
+    <wangtile tileid="393" wangid="0,1,0,0,0,0,0,1"/>
+    <wangtile tileid="462" wangid="0,0,0,1,0,1,0,1"/>
+    <wangtile tileid="463" wangid="0,1,0,1,0,1,0,0"/>
+    <wangtile tileid="478" wangid="0,1,0,0,0,1,0,1"/>
+    <wangtile tileid="479" wangid="0,1,0,1,0,0,0,1"/>
+   </wangset>
+  </wangsets>
+ </tileset>
+ <layer id="1" name="CapaSuelo" width="30" height="20">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,370,369,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,369,370,370,369,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,185,194,194,194,186,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,187,199,199,199,188,10,10,10,10,10,10,10,10,10,10,10,10,2,
+0,0,0,0,0,0,0,0,0,0,0,0,187,199,199,199,188,15,15,15,15,15,15,15,15,15,15,15,15,4,
+377,386,386,386,387,386,386,386,387,387,387,378,187,199,199,199,188,15,15,15,15,15,15,15,15,15,15,15,15,4,
+379,391,391,391,391,391,391,391,391,391,391,380,187,199,199,199,188,15,15,15,15,15,15,15,15,15,15,15,15,4,
+379,391,391,391,391,391,391,391,391,391,391,380,187,199,199,199,188,15,15,15,15,15,15,15,15,15,15,15,15,4,
+379,391,391,391,391,391,391,391,391,391,391,380,187,199,199,199,188,15,15,15,15,15,15,15,15,15,15,15,15,4,
+379,391,391,391,391,391,391,391,391,391,391,380,187,199,199,199,188,15,15,15,15,15,15,15,15,15,15,15,15,4,
+379,391,391,391,391,391,391,391,391,391,391,380,187,199,199,199,188,15,15,15,15,15,15,15,15,15,15,15,15,4,
+379,391,391,391,391,391,391,391,391,391,391,380,187,199,199,199,188,15,15,15,15,15,15,15,15,15,15,15,15,4,
+379,391,391,391,391,391,391,391,391,391,391,380,187,199,199,199,188,15,15,15,15,15,15,15,15,15,15,15,15,4,
+381,394,394,394,394,394,394,394,394,394,394,382,189,202,202,202,190,18,18,18,18,18,18,18,18,18,18,18,18,6
+</data>
+ </layer>
+</map>

@@ -87,7 +87,7 @@ class MainMenu extends Phaser.Scene
 
 
     this.buttonPrueba = new Button(this, 0, 0,'Prueba',() =>{
-        this.scene.launch('MapScene');
+        this.scene.launch('NivelScene');
         this.scene.stop();
     });
 
