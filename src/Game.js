@@ -14,6 +14,7 @@ let config = {
 	scale: {
 		autoCenter: Phaser.Scale.CENTER_BOTH,
 		mode: Phaser.Scale.FIT,
+		fullscreenTarget: 'game'
 	},
 	scene:[PreloadScene, MainMenu, MapScene, NivelScene],	// Decimos a Phaser cual es nuestra escena
 	physics: { 

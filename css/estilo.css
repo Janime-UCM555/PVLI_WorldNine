@@ -56,5 +56,28 @@ li{
 
 #game{
   height: 100%;
+  width:min(100%, 960px);
+  position: relative;
+  overflow: hidden;
+  margin: 0 auto;
+  aspect-ratio: 16 / 9;
+  text-align: left;
+}
+
+#game:fullscreen,
+#game:-webkit-full-screen,
+#game:-moz-full-screen,
+#game:-ms-fullscreen
+{
+
+  width: 100vw;
+  height: 100vh;
+  aspect-ratio: unset;
+  inset: 0;
+}
+
+#game canvas{
+  display: block;
   width: 100%;
+  height: 100%;
 }
