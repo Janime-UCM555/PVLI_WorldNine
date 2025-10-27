@@ -4,6 +4,7 @@ class NivelScene extends Phaser.Scene
 {
     constructor(){
         super({key:'NivelScene'});
+        this.score=0;
     }
 
     init(){
@@ -23,6 +24,8 @@ class NivelScene extends Phaser.Scene
 
         this.load.tilemapTiledJSON('map1', '../../../TestMapaTiled/ElMapa.json');
         this.load.image('tiles1', '../../../assets/GameSprites/Tilesets/base_tileset.png'); // Patrones
+        
+        this.score=0;
     }
 
     create(){
@@ -33,7 +36,7 @@ class NivelScene extends Phaser.Scene
     // });
     // const tileset1 = this.map.addTilesetImage('Desert', 'tiles');
     // this.ground = this.map.createLayer('Ground', tileset1);
-
+    let textScore;
 
 
     this.map1 = this.make.tilemap({ 
@@ -60,25 +63,49 @@ class NivelScene extends Phaser.Scene
         this.scene.stop();
     });
 
+    this.buttonScore = new Button(this, 0, -B_SPACING,'Subescore',() =>{
+    if (this.score < 9999999999)
+    {
+        this.score+=100;
+        textScore.setText("".padStart(10-this.score.toString().length,"0")+this.score);
+    }
+    else{
+        textScore.setText(9999999999);
+    }
+    // textScore.setText(score.padStart(10,"0"));
+    });
 
     this.ui = this.add.container(this.cameras.main.width/2, this.cameras.main.height/2);
     
     this.ui.add([
         //Añadir aqui los elementos de la ui
         this.buttonPrueba,
+        this.buttonScore,
     ])
 
 
-    let text = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -');
-    text.setOrigin(0.5,-0.5);
-    text.setFont('Arial Black');
-    text.setFontSize(50);
-    text.setAlign('center');
-    text.setStroke('#ffffffff', 6)
-    text.setFill('#000000ff');
-    text.setShadow(5, 5, 'rgba(0,0,0,0.5)', 5); 
+    let textTimer = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -');
+    textTimer.setOrigin(0.5,-0.5);
+    textTimer.setFont('Arial Black');
+    textTimer.setFontSize(50);
+    textTimer.setAlign('center');
+    textTimer.setStroke('#ffffffff', 6)
+    textTimer.setFill('#000000ff');
+    textTimer.setShadow(5, 5, 'rgba(0,0,0,0.5)', 5); 
     var inTime = 60;
-    startTimer(inTime,  text);
+    startTimer(inTime,  textTimer);
+
+
+    textScore = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -');
+    textScore.setOrigin(0.5,-1.5);
+    textScore.setFont('Arial Black');
+    textScore.setFontSize(50);
+    textScore.setAlign('center');
+    textScore.setStroke('#ffffffff', 6)
+    textScore.setFill('#000000ff');
+    textScore.setText("".padStart(10,"0"));
+    textScore.setShadow(5, 5, 'rgba(0,0,0,0.5)', 5); 
+
     }
 }
 
