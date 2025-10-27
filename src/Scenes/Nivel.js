@@ -7,7 +7,6 @@ class NivelScene extends Phaser.Scene
     }
 
     init(){
-
     }
     
     preload(){
@@ -46,7 +45,6 @@ class NivelScene extends Phaser.Scene
     this.ground2 = this.map1.createLayer('CapaSuelo', tileset2);
 
 
-
     this.anims.create({
       key: 'mario_run',
       frames: this.anims.generateFrameNumbers('mario_run', { start: 0, end: 3 }),
@@ -62,13 +60,47 @@ class NivelScene extends Phaser.Scene
         this.scene.stop();
     });
 
+
     this.ui = this.add.container(this.cameras.main.width/2, this.cameras.main.height/2);
     
     this.ui.add([
         //Añadir aqui los elementos de la ui
-        this.buttonPrueba
+        this.buttonPrueba,
     ])
+
+
+    let text = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -');
+    text.setOrigin(0.5,-0.5);
+    text.setFont('Arial Black');
+    text.setFontSize(50);
+    text.setAlign('center');
+    text.setStroke('#ffffffff', 6)
+    text.setFill('#000000ff');
+    text.setShadow(5, 5, 'rgba(0,0,0,0.5)', 5); 
+    var inTime = 60;
+    startTimer(inTime,  text);
     }
 }
 
+// window.addEventListener('load', function()
+// {
+//     var segundos = 60;
+//     display = timerPrueba;
+//     startTime(segundos, display);
+// })
+
+function startTimer(duration, display) {
+    var timer = duration, seconds;
+    setInterval(function () {
+        seconds = parseInt(timer % 60, 10);
+
+        seconds = seconds < 10 ? "0" + seconds : seconds;
+
+        display.setText(seconds);
+
+        if (--timer < 0) {
+            timer = duration;
+        }
+    }, 1000);
+}
 export default NivelScene;
