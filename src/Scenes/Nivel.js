@@ -24,7 +24,7 @@ class NivelScene extends Phaser.Scene
 
         this.load.tilemapTiledJSON('map1', '../../../TestMapaTiled/ElMapa.json');
         this.load.image('tiles1', '../../../assets/GameSprites/Tilesets/base_tileset.png'); // Patrones
-        
+        this.load.image('tileBG', '../../../assets/GameSprites/Tilesets/Rome_BG.png');
         this.score=0;
     }
 
@@ -45,7 +45,11 @@ class NivelScene extends Phaser.Scene
     tileHeight: 32 
     });
     const tileset2 = this.map1.addTilesetImage('MapaTiles', 'tiles1');
+    const bgTileset = this.map1.addTilesetImage('bg', 'tileBG');
+    this.bg = this.map1.createLayer('CapaFondo', bgTileset);
     this.ground2 = this.map1.createLayer('CapaSuelo', tileset2);
+    this.blocks = this.map1.createLayer('CapaBloques', tileset2);
+    this.deco = this.map1.createLayer('CapaDecoraciones', tileset2);
 
 
     this.anims.create({
