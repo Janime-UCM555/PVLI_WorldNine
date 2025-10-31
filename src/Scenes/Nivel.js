@@ -18,7 +18,8 @@ class NivelScene extends Phaser.Scene
         this.load.tilemapTiledJSON('map1', '../../../TestMapaTiled/ElMapa.json');
         this.load.image('tiles1', '../../../assets/GameSprites/Tilesets/base_tileset.png'); // Patrones
         this.load.image('tileBG', '../../../assets/GameSprites/Tilesets/Rome_BG.png');
-        this.score = 0;
+        this.load.image('coinsTiles', '../../../assets/GameSprites/Items/Coins.png');
+        this.score=0;
     }
 
     create(){
