@@ -122,6 +122,15 @@ class MainMenu extends Phaser.Scene
         this.mario3.setPosition(width - 150, height - 50);
         this.mario4.setPosition(width - 200, height - 50);
         this.mario5.setPosition(width - 250, height - 50);
+
+        this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+        this.scale.off(Phaser.Scale.Events.RESIZE, this.UIResize, this);
+        this.scale.off(Phaser.Scale.Events.ENTER_FULLSCREEN, undefined, this);
+        this.scale.off(Phaser.Scale.Events.LEAVE_FULLSCREEN, undefined, this);
+        
+        // Ajustar world bounds
+        if(this.physics?.world) this.physics.world.setBounds(0, 0, width, height);
+  });
         
     }
 }
