@@ -14,6 +14,7 @@ class MovimientoScene extends Phaser.Scene
         this.load.tilemapTiledJSON('map', '../../../TestMapaTiled/ElMapa.json');
         this.load.image('mi_tileset', '../../../assets/GameSprites/Tilesets/base_tileset.png');
         this.load.image('coin_tileset', '../../../assets/GameSprites/Items/Coins.png');
+        this.load.image('bg_tileset', '../../../assets/GameSprites/Tilesets/Rome_BG.png');
 
         this.load.spritesheet('mario_run', '../../../assets/GameSprites/Characters/Mario/Mario_run.png', {
             frameWidth: 32,
@@ -36,10 +37,14 @@ class MovimientoScene extends Phaser.Scene
         this.map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
         const tileset = this.map.addTilesetImage('MapaTiles', 'mi_tileset');
         const tilesetCoins = this.map.addTilesetImage('Monedas', 'coin_tileset');
+        const tilesetBG = this.map.addTilesetImage('bg', 'bg_tileset');
         
         // Capa de suelo
+        const bgLayer = this.map.createLayer('CapaFondo', tilesetBG, 0, 0);
+        const decorationsLayer = this.map.createLayer('CapaDecoraciones', tileset, 0, 0);
         const groundLayer = this.map.createLayer('CapaSuelo', tileset, 0, 0);
         const coinLayer = this.map.createLayer('Capa monedas', tilesetCoins, 0, 0);
+        const blockLayer = this.map.createLayer('CapaBloques', tileset, 0, 0);
 
         this.anims.create({
             key: 'mario_run',
@@ -81,6 +86,13 @@ class MovimientoScene extends Phaser.Scene
         
             // Añadir el collider
             this.physics.add.collider(this.jugador, groundLayer);
+        }
+        if (blockLayer) {
+            // Establecer las colisiones
+            blockLayer.setCollisionByExclusion([-1]);
+        
+            // Añadir el collider
+            this.physics.add.collider(this.jugador, blockLayer);
         }
 
         // Configurar mejor los límites del mundo
