@@ -85,8 +85,8 @@ a{
   background-size: 60px 60px;
   animation: stars-move 30s linear infinite;
   will-change: background-position;
-  /* background-color: rosybrown;
-  background-blend-mode: lighten; */
+  background-color: rosybrown;
+  background-blend-mode: lighten;
 }
 
 @keyframes stars-move{
@@ -190,48 +190,13 @@ a{
   display: inline-block;
 }
 
-/* 
-
-
-
-
-body{
-    background: url("../assets/web/Background.png") repeat center center fixed;
-    background-size: 10%;
-}
-
-
-
-li{
-  text-align: left;
-  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
-}
-
-
-ul{
-  padding-left: clamp(10%, 9vw, 33%);
-}
-
-
-.Caja{
-  margin-left: 20%;
-  margin-right: 20%;
-  text-align: center;
-  background-color: rgb(228, 150, 150);
-  overflow-y: auto;
-}
-
-.Caja a{
-  display: block;
-}
-*/
-
 .icon{
-  width: clamp(48px, 12vw, 96px);
-  height: auto;
+  width: clamp(32px, 6vw, 72px);
+  height: clamp(32px, 6vw, 72px);
   border-radius: 50%;
-  text-align: left;
   display: inline-block;
+  outline: 4px solid var(--accent);
+  margin-left: 12px;
 }
 
 #game{
