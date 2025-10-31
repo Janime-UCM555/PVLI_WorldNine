@@ -103,7 +103,7 @@ a{
   background-size: 60px 60px;
   animation: greek-move 60s linear infinite;
   will-change: background-position;
-  background-color: var(--fg);
+  background-color: #f6f6f625;
   background-blend-mode: darken;
 }
 

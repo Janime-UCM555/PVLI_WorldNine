@@ -1,4 +1,5 @@
 import Button from '../gameObjects/Button.js';
+import Mario from '../gameObjects/Mario.js';
 import { PowerUp, POWERUP_TYPES } from '../gameObjects/PowerUps.js'; // <-- ajusta la ruta
 
 const B_SPACING = 100;
@@ -30,8 +31,8 @@ class MapScene extends Phaser.Scene {
     this.physics.add.existing(this.groundRect, true); // static body
 
     // 1) Mario con física
-    this.mario = this.physics.add.sprite(500, 0, 'mario_run');
-    this.mario.setCollideWorldBounds(true);
+    this.mario = new Mario(this, 0, h - 200, 'mario_run');
+    this.mario.body.setCollideWorldBounds(true);
 
     // 2) Grupo de power-ups
     this.powerups = this.add.group();
@@ -49,6 +50,9 @@ class MapScene extends Phaser.Scene {
     this
     );
 
+    // Colisiones con el suelo
+    this.physics.add.collider(this.mario, this.groundRect);
+    this.physics.add.collider(this.powerups, this.groundRect);
 
     this.buttonPrueba = new Button(this, 0, 0, 'Prueba', () => {
       this.scene.launch('MainMenu');
@@ -79,8 +83,7 @@ class MapScene extends Phaser.Scene {
 
   // Spawner simple (tu PowerUp ya añade físicas y movimiento)
   spawnPowerUp(x, y, type, textureKey) {
-    new PowerUp(this, x, y, type, textureKey);
-    this.powerups.add(this.powerups);2
+    this.powerups.add(new PowerUp(this, x, y, type, textureKey));
     return this.powerups;
   }
 
@@ -107,6 +110,13 @@ class MapScene extends Phaser.Scene {
 
     // Ajustar world bounds
      if(this.physics?.world) this.physics.world.setBounds(0, 0, width, height);
+  }
+
+  update(time, delta) {
+    if (this.mario){
+      this.mario.update(time, delta);
+    }
+    
   }
 }
 
