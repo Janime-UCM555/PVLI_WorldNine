@@ -42,6 +42,10 @@ class MapScene extends Phaser.Scene
     this.mario = this.add.sprite(this.cameras.main.width - 50, this.cameras.main.height - 50, 'mario_walk');
     this.mario.play('mario_Walk');
 
+    this.buttonMove = new Button(this, 0, -B_SPACING, 'Move',() =>{
+        this.scene.launch('MovimientoScene');
+        this.scene.stop();
+    })
 
     this.buttonPrueba = new Button(this, 0, 0,'Prueba',() =>{
         this.scene.launch('MainMenu');
@@ -57,7 +61,8 @@ class MapScene extends Phaser.Scene
     this.ui.add([
         //Añadir aqui los elementos de la ui
         this.buttonFullScreen,
-        this.buttonPrueba
+        this.buttonPrueba,
+        this.buttonMove
     ])
 
     this.scale.on('resize', (gameSize) => {this.UIResize(gameSize.width, gameSize.height)});

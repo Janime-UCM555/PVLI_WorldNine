@@ -2,6 +2,7 @@ import PreloadScene from './Scenes/PreloadScene.js';
 import MainMenu from './Scenes/MainMenu.js';
 import MapScene from './Scenes/Map.js';
 import NivelScene from './Scenes/Nivel.js';
+import MovimientoScene from './Scenes/TestMovimiento.js';
 
 /**
  * Inicio del juego en Phaser. Creamos el archivo de configuración del juego y creamos
@@ -16,11 +17,11 @@ let config = {
 		mode: Phaser.Scale.FIT,
 		fullscreenTarget: 'game'
 	},
-	scene:[PreloadScene, MainMenu, MapScene, NivelScene],	// Decimos a Phaser cual es nuestra escena
+	scene:[PreloadScene, MainMenu, MapScene, NivelScene, MovimientoScene],	// Decimos a Phaser cual es nuestra escena
 	physics: { 
 		default: 'arcade', 
 		arcade: { 
-			gravity: { y: 0}, 
+			gravity: { y: 300}, 
 			debug: true 
 		} 
 	},
