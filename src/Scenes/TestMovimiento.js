@@ -73,7 +73,7 @@ class MovimientoScene extends Phaser.Scene
             repeat: -1
         });
 
-        this.jugador = new Mario(this, 25, 625, 'mario_run', 200, -400, true);
+        this.jugador = new Mario(this, 25, 625, 'mario_run', 200, -225, true);
         // Forzar la inicialización de animaciones
         if (this.anims.exists('mario_run')) {
             this.jugador.play('mario_run');
