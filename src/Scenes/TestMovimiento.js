@@ -13,6 +13,7 @@ class MovimientoScene extends Phaser.Scene
     preload(){
         this.load.tilemapTiledJSON('map', '../../../TestMapaTiled/ElMapa.json');
         this.load.image('mi_tileset', '../../../assets/GameSprites/Tilesets/base_tileset.png');
+        this.load.image('coin_tileset', '../../../assets/GameSprites/Items/Coins.png');
 
         this.load.spritesheet('mario_run', '../../../assets/GameSprites/Characters/Mario/Mario_run.png', {
             frameWidth: 32,
@@ -34,10 +35,11 @@ class MovimientoScene extends Phaser.Scene
         // Crear mapa desde Tiled
         this.map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
         const tileset = this.map.addTilesetImage('MapaTiles', 'mi_tileset');
+        const tilesetCoins = this.map.addTilesetImage('Monedas', 'coin_tileset');
         
         // Capa de suelo
         const groundLayer = this.map.createLayer('CapaSuelo', tileset, 0, 0);
-
+        const coinLayer = this.map.createLayer('Capa monedas', tilesetCoins, 0, 0);
 
         this.anims.create({
             key: 'mario_run',
