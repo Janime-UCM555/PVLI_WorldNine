@@ -13,9 +13,12 @@ class MovimientoScene extends Phaser.Scene
     preload(){
         this.load.tilemapTiledJSON('map', '../../../TestMapaTiled/ElMapa.json');
         this.load.image('mi_tileset', '../../../assets/GameSprites/Tilesets/base_tileset.png');
-        this.load.image('coin_tileset', '../../../assets/GameSprites/Items/Coins.png');
         this.load.image('bg_tileset', '../../../assets/GameSprites/Tilesets/Rome_BG.png');
 
+        this.load.spritesheet('coin_tileset', '../../../assets/GameSprites/Items/Coins.png', {
+            frameWidth: 32,
+            frameHeight: 32
+        });
         this.load.spritesheet('mario_run', '../../../assets/GameSprites/Characters/Mario/Mario_run.png', {
             frameWidth: 32,
             frameHeight: 56,
@@ -32,6 +35,7 @@ class MovimientoScene extends Phaser.Scene
         });
 
         this.score=0;
+        this.coinScore = 0;
 
         // this.load.bitmapFont('UIFont', 'assets/web/sugo_pro_display/Sugo_pro_by_Zetafonts.png',
         // 'assets/web/sugo_pro_display/Sugo-Pro-Classic-Bold-trial.ttf');
@@ -60,8 +64,21 @@ class MovimientoScene extends Phaser.Scene
         const bgLayer = this.map.createLayer('CapaFondo', tilesetBG, 0, 0);
         const decorationsLayer = this.map.createLayer('CapaDecoraciones', tileset, 0, 0);
         const groundLayer = this.map.createLayer('CapaSuelo', tileset, 0, 0);
-        const coinLayer = this.map.createLayer('Capa monedas', tilesetCoins, 0, 0);
         const blockLayer = this.map.createLayer('CapaBloques', tileset, 0, 0);
+        const coins = this.map.getObjectLayer('Monedas').objects;
+
+        this.anims.create({
+            key: 'coin_gold_spin',
+            frames: this.anims.generateFrameNumbers('coin_tileset', { start: 0, end: 8 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'coin_purple_spin',
+            frames: this.anims.generateFrameNumbers('coin_tileset', { start: 9, end: 17 }),
+            frameRate: 8,
+            repeat: -1
+        });
 
         this.anims.create({
             key: 'mario_run',
@@ -96,6 +113,33 @@ class MovimientoScene extends Phaser.Scene
             this.jugador.play('mario_run');
         }
 
+        this.coinsGroup = this.physics.add.group();
+        for (const coinObj of coins)
+        {
+            const coin = this.coinsGroup.create(coinObj.x, coinObj.y, 'coin_tileset');
+            coin.setOrigin(0, 1);
+            coin.body.setAllowGravity(false);
+            coin.body.setImmovable(true);
+            const coinType = coinObj.name;
+            if (coinType === 'purple') {
+                coin.play('coin_purple_spin');
+                coin.coinValue = 500;
+            } else {
+                coin.play('coin_gold_spin');
+                coin.coinValue = 100;
+            }
+        }
+
+        this.physics.add.overlap(
+        this.jugador,
+        this.coinsGroup,
+        this.collectCoin,
+        null,
+        this
+        );
+
+        this.createText();
+
         // Configurar colisiones
         if (groundLayer) {
             // Establecer las colisiones
@@ -124,8 +168,12 @@ class MovimientoScene extends Phaser.Scene
         this.ui.add([this.buttonPrueba]);
         
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
+    }
 
-        this.createText();
+        collectCoin(player, coin) {
+        coin.destroy();
+        this.increaseScore(coin.coinValue, 'score');
+        this.increaseScore(coin.coinValue / 100, 'coins');
     }
 
     createText()
@@ -143,16 +191,26 @@ class MovimientoScene extends Phaser.Scene
         // textTimer.setShadow(5, 5, 'rgba(0,0,0,0.5)', 5);
 
 
-        let textScore = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -');
-        textScore.setOrigin(-0.4,7);
-        textScore.setFont('sugoDisplay');
-        textScore.setFontSize(50);
-        textScore.setAlign('center');
-        textScore.setStroke('#000000ff', 6)
-        textScore.setFill('#ffffffff');
-        textScore.setText("".padStart(10,"0"));
-        textScore.setScrollFactor(0);
+        this.textScore = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -');
+        this.textScore.setOrigin(-0.4,7);
+        this.textScore.setFont('sugoDisplay');
+        this.textScore.setFontSize(50);
+        this.textScore.setAlign('center');
+        this.textScore.setStroke('#000000ff', 6)
+        this.textScore.setFill('#ffffffff');
+        this.textScore.setText("".padStart(10,"0"));
+        this.textScore.setScrollFactor(0);
         // textScore.setShadow(10, 10, 'rgba(0,0,0,0.5)', 10); 
+
+        this.textCoins = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -');
+        this.textCoins.setOrigin(-5.4,6);
+        this.textCoins.setFont('sugoDisplay');
+        this.textCoins.setFontSize(50);
+        this.textCoins.setAlign('center');
+        this.textCoins.setStroke('#000000ff', 6)
+        this.textCoins.setFill('#ffffffff');
+        this.textCoins.setText("".padStart(2,"0"));
+        this.textCoins.setScrollFactor(0);
 
         let timer = 60;
         this.timerEvent = this.time.addEvent({
@@ -170,15 +228,20 @@ class MovimientoScene extends Phaser.Scene
         });
     }
 
-    increaseScore(score){
-    if (this.score < 9999999999)
-    {
-        this.score += score;
-        this.textScore.setText("".padStart( 10 - this.score.toString().length,"0")+this.score);
-    }
-    else{
-        this.textScore.setText(9999999999);
-    }
+    increaseScore(points, type = 'score'){
+        if (type === 'score') {
+            if (this.score < 9999999999) {
+                this.score += points;
+                this.textScore.setText("".padStart(10 - this.score.toString().length, "0") + this.score);
+            } else {
+                this.textScore.setText("9999999999");
+            }
+        } else if (type === 'coins') {
+            this.coinScore += points;
+            if (this.textCoins) {
+                this.textCoins.setText(this.coinScore.toString().padStart(2, '0'));
+            }
+        }
     }
 
     playerFell() {
