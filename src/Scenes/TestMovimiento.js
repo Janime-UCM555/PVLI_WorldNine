@@ -30,6 +30,23 @@ class MovimientoScene extends Phaser.Scene
             frameWidth: 48,
             frameHeight: 56
         });
+
+        this.score=0;
+
+        // this.load.bitmapFont('UIFont', 'assets/web/sugo_pro_display/Sugo_pro_by_Zetafonts.png',
+        // 'assets/web/sugo_pro_display/Sugo-Pro-Classic-Bold-trial.ttf');
+
+        function loadFont(name, url) {
+            var newFont = new FontFace(name, `url(${url})`);
+            newFont.load().then(function (loaded) {
+                document.fonts.add(loaded);
+            }).catch(function (error) {
+                return error;
+            });
+        }
+
+        loadFont("super-mario-256", "assets/web/sugo_pro_display/Sugo-Pro-Classic-Bold-trial.ttf");
+
     }
 
     create(){
@@ -107,6 +124,61 @@ class MovimientoScene extends Phaser.Scene
         this.ui.add([this.buttonPrueba]);
         
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
+
+        this.createText();
+    }
+
+    createText()
+    {
+
+        let textTimer = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -');
+        textTimer.setOrigin(0.5,7);
+        textTimer.setFont('sugoDisplay');
+        textTimer.setFontSize(50);
+        textTimer.setAlign('center');
+        textTimer.setStroke('#000000ff', 6)
+        textTimer.setFill('#ffffffff');
+        textTimer.setText("60");
+        textTimer.setScrollFactor(0);
+        // textTimer.setShadow(5, 5, 'rgba(0,0,0,0.5)', 5);
+
+
+        let textScore = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -');
+        textScore.setOrigin(-0.4,7);
+        textScore.setFont('sugoDisplay');
+        textScore.setFontSize(50);
+        textScore.setAlign('center');
+        textScore.setStroke('#000000ff', 6)
+        textScore.setFill('#ffffffff');
+        textScore.setText("".padStart(10,"0"));
+        textScore.setScrollFactor(0);
+        // textScore.setShadow(10, 10, 'rgba(0,0,0,0.5)', 10); 
+
+        let timer = 60;
+        this.timerEvent = this.time.addEvent({
+        delay: 1000,
+        loop: true,
+        callback: () => {
+            timer = (timer - 1 + 60) % 60; // reinicia a 60
+            textTimer.setText(timer.toString().padStart(2, '0'));
+        },
+        });
+
+            // Eventos para limpiar listeners al cerrar la escena
+            this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+            this.timerEvent?.remove(false);
+        });
+    }
+
+    increaseScore(score){
+    if (this.score < 9999999999)
+    {
+        this.score += score;
+        this.textScore.setText("".padStart( 10 - this.score.toString().length,"0")+this.score);
+    }
+    else{
+        this.textScore.setText(9999999999);
+    }
     }
 
     playerFell() {
