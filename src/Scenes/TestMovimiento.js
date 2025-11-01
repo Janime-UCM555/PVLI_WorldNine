@@ -36,6 +36,7 @@ class MovimientoScene extends Phaser.Scene
 
         this.score=0;
         this.coinScore = 0;
+        this.purpleCoinScore = 0;
 
         // this.load.bitmapFont('UIFont', 'assets/web/sugo_pro_display/Sugo_pro_by_Zetafonts.png',
         // 'assets/web/sugo_pro_display/Sugo-Pro-Classic-Bold-trial.ttf');
@@ -173,7 +174,14 @@ class MovimientoScene extends Phaser.Scene
         collectCoin(player, coin) {
         coin.destroy();
         this.increaseScore(coin.coinValue, 'score');
-        this.increaseScore(coin.coinValue / 100, 'coins');
+        if (coin.coinValue === 500)
+        {
+            this.increaseScore(1, 'purple_coin');
+        }
+        else
+        {
+            this.increaseScore(coin.coinValue / 100, 'coins');
+        }
     }
 
     createText()
@@ -208,9 +216,19 @@ class MovimientoScene extends Phaser.Scene
         this.textCoins.setFontSize(50);
         this.textCoins.setAlign('center');
         this.textCoins.setStroke('#000000ff', 6)
-        this.textCoins.setFill('#ffffffff');
+        this.textCoins.setFill('#DBC716');
         this.textCoins.setText("".padStart(2,"0"));
         this.textCoins.setScrollFactor(0);
+
+        this.textPurpleCoins = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -');
+        this.textPurpleCoins.setOrigin(-10.6,5);
+        this.textPurpleCoins.setFont('sugoDisplay');
+        this.textPurpleCoins.setFontSize(50);
+        this.textPurpleCoins.setAlign('center');
+        this.textPurpleCoins.setStroke('#000000ff', 6)
+        this.textPurpleCoins.setFill('#621C87');
+        this.textPurpleCoins.setText("".padStart(1,"0"));
+        this.textPurpleCoins.setScrollFactor(0);
 
         let timer = 60;
         this.timerEvent = this.time.addEvent({
@@ -240,6 +258,11 @@ class MovimientoScene extends Phaser.Scene
             this.coinScore += points;
             if (this.textCoins) {
                 this.textCoins.setText(this.coinScore.toString().padStart(2, '0'));
+            }
+        } else if (type == 'purple_coin'){
+            this.purpleCoinScore += points;
+            if (this.textPurpleCoins) {
+                this.textPurpleCoins.setText(this.purpleCoinScore.toString().padStart(1, '0'));
             }
         }
     }
