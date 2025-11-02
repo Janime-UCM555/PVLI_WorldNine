@@ -1,6 +1,7 @@
 import Button from '../gameObjects/Button.js';
 import Mario from '../gameObjects/Mario.js';
 import Fin from '../gameObjects/BarraFin.js';
+import { PowerUp, POWERUP_TYPES } from '../gameObjects/PowerUps.js';
 class MovimientoScene extends Phaser.Scene
 {
     constructor(){
@@ -71,6 +72,7 @@ class MovimientoScene extends Phaser.Scene
 
         loadFont("super-mario-256", "assets/web/sugo_pro_display/Sugo-Pro-Classic-Bold-trial.ttf");
 
+         this.load.image('mushroom', '../../../assets/GameSprites/PowerUps/mushroom.png');
     }
 
     create(){
@@ -200,6 +202,24 @@ class MovimientoScene extends Phaser.Scene
         null,
         this
         );
+
+
+            this.powerups = this.add.group();
+
+        const w = this.cameras.main.width;
+        const h = this.cameras.main.height;
+
+            this.spawnPowerUp(700, h - 100, POWERUP_TYPES.MUSHROOM, 'mushroom');
+
+              this.physics.add.overlap(
+    this.jugador,
+    this.powerups,
+    (player, pu) => pu.collect(player),
+    null,
+    this
+    );
+    this.physics.add.collider(this.powerups, groundLayer);
+this.physics.add.collider(this.powerups, blockLayer);
 
         this.createText();
 
@@ -412,6 +432,13 @@ class MovimientoScene extends Phaser.Scene
             this.playerFell();
         }
     }
+
+     // Spawner simple (tu PowerUp ya añade físicas y movimiento)
+    spawnPowerUp(x, y, type, textureKey) {
+        this.powerups.add(new PowerUp(this, x, y, type, textureKey));
+        return this.powerups;
+    }
+
 
     centerCameraOnPlayerX() {
         let targetX = this.jugador.x - this.cameras.main.width / 4;

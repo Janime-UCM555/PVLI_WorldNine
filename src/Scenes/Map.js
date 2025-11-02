@@ -1,6 +1,6 @@
 import Button from '../gameObjects/Button.js';
 import Mario from '../gameObjects/Mario.js';
-import { PowerUp, POWERUP_TYPES } from '../gameObjects/PowerUps.js'; // <-- ajusta la ruta
+import { PowerUp, POWERUP_TYPES } from '../gameObjects/PowerUps.js';
 
 const B_SPACING = 100;
 
@@ -40,6 +40,10 @@ class MapScene extends Phaser.Scene {
     // 3) Spawnea SIEMPRE con tu clase PowerUp
     this.spawnPowerUp(200, h - 100, POWERUP_TYPES.STAR, 'star');
     this.spawnPowerUp(300, h - 100, POWERUP_TYPES.HAMMER, 'hammer');
+    this.spawnPowerUp(400, h - 100, POWERUP_TYPES.DOUBLE_JUMP, 'double_jump');
+    this.spawnPowerUp(500, h - 100, POWERUP_TYPES.DASH, 'dash');
+    this.spawnPowerUp(600, h - 100, POWERUP_TYPES.JUMP_BOOTS, 'jump_boots');
+    this.spawnPowerUp(700, h - 100, POWERUP_TYPES.MUSHROOM, 'mushroom');
 
     // 4) Overlap para recoger (llama a collect y se destruye)
     this.physics.add.overlap(

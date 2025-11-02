@@ -1,3 +1,5 @@
+import { POWERUP_TYPES } from "./PowerUps.js";
+
 class Mario extends Phaser.GameObjects.Sprite
 {
     constructor(scene, x, y, texture, speed = 200, jumpForce = -225, flipHorizontal = true) {
@@ -55,10 +57,58 @@ class Mario extends Phaser.GameObjects.Sprite
 
             // Mejorar la detección de colisiones
             this.body.onWorldBounds = true;
+
         }
         
         this.jumpSound = scene.sound.add('salto');
 
+        this.base = {
+            speed: speed,
+            jumpForce: jumpForce,
+            minJumpVelocity: this.minJumpVelocity,
+            maxJumpVelocity: this.maxJumpVelocity,
+            scaleX: this.scaleX,
+            scaleY: this.scaleY
+        }
+
+        if(this.body){
+            this.baseBody = {
+                w: this.body.width,
+                h: this.body.height,
+                offsetX: this.body.offset.x || 0,
+                offsetY: this.body.offset.y || 0
+            };
+        }
+
+        this.activePowerUp = null;
+
+        //Parametros Estrella
+        this.isInvincible = false;
+        this.invEvent = null;
+        this.invTimer = null;
+
+        //Martillo
+        this.canThrowHammer = false;
+
+        //Doble Salto
+        this.canDoubleJump = false;
+        this.hasDoubleJumped = false;
+        
+        //Dash
+        this.canDash = false;
+        this.isDashing = false;
+        this.dashSpeed = this.speed * 2;
+        this.dashDuration = 200;
+
+        //Botas de salto
+        this.canHighJump = false;
+        this.highJumpMultiplier = 1.5;
+
+        //Seta
+        this.isSuperSize = false;
+        this.scaleMultiplier = 1.5;
+
+        // Configurar entrada del ratón para saltar
         this.setupMouseInput();
     }
 
@@ -321,6 +371,110 @@ class Mario extends Phaser.GameObjects.Sprite
         this.wasHoldingJumpWhenBuffered = false;
         this.isHurt = false;
         this.hasWon = false;
+
     }
+    
+    setInvincible(durationMs) {
+
+        if (this.isInvincible) {
+            this.invTimer.remove(false);
+        }
+
+        this.isInvincible = true;
+        this.activePowerUp = POWERUP_TYPES.STAR;
+
+        const rainbowColors = [
+            0xFF0000, // Rojo
+            0xFF7F00, // Naranja
+            0xFFFF00, // Amarillo
+            0x00FF00, // Verde
+            0x0000FF, // Azul
+            0x4B0082, // Índigo
+            0x8B00FF // Violeta
+        ];
+
+        let colorIndex = 0;
+
+        this.invEvent = this.scene.time.addEvent({
+            delay: 100,
+            loop: true,
+            callback: () => {
+                this.setTint(rainbowColors[colorIndex]);
+                colorIndex = (colorIndex + 1) % rainbowColors.length;
+            }
+    });
+
+        this.invTimer = this.scene.time.delayedCall(durationMs, () => {
+           this.deactivatePowerUp();
+        });
+    }
+
+    enableHammer() {
+
+    }
+
+    enableDoubleJump() {
+    
+    }
+
+    enableDash(){
+
+    }
+
+    enableHighJump(){
+
+    }
+
+    deactivatePowerUp(){
+       // 1. Cancelar eventos de la estrella (arcoíris)
+        if (this._invEvent?.remove) this._invEvent.remove(false);
+        this._invEvent = null;
+
+        if (this._invTimer?.remove) this._invTimer.remove(false);
+        this._invTimer = null;
+
+        // 2. Restaurar apariencia
+        this.clearTint();
+        this.alpha = 1;
+
+        // 3. Restaurar tamaño si había super size
+        if (this.activePowerUp === 'mushroom' && this._baseBody) {
+            this.setScale(this.base.scaleX, this.base.scaleY);
+            this.body.setSize(this._baseBody.w, this._baseBody.h, true);
+            this.body.setOffset(this._baseBody.ox, this._baseBody.oy);
+        }
+
+        // 4. Resetear flags y multiplicadores
+        this.invincible = false;
+        this.hammerEnabled = false;
+        this.doubleJumpEnabled = false;
+        this.doubleJumpAvailable = false;
+        this.dashMultiplier = 1;
+        this.highJumpMultiplier = 1;
+
+        // 5. Restaurar velocidad y salto base
+        this.speed = this.base.speed;
+        this.minJumpVelocity = this.base.minJumpVelocity ?? this.base.jumpForce ?? this.minJumpVelocity;
+        this.maxJumpVelocity = this.base.maxJumpVelocity ?? this.maxJumpVelocity;
+
+        // 6. Limpieza final
+        this.isSuperSize? 
+        this.activePowerUp = POWERUP_TYPES.MUSHROOM :
+        this.activePowerUp = null;
+    }
+
+    enableSuperSize(){
+        // evita duplicar power-ups
+        if (this.isSuperSize) {
+            // aquí podrías sumar puntos, etc.
+            return;
+        }
+        const k = this.scaleMultiplier || 1.5;
+        this.activePowerUp = POWERUP_TYPES.MUSHROOM;
+        this.isSuperSize = true;
+
+        // Escala visual
+        this.setScale(this.base.scaleX * k, this.base.scaleY * k);
+}
 }
 export default Mario;
