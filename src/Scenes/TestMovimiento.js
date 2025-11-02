@@ -1,5 +1,6 @@
 import Button from '../gameObjects/Button.js';
 import Mario from '../gameObjects/Mario.js';
+import Fin from '../gameObjects/BarraFin.js';
 class MovimientoScene extends Phaser.Scene
 {
     constructor(){
@@ -15,6 +16,10 @@ class MovimientoScene extends Phaser.Scene
         this.load.image('mi_tileset', '../../../assets/GameSprites/Tilesets/base_tileset.png');
         this.load.image('bg_tileset', '../../../assets/GameSprites/Tilesets/Rome_BG.png');
 
+        this.load.spritesheet('barra_tileset', '../../../assets/GameSprites/Items/barraFin.png', {
+            frameWidth: 64,
+            frameHeight: 32
+        });
         this.load.spritesheet('coin_tileset', '../../../assets/GameSprites/Items/Coins.png', {
             frameWidth: 32,
             frameHeight: 32
@@ -58,7 +63,6 @@ class MovimientoScene extends Phaser.Scene
         // Crear mapa desde Tiled
         this.map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
         const tileset = this.map.addTilesetImage('MapaTiles', 'mi_tileset');
-        const tilesetCoins = this.map.addTilesetImage('Monedas', 'coin_tileset');
         const tilesetBG = this.map.addTilesetImage('bg', 'bg_tileset');
         
         // Capa de suelo
@@ -67,6 +71,7 @@ class MovimientoScene extends Phaser.Scene
         const groundLayer = this.map.createLayer('CapaSuelo', tileset, 0, 0);
         const blockLayer = this.map.createLayer('CapaBloques', tileset, 0, 0);
         const coins = this.map.getObjectLayer('Monedas').objects;
+        const barraFinLayer = this.map.getObjectLayer('BarraFin').objects;
 
         this.anims.create({
             key: 'coin_gold_spin',
@@ -114,6 +119,8 @@ class MovimientoScene extends Phaser.Scene
             this.jugador.play('mario_run');
         }
 
+        const frontLayer = this.map.createLayer('CapaFrente', tileset, 0, 0);
+
         this.coinsGroup = this.physics.add.group();
         for (const coinObj of coins)
         {
@@ -130,11 +137,31 @@ class MovimientoScene extends Phaser.Scene
                 coin.coinValue = 100;
             }
         }
+        for (const barraPart of barraFinLayer)
+        {
+            this.barraFin = new Fin(
+            this,
+            barraPart.x + 32,
+            barraPart.y, 
+            'barra_tileset',
+            0,
+            600,
+            80
+            );
+        }
 
         this.physics.add.overlap(
         this.jugador,
         this.coinsGroup,
         this.collectCoin,
+        null,
+        this
+        );
+
+        this.physics.add.overlap(
+        this.jugador,
+        this.barraFin,
+        this.ganasPartida,
         null,
         this
         );
@@ -171,7 +198,7 @@ class MovimientoScene extends Phaser.Scene
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
     }
 
-        collectCoin(player, coin) {
+    collectCoin(player, coin) {
         coin.destroy();
         this.increaseScore(coin.coinValue, 'score');
         if (coin.coinValue === 500)
@@ -182,6 +209,17 @@ class MovimientoScene extends Phaser.Scene
         {
             this.increaseScore(coin.coinValue / 100, 'coins');
         }
+    }
+
+    ganasPartida(player, barra) {
+        barra.destroy();
+        this.jugador.stop();
+        this.jugador.body.setVelocity(0, 0);
+        this.increaseScore(Math.round(barra.y * 10), 'score');
+        setTimeout(() => {
+        this.scene.launch('MainMenu');
+        this.scene.stop();
+        }, 2000);
     }
 
     createText()
@@ -286,6 +324,10 @@ class MovimientoScene extends Phaser.Scene
 
     update(time, delta) {
         this.jugador.update(time,delta);
+        if (this.barraFin)
+        {
+            this.barraFin.update(time,delta);
+        }
         this.centerCameraOnPlayerX();
 
         if (this.jugador.y > this.map.heightInPixels + 100) {
