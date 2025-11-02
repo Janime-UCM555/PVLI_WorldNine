@@ -41,6 +41,7 @@ class MovimientoScene extends Phaser.Scene
         this.load.audio('coin_sound', '../../../assets/sonidos/SE/Items/Monedas/coin.wav');
         this.load.audio('purple_coin_sound', '../../../assets/sonidos/SE/Items/Monedas/purpleCoin.wav');
         this.load.audio('purple_coin_all_sound', '../../../assets/sonidos/SE/Items/Monedas/purpleCoinAll.wav');
+        this.load.audio('victory_music', '../../../assets/sonidos/BGM/Nivel_Completado.wav');
 
         this.score=0;
         this.coinScore = 0;
@@ -228,6 +229,7 @@ class MovimientoScene extends Phaser.Scene
         this.jugador.body.setVelocity(0, 0);
         this.increaseScore(Math.round(barra.y * 10), 'score');
         const victoryMusic = this.sound.add('victory_music');
+        victoryMusic.play();
         victoryMusic.once('complete', () => {
         setTimeout(() => {
         this.scene.launch('MainMenu');
