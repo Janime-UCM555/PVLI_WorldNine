@@ -34,6 +34,16 @@ class MovimientoScene extends Phaser.Scene
             frameHeight: 56,
         });
 
+        this.load.spritesheet('mario_stop', '../../../assets/GameSprites/Characters/Mario/Mario_no_movement.png', {
+            frameWidth: 32,
+            frameHeight: 56,
+        });
+
+        this.load.spritesheet('mario_victory', '../../../assets/GameSprites/Characters/Mario/Mario_victory.png', {
+            frameWidth: 48,
+            frameHeight: 56,
+        });
+
         this.load.spritesheet('mario_fall', 'assets/GameSprites/Characters/Mario/Mario_fall.png', {
             frameWidth: 48,
             frameHeight: 56
@@ -42,6 +52,7 @@ class MovimientoScene extends Phaser.Scene
         this.load.audio('purple_coin_sound', '../../../assets/sonidos/SE/Items/Monedas/purpleCoin.wav');
         this.load.audio('purple_coin_all_sound', '../../../assets/sonidos/SE/Items/Monedas/purpleCoinAll.wav');
         this.load.audio('victory_music', '../../../assets/sonidos/BGM/Nivel_Completado.wav');
+        this.load.audio('salto', '../../../assets/sonidos/SE/Mario/Acciones/salto.wav');
 
         this.score=0;
         this.coinScore = 0;
@@ -125,12 +136,25 @@ class MovimientoScene extends Phaser.Scene
             repeat: -1
         });
 
+        this.anims.create({
+            key: 'mario_stop',
+            frames: this.anims.generateFrameNumbers('mario_stop', { start: 0, end: 0 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'mario_victory',
+            frames: this.anims.generateFrameNumbers('mario_victory', { start: 0, end: 0 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
         this.jugador = new Mario(this, 25, 625, 'mario_run', 200, -225, true);
         // Forzar la inicialización de animaciones
         if (this.anims.exists('mario_run')) {
             this.jugador.play('mario_run');
         }
-
         const frontLayer = this.map.createLayer('CapaFrente', tileset, 0, 0);
 
         this.coinsGroup = this.physics.add.group();
@@ -228,9 +252,13 @@ class MovimientoScene extends Phaser.Scene
         this.jugador.stop();
         this.jugador.body.setVelocity(0, 0);
         this.increaseScore(Math.round(barra.y * 10), 'score');
+        this.endTimer=true;
+        this.jugador.win();
+        this.jugador.play('mario_victory', true);
         const victoryMusic = this.sound.add('victory_music');
         victoryMusic.play();
         victoryMusic.once('complete', () => {
+        this.jugador.play('mario_victory', true);
         setTimeout(() => {
         this.scene.launch('MainMenu');
         this.scene.stop();

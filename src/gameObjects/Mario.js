@@ -57,6 +57,8 @@ class Mario extends Phaser.GameObjects.Sprite
             this.body.onWorldBounds = true;
         }
         
+        this.jumpSound = scene.sound.add('salto');
+
         this.setupMouseInput();
     }
 
@@ -128,7 +130,7 @@ class Mario extends Phaser.GameObjects.Sprite
         
         this.hasBufferedJump = false; // Limpiar el buffer al iniciar el salto
         this.wasHoldingJumpWhenBuffered = false;
-
+        this.jumpSound.play();
         if (this.scene.anims.exists('mario_jump')) {
             this.play('mario_jump', true);
         }
@@ -181,6 +183,17 @@ class Mario extends Phaser.GameObjects.Sprite
         }
     }
     
+    // Detener el jugador
+    win() {
+        this.hasWon = true;
+        if (this.body) {
+            this.body.setVelocityX(0);
+        }
+        // Cambiar a animación idle cuando se detiene
+        this.play('mario_stop', true);
+    }
+    
+
     //Daña al jugador
     hurt()
     {
@@ -204,7 +217,7 @@ class Mario extends Phaser.GameObjects.Sprite
             return;
         }
         
-        if (this.body && !this.isHurt) {
+        if (this.body && !this.isHurt && !this.hasWon) {
             // Movimiento horizontal hacia la derecha
             this.body.setVelocityX(this.speed);
 
@@ -251,7 +264,7 @@ class Mario extends Phaser.GameObjects.Sprite
 
 
             // Manejo de animaciones basado en el estado
-            if (!this.isHurt)
+            if (!this.isHurt && !this.hasWon)
             {
                 this.handleAnimations();
             }
@@ -310,6 +323,7 @@ class Mario extends Phaser.GameObjects.Sprite
         this.hasBufferedJump = false;
         this.wasHoldingJumpWhenBuffered = false;
         this.isHurt = false;
+        this.hasWon = false;
     }
 }
 export default Mario;
