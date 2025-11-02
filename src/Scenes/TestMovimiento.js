@@ -204,22 +204,22 @@ class MovimientoScene extends Phaser.Scene
         );
 
 
-            this.powerups = this.add.group();
+        this.powerups = this.add.group();
 
         const w = this.cameras.main.width;
         const h = this.cameras.main.height;
 
-            this.spawnPowerUp(700, h - 100, POWERUP_TYPES.MUSHROOM, 'mushroom');
+        this.spawnPowerUp(700, h - 100, POWERUP_TYPES.MUSHROOM, 'mushroom');
 
-              this.physics.add.overlap(
-    this.jugador,
-    this.powerups,
-    (player, pu) => pu.collect(player),
-    null,
-    this
-    );
-    this.physics.add.collider(this.powerups, groundLayer);
-this.physics.add.collider(this.powerups, blockLayer);
+        this.physics.add.overlap(
+            this.jugador,
+            this.powerups,
+            (player, pu) => pu.collect(player),
+            null,
+            this
+        );
+        this.physics.add.collider(this.powerups, groundLayer);
+        this.physics.add.collider(this.powerups, blockLayer);
 
         this.createText();
 

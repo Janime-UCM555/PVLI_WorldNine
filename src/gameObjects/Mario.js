@@ -427,11 +427,15 @@ class Mario extends Phaser.GameObjects.Sprite
 
     deactivatePowerUp(){
        // 1. Cancelar eventos de la estrella (arcoíris)
-        if (this._invEvent?.remove) this._invEvent.remove(false);
-        this._invEvent = null;
+        if (this.invEvent?.remove){
+            this.invEvent.remove(false);
+            this.invEvent = null;
+        } 
 
-        if (this._invTimer?.remove) this._invTimer.remove(false);
-        this._invTimer = null;
+        if (this._invTimer?.remove){
+            this._invTimer.remove(false);
+            this._invTimer = null;
+        } 
 
         // 2. Restaurar apariencia
         this.clearTint();
