@@ -180,6 +180,17 @@ class Mario extends Phaser.GameObjects.Sprite
             this.play('mario_idle', true);
         }
     }
+    
+    //Daña al jugador
+    hurt()
+    {
+        this.isHurt = true;
+        if (this.body) {
+            this.body.setVelocityX(0);
+        }
+        // Cambiar a animación idle cuando se detiene
+        this.play('mario_hurt', true);
+    }
 
     update(time, delta) {
         // Manejar el salto
@@ -193,7 +204,7 @@ class Mario extends Phaser.GameObjects.Sprite
             return;
         }
         
-        if (this.body) {
+        if (this.body && !this.isHurt) {
             // Movimiento horizontal hacia la derecha
             this.body.setVelocityX(this.speed);
 
@@ -240,7 +251,10 @@ class Mario extends Phaser.GameObjects.Sprite
 
 
             // Manejo de animaciones basado en el estado
-            this.handleAnimations();
+            if (!this.isHurt)
+            {
+                this.handleAnimations();
+            }
             
             // Detectar colisión con paredes
             if (this.body.blocked.right) {
@@ -295,6 +309,7 @@ class Mario extends Phaser.GameObjects.Sprite
         this.jumpHeld = false;
         this.hasBufferedJump = false;
         this.wasHoldingJumpWhenBuffered = false;
+        this.isHurt = false;
     }
 }
 export default Mario;

@@ -113,6 +113,14 @@ class MovimientoScene extends Phaser.Scene
             repeat: -1
         });
 
+        
+        this.anims.create({
+            key: 'mario_hurt',
+            frames: this.anims.generateFrameNumbers('mario_hurt', { start: 0, end: 0 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
         this.jugador = new Mario(this, 25, 625, 'mario_run', 200, -225, true);
         // Forzar la inicialización de animaciones
         if (this.anims.exists('mario_run')) {
@@ -225,15 +233,15 @@ class MovimientoScene extends Phaser.Scene
     createText()
     {
 
-        let textTimer = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -');
-        textTimer.setOrigin(0.5,7);
-        textTimer.setFont('sugoDisplay');
-        textTimer.setFontSize(50);
-        textTimer.setAlign('center');
-        textTimer.setStroke('#000000ff', 6)
-        textTimer.setFill('#ffffffff');
-        textTimer.setText("60");
-        textTimer.setScrollFactor(0);
+        this.textTimer = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -');
+        this.textTimer.setOrigin(0.5,7);
+        this.textTimer.setFont('sugoDisplay');
+        this.textTimer.setFontSize(50);
+        this.textTimer.setAlign('center');
+        this.textTimer.setStroke('#000000ff', 6)
+        this.textTimer.setFill('#ffffffff');
+        this.textTimer.setText("60");
+        this.textTimer.setScrollFactor(0);
         // textTimer.setShadow(5, 5, 'rgba(0,0,0,0.5)', 5);
 
 
@@ -268,20 +276,49 @@ class MovimientoScene extends Phaser.Scene
         this.textPurpleCoins.setText("".padStart(1,"0"));
         this.textPurpleCoins.setScrollFactor(0);
 
+        this.timerMethod();
+    }
+
+    timerMethod ()
+    {
         let timer = 60;
+        this.endTimer = false;
         this.timerEvent = this.time.addEvent({
         delay: 1000,
         loop: true,
         callback: () => {
-            timer = (timer - 1 + 60) % 60; // reinicia a 60
-            textTimer.setText(timer.toString().padStart(2, '0'));
+            if (!this.endTimer)
+            {
+                timer = (timer - 1 + 60) % 60; // reinicia a 60
+                this.textTimer.setText(timer.toString().padStart(2, '0'));
+                if (timer == 0)
+                {
+                    this.endTimer=true;
+                    this.jugador.play('mario_hurt', true); 
+                    this.jugador.hurt();  
+                    setTimeout(() => {
+                    this.scene.launch('MainMenu');
+                    this.scene.stop();
+                    }, 2000);
+                }   
+            }
+            else{
+                timer = 0;
+                this.textTimer.setText(timer.toString().padStart(2, '0'));
+            }
+
         },
         });
 
-            // Eventos para limpiar listeners al cerrar la escena
-            this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-            this.timerEvent?.remove(false);
+        // Eventos para limpiar listeners al cerrar la escena
+        this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+        this.timerEvent?.remove(false);
         });
+    }
+
+    transition()
+    {
+
     }
 
     increaseScore(points, type = 'score'){
