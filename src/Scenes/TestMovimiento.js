@@ -38,6 +38,10 @@ class MovimientoScene extends Phaser.Scene
             frameWidth: 48,
             frameHeight: 56
         });
+        this.load.audio('coin_sound', '../../../assets/sonidos/SE/Items/Monedas/coin.wav');
+        this.load.audio('purple_coin_sound', '../../../assets/sonidos/SE/Items/Monedas/purpleCoin.wav');
+        this.load.audio('purple_coin_all_sound', '../../../assets/sonidos/SE/Items/Monedas/purpleCoinAll.wav');
+        // this.load.audio('victory_music', '../../../assets/sonidos/BGM/Nivel_Completado.wav');
 
         this.score=0;
         this.coinScore = 0;
@@ -216,10 +220,13 @@ class MovimientoScene extends Phaser.Scene
         this.jugador.stop();
         this.jugador.body.setVelocity(0, 0);
         this.increaseScore(Math.round(barra.y * 10), 'score');
-        setTimeout(() => {
-        this.scene.launch('MainMenu');
-        this.scene.stop();
-        }, 2000);
+        // const victoryMusic = this.sound.add('victory_music');
+        // victoryMusic.once('complete', () => {
+        // setTimeout(() => {
+        // this.scene.launch('MainMenu');
+        // this.scene.stop();
+        // }, 1000);
+        // });
     }
 
     createText()
@@ -293,12 +300,20 @@ class MovimientoScene extends Phaser.Scene
                 this.textScore.setText("9999999999");
             }
         } else if (type === 'coins') {
+            this.sound.play('coin_sound');
             this.coinScore += points;
             if (this.textCoins) {
                 this.textCoins.setText(this.coinScore.toString().padStart(2, '0'));
             }
         } else if (type == 'purple_coin'){
             this.purpleCoinScore += points;
+            if(this.purpleCoinScore < 5)
+            {
+                this.sound.play('purple_coin_sound');
+            }
+            else{
+                this.sound.play('purple_coin_all_sound');
+            }
             if (this.textPurpleCoins) {
                 this.textPurpleCoins.setText(this.purpleCoinScore.toString().padStart(1, '0'));
             }
