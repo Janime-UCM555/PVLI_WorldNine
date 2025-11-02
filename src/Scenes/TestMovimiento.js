@@ -33,7 +33,6 @@ class MovimientoScene extends Phaser.Scene
             frameWidth: 48,
             frameHeight: 56,
         });
-
         this.load.spritesheet('mario_stop', '../../../assets/GameSprites/Characters/Mario/Mario_no_movement.png', {
             frameWidth: 32,
             frameHeight: 56,
@@ -249,12 +248,10 @@ class MovimientoScene extends Phaser.Scene
 
     ganasPartida(player, barra) {
         barra.destroy();
-        this.jugador.stop();
-        this.jugador.body.setVelocity(0, 0);
         this.increaseScore(Math.round(barra.y * 10), 'score');
         this.endTimer=true;
         this.jugador.win();
-        this.jugador.play('mario_victory', true);
+        this.jugador.play('mario_stop', true);
         const victoryMusic = this.sound.add('victory_music');
         victoryMusic.play();
         victoryMusic.once('complete', () => {

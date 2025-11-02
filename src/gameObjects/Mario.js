@@ -186,9 +186,6 @@ class Mario extends Phaser.GameObjects.Sprite
     // Detener el jugador
     win() {
         this.hasWon = true;
-        if (this.body) {
-            this.body.setVelocityX(0);
-        }
         // Cambiar a animación idle cuando se detiene
         this.play('mario_stop', true);
     }
