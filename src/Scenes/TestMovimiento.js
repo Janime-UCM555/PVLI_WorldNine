@@ -2,6 +2,7 @@ import Button from '../gameObjects/Button.js';
 import Mario from '../gameObjects/Mario.js';
 import Fin from '../gameObjects/BarraFin.js';
 import { PowerUp, POWERUP_TYPES } from '../gameObjects/PowerUps.js';
+
 class MovimientoScene extends Phaser.Scene
 {
     constructor(){
@@ -76,6 +77,8 @@ class MovimientoScene extends Phaser.Scene
     }
 
     create(){
+        
+
         // Crear mapa desde Tiled
         this.map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
         const tileset = this.map.addTilesetImage('MapaTiles', 'mi_tileset');
@@ -89,67 +92,7 @@ class MovimientoScene extends Phaser.Scene
         const coins = this.map.getObjectLayer('Monedas').objects;
         const barraFinLayer = this.map.getObjectLayer('BarraFin').objects;
 
-        this.anims.create({
-            key: 'coin_gold_spin',
-            frames: this.anims.generateFrameNumbers('coin_tileset', { start: 0, end: 8 }),
-            frameRate: 8,
-            repeat: -1
-        });
-        this.anims.create({
-            key: 'coin_purple_spin',
-            frames: this.anims.generateFrameNumbers('coin_tileset', { start: 9, end: 17 }),
-            frameRate: 8,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: 'mario_run',
-            frames: this.anims.generateFrameNumbers('mario_run', { start: 0, end: 3 }),
-            frameRate: 8,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: 'mario_idle',
-            frames: [{ key: 'mario_run', frame: 0 }],
-            frameRate: 1
-        });
-
-        this.anims.create({
-            key: 'mario_jump',
-            frames: this.anims.generateFrameNumbers('mario_jump', { start: 0, end: 1 }),
-            frameRate: 8,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: 'mario_fall',
-            frames: this.anims.generateFrameNumbers('mario_fall', { start: 0, end: 1 }),
-            frameRate: 8,
-            repeat: -1
-        });
-
-        
-        this.anims.create({
-            key: 'mario_hurt',
-            frames: this.anims.generateFrameNumbers('mario_hurt', { start: 0, end: 0 }),
-            frameRate: 8,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: 'mario_stop',
-            frames: this.anims.generateFrameNumbers('mario_stop', { start: 0, end: 0 }),
-            frameRate: 8,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: 'mario_victory',
-            frames: this.anims.generateFrameNumbers('mario_victory', { start: 0, end: 0 }),
-            frameRate: 8,
-            repeat: -1
-        });
+        this.marioAnims()
 
         this.jugador = new Mario(this, 25, 625, 'mario_run', 200, -225, true);
         // Forzar la inicialización de animaciones
@@ -243,14 +186,15 @@ class MovimientoScene extends Phaser.Scene
         this.physics.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
 
         this.buttonPrueba = new Button(this, 0, 0,'Prueba',() =>{
-            this.scene.launch('MainMenu');
-            this.scene.stop();
+            this.transition('MainMenu'); // Llamar a la transición cuando se acaba el tiempo
         });
 
         this.ui = this.add.container(this.cameras.main.width/2, this.cameras.main.height/2);
         this.ui.add([this.buttonPrueba]);
         
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
+    
+        
     }
 
     collectCoin(player, coin) {
@@ -277,8 +221,7 @@ class MovimientoScene extends Phaser.Scene
         victoryMusic.once('complete', () => {
         this.jugador.play('mario_victory', true);
         setTimeout(() => {
-        this.scene.launch('MainMenu');
-        this.scene.stop();
+        this.transition('MainMenu'); // Llamar a la transición cuando se acaba el tiempo
         }, 1000);
         });
     }
@@ -331,10 +274,72 @@ class MovimientoScene extends Phaser.Scene
 
         this.timerMethod();
     }
+    
+    transition(sceneName)
+    {
+        const cam = this.cameras.main;
+
+        // Fondo negro que cubrirá todo
+        const blackout = this.add.rectangle(0, 0, cam.width, cam.height, 0x000000)
+            .setOrigin(0)
+            .setScrollFactor(0)
+            .setDepth(1000); // Asegura que esté por encima de todo
+
+        // Crear un círculo
+        const circle = this.make.graphics({ x: 0, y: 0, add: false });
+
+        // Recogemos la pos del jugador actualmente
+        const playerWorld = this.jugador.getCenter();
+
+        var radius = 1500; // Tamaño al principio
+
+        // Dibujar círculo blanco
+        circle.fillStyle(0xffffff);
+        circle.fillCircle(playerWorld.x, playerWorld.y, radius);
+
+        // Crear máscara y aplicarla invertida
+        const mask = circle.createGeometryMask();
+        mask.invertAlpha = true; //ESTA LÍNEA invierte la visibilidad
+
+        blackout.setMask(mask);
+        this.tweens.add({
+            targets: { r: radius}, 
+            r: 120,
+            duration: 1000,
+            ease: 'Cubic.easeInOut',
+            onUpdate: (tween, target) => {
+                this.circleMask.clear();
+                this.circleMask.fillStyle(0xffffff);
+                this.circleMask.fillCircle(playerWorld.x, playerWorld.y, target.r);
+            },
+            onComplete:()=>
+            {
+                this.tweens.add({
+                    targets: { r: 120, py:playerWorld.y}, 
+                    r: 0,
+                    py: playerWorld.y+10, // Se dirige a los pies el círculo.
+                    duration: 1500,
+                    ease: 'Cubic.easeInOut',
+                    onUpdate: (tween, target) => {
+                        this.circleMask.clear();
+                        this.circleMask.fillStyle(0xffffff);
+                        this.circleMask.fillCircle(playerWorld.x, target.py, target.r);
+                    },
+                    onComplete: () => {
+                        this.scene.launch(sceneName);
+                        this.scene.stop();
+                    }
+                });
+            }
+        });
+        // Guardar referencias para otros métodos
+        this.circleMask = circle;
+        this.blackoutMask = blackout;
+    }
 
     timerMethod ()
     {
-        let timer = 60;
+        let timer = 3;
         this.endTimer = false;
         this.timerEvent = this.time.addEvent({
         delay: 1000,
@@ -349,10 +354,7 @@ class MovimientoScene extends Phaser.Scene
                     this.endTimer=true;
                     this.jugador.play('mario_hurt', true); 
                     this.jugador.hurt();  
-                    setTimeout(() => {
-                    this.scene.launch('MainMenu');
-                    this.scene.stop();
-                    }, 2000);
+                    this.transition('MainMenu'); // Llamar a la transición cuando se acaba el tiempo
                 }   
             }
             else{
@@ -369,11 +371,70 @@ class MovimientoScene extends Phaser.Scene
         });
     }
 
-    transition()
+    marioAnims()
     {
+        this.anims.create({
+            key: 'coin_gold_spin',
+            frames: this.anims.generateFrameNumbers('coin_tileset', { start: 0, end: 8 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'coin_purple_spin',
+            frames: this.anims.generateFrameNumbers('coin_tileset', { start: 9, end: 17 }),
+            frameRate: 8,
+            repeat: -1
+        });
 
+        this.anims.create({
+            key: 'mario_run',
+            frames: this.anims.generateFrameNumbers('mario_run', { start: 0, end: 3 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'mario_idle',
+            frames: [{ key: 'mario_run', frame: 0 }],
+            frameRate: 1
+        });
+
+        this.anims.create({
+            key: 'mario_jump',
+            frames: this.anims.generateFrameNumbers('mario_jump', { start: 0, end: 1 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'mario_fall',
+            frames: this.anims.generateFrameNumbers('mario_fall', { start: 0, end: 1 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        
+        this.anims.create({
+            key: 'mario_hurt',
+            frames: this.anims.generateFrameNumbers('mario_hurt', { start: 0, end: 0 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'mario_stop',
+            frames: this.anims.generateFrameNumbers('mario_stop', { start: 0, end: 0 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'mario_victory',
+            frames: this.anims.generateFrameNumbers('mario_victory', { start: 0, end: 0 }),
+            frameRate: 8,
+            repeat: -1
+        });
     }
-
     increaseScore(points, type = 'score'){
         if (type === 'score') {
             if (this.score < 9999999999) {
@@ -406,6 +467,7 @@ class MovimientoScene extends Phaser.Scene
     playerFell() {
         this.restartLevel();
     }
+
 
     restartLevel() {
         // Reiniciar la escena o reposicionar el jugador
@@ -454,4 +516,5 @@ class MovimientoScene extends Phaser.Scene
         this.cameras.main.scrollY = this.map.heightInPixels / 4;
     }
 }
+
 export default MovimientoScene;
