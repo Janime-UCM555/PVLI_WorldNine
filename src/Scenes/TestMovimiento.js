@@ -62,7 +62,12 @@ class MovimientoScene extends Phaser.Scene
         this.load.audio('purple_coin_all_sound', '../../../assets/sonidos/SE/Items/Monedas/purpleCoinAll.wav');
         this.load.audio('victory_music', '../../../assets/sonidos/BGM/Nivel_Completado.wav');
         this.load.audio('salto', '../../../assets/sonidos/SE/Mario/Acciones/salto.wav');
-
+        this.load.audio('aplastar', '../../../assets/sonidos/SE/Mario/Acciones/Stomp.wav');
+        this.load.audio('muerte', '../../../assets/sonidos/SE/Mario/Acciones/Muerte.wav');
+        this.load.audio('PowerUp', '../../../assets/sonidos/SE/Items/PowerUps/PowerUp.wav');
+        this.load.audio('PowerDown', '../../../assets/sonidos/SE/Items/PowerUps/PowerDown.wav');
+        this.load.audio('paso1', '../../../assets/sonidos/SE/Mario/Acciones/pisadaBloque1.wav');
+        this.load.audio('paso2', '../../../assets/sonidos/SE/Mario/Acciones/pisadaBloque2.wav');
         this.score=0;
         this.coinScore = 0;
         this.purpleCoinScore = 0;
@@ -431,6 +436,7 @@ class MovimientoScene extends Phaser.Scene
             mario.takeDamage(pushDirection);
             if (!marioWasSuperSize) {
                 // Si Mario ha colisionado lateralmente con un Goomba siendo pequeño se reinicia el nivel
+                this.sound.play('muerte');
                 this.restartLevel();
             }
         }
@@ -593,6 +599,7 @@ class MovimientoScene extends Phaser.Scene
                 if (timer == 0)
                 {
                     this.endTimer=true;
+                    this.sound.play('muerte');
                     this.jugador.hurt();  
                     this.transition('MainMenu'); // Llamar a la transición cuando se acaba el tiempo
                 }   
@@ -753,6 +760,7 @@ class MovimientoScene extends Phaser.Scene
 
         // Comprobar si el jugador se ha caído
         if (this.jugador.y > this.map.heightInPixels + 100) {
+            this.sound.play('muerte');
             this.playerFell();
         }
     }

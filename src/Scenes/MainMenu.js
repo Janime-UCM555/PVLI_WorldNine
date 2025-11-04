@@ -36,6 +36,7 @@ class MainMenu extends Phaser.Scene
             frameWidth: 48,
             frameHeight: 55,
         });
+        this.load.audio('coin_sound', '../../../assets/sonidos/SE/Items/Monedas/coin.wav');
     }
 
     create(){
@@ -103,6 +104,7 @@ class MainMenu extends Phaser.Scene
 
 
     this.buttonMove = new Button(this, 0, -B_SPACING + B_SPACING/2, 'Jugar',() =>{
+        this.sound.play('coin_sound', { volume: 0 });
         this.scene.launch('MovimientoScene');
         this.scene.stop();
     })

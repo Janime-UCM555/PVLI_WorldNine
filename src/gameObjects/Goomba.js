@@ -30,6 +30,9 @@ class Goomba extends Phaser.GameObjects.Sprite
             // Configurar las propiedades de colisión
             this.body.setBounce(0, 0);
             this.body.setDrag(200, 0);
+            
+            this.stompSound = scene.sound.add('aplastar');
+
         }
     }
 
@@ -101,6 +104,8 @@ class Goomba extends Phaser.GameObjects.Sprite
         // Si está muerto o marcado para destrucción, no aplicar empuje
         if (!this.isAlive || this.shouldBeDestroyed) return;
         
+        this.stompSound.play();
+
         this.isAlive = false;
         this.body.setVelocity(0, 0);
         this.body.checkCollision.none = true;

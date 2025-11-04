@@ -62,6 +62,12 @@ class Mario extends Phaser.GameObjects.Sprite
         }
         
         this.jumpSound = scene.sound.add('salto');
+        this.hurtSound = scene.sound.add('PowerDown');
+        this.powerUpSound = scene.sound.add('PowerUp');
+        this.paso1 = scene.sound.add('paso1');
+        this.paso2 = scene.sound.add('paso2');
+        this.nextFootstep = 1;
+        this.footstepCooldown = 0;
 
         this.base = {
             speed: speed,
@@ -276,6 +282,7 @@ class Mario extends Phaser.GameObjects.Sprite
         
         // Desactivar el estado de super tamaño si estaba activo
         if (this.isSuperSize) {
+            this.hurtSound.play();
             this.isSuperSize = false;
             this.setScale(this.base.scaleX, this.base.scaleY); // Restaurar tamaño original
         }
@@ -334,6 +341,9 @@ class Mario extends Phaser.GameObjects.Sprite
             // Solo mantener la animación de hurt y salir
             this.handleAnimations();
             return;
+        }
+        if (this.footstepCooldown > 0) {
+            this.footstepCooldown -= delta;
         }
 
         // Manejar el salto
@@ -455,6 +465,18 @@ class Mario extends Phaser.GameObjects.Sprite
             if (this.body.velocity.x !== 0 && !this.isStopped) {
                 if (this.anims.currentAnim?.key !== 'mario_run') {
                     this.play('mario_run', true);
+                }
+                if (this.footstepCooldown <= 0) {
+                    if (!this.paso1.isPlaying && !this.paso2.isPlaying) {
+                        if (this.nextFootstep === 1) {
+                            this.paso1.play();
+                            this.nextFootstep = 2;
+                    } else {
+                        this.paso2.play();
+                        this.nextFootstep = 1;
+                    }
+                    }
+                this.footstepCooldown = 300;
                 }
             } else {
                 if (this.anims.currentAnim?.key !== 'mario_idle') {
@@ -580,6 +602,7 @@ class Mario extends Phaser.GameObjects.Sprite
             // aquí podrías sumar puntos, etc.
             return;
         }
+        this.powerUpSound.play();
         const k = this.scaleMultiplier || 1.5;
         this.activePowerUp = POWERUP_TYPES.MUSHROOM;
         this.isSuperSize = true;
