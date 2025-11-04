@@ -90,6 +90,7 @@ class MovimientoScene extends Phaser.Scene
     }
 
     create(){
+        this.cameras.main.setZoom(2);
         // Crear mapa desde Tiled
         this.map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
         const tileset = this.map.addTilesetImage('MapaTiles', 'mi_tileset');
@@ -99,7 +100,7 @@ class MovimientoScene extends Phaser.Scene
         const bgLayer = this.map.createLayer('CapaFondo', tilesetBG, 0, 0);
         const decorationsLayer = this.map.createLayer('CapaDecoraciones', tileset, 0, 0);
         this.groundLayer = this.map.createLayer('CapaSuelo', tileset, 0, 0);
-        this.blockLayer = this.map.createLayer('CapaBloques', tileset, 0, 0);
+        const blocks = this.map.getObjectLayer('Bloques').objects;
         const coins = this.map.getObjectLayer('Monedas').objects;
         const barraFinLayer = this.map.getObjectLayer('BarraFin').objects;
 
