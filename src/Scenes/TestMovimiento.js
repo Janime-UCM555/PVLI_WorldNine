@@ -90,7 +90,7 @@ class MovimientoScene extends Phaser.Scene
     }
 
     create(){
-        this.cameras.main.setZoom(2);
+        // this.cameras.main.setZoom(2);
         // Crear mapa desde Tiled
         this.map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
         const tileset = this.map.addTilesetImage('MapaTiles', 'mi_tileset');
