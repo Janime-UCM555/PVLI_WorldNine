@@ -11,6 +11,7 @@ class MainMenu extends Phaser.Scene
     }
     
     preload(){
+        this.load.image('menu_pattern', 'assets/GameSprites/Precarga/menu_pattern.jpg');
         this.load.spritesheet('mario_walk', '../../../assets/GameSprites/Characters/Mario/Mario_walk.png', {
             frameWidth: 32,
             frameHeight: 55,
@@ -38,6 +39,21 @@ class MainMenu extends Phaser.Scene
     }
 
     create(){
+
+    const width = this.cameras.main.width;
+    const height = this.cameras.main.height;
+    this.stars = this.add.tileSprite(
+        0,
+        0,
+        width,
+        height,
+        'menu_pattern'
+    );
+    this.stars.setOrigin(0, 0);
+        
+    // Para que las estrellas cubran toda la pantalla
+    this.stars.setDisplaySize(width, height);
+
       this.anims.create({
       key: 'mario_Walk',
       frames: this.anims.generateFrameNumbers('mario_walk', { start: 0, end: 3 }),
@@ -86,17 +102,17 @@ class MainMenu extends Phaser.Scene
 
 
 
-    this.buttonMove = new Button(this, 0, -B_SPACING, 'Move',() =>{
+    this.buttonMove = new Button(this, 0, -B_SPACING + B_SPACING/2, 'Jugar',() =>{
         this.scene.launch('MovimientoScene');
         this.scene.stop();
     })
 
-    this.buttonPrueba = new Button(this, 0, 0,'Prueba',() =>{
-        this.scene.launch('NivelScene');
-        this.scene.stop();
-    });
+    // this.buttonPrueba = new Button(this, 0, 0,'Prueba',() =>{
+    //     this.scene.launch('NivelScene');
+    //     this.scene.stop();
+    // });
 
-    this.buttonFullScreen = new Button(this, 0, B_SPACING, "Pantalla \nCompleta",
+    this.buttonFullScreen = new Button(this, 0, B_SPACING / 2, "Pantalla \nCompleta",
         () => this.scale.toggleFullscreen()
     );
 
@@ -105,14 +121,13 @@ class MainMenu extends Phaser.Scene
     this.ui.add([
         //Añadir aqui los elementos de la ui
         this.buttonFullScreen,
-        this.buttonPrueba,
+        // this.buttonPrueba,
         this.buttonMove
     ])
 
     this.scale.on('resize', (gameSize) => {this.UIResize(gameSize.width, gameSize.height)});
     this.scale.on('enterFullscreen', () => {this.UIResize(this.scale.gameSize.width, this.scale.gameSize.height)});
     this.scale.on('leaveFullscreen', () => {this.UIResize(this.scale.gameSize.width, this.scale.gameSize.height)});
-
     }
 
     UIResize(width, height){
@@ -132,6 +147,13 @@ class MainMenu extends Phaser.Scene
         if(this.physics?.world) this.physics.world.setBounds(0, 0, width, height);
   });
         
+    }
+        update(time, delta) {
+        // Se mueven las estrellas de izquierda a derecha y de arriba a abajo
+        if (this.stars) {
+            this.stars.tilePositionX -= 0.05;
+            this.stars.tilePositionY -= 0.015;
+        }
     }
 }
 
