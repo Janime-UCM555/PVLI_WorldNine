@@ -2263,6 +2263,18 @@
                  "width":32,
                  "x":3808,
                  "y":576
+                }, 
+                {
+                 "gid":375,
+                 "height":32,
+                 "id":227,
+                 "name":"Pausa",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":32,
+                 "x":4576,
+                 "y":512
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -2511,7 +2523,7 @@
          "y":0
         }],
  "nextlayerid":14,
- "nextobjectid":227,
+ "nextobjectid":228,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.2",
