@@ -16,18 +16,20 @@ class Mario extends Phaser.GameObjects.Sprite
         this.wasGrounded = false; // Para rastrear el estado anterior
         this.isStopped = false; // Controlar si está detenido
         this.canJump = true; // Controlar si puede saltar
+        this.isBeingPushed = false; // Indica si está siendo empujado
+        this.isInvulnerable = false; // Para controlar la invulnerabilidad temporal
 
         // Sistema de salto
         this.isJumping = false; // Indica si está en proceso de salto
         this.isHoldingJump = false; // Indica si está manteniendo el botón de salto
         this.jumpStartTime = 0; // Momento en que se inició el salto
-        this.maxJumpHoldTime = 400; // Tiempo máximo que se puede mantener el salto en ms
+        this.maxJumpHoldTime = 290; // Tiempo máximo que se puede mantener el salto en ms
 
         // Control del salto
         this.jumpVelocity = 0; // Velocidad de salto
-        this.maxJumpVelocity = -350; // Velocidad máxima hacia arriba
-        this.minJumpVelocity = jumpForce; // Velocidad mínima hacia arriba
-        this.jumpAcceleration = -900; // Aceleración hacia arriba durante el salto
+        this.maxJumpVelocity = jumpForce; // Velocidad máxima hacia arriba
+        this.minJumpVelocity = -100; // Velocidad mínima hacia arriba
+        this.jumpAcceleration = -800; // Aceleración hacia arriba durante el salto
         
         // Coyote time
         this.coyoteTime = 150; // Tiempo en ms para permitir salto después de dejar el suelo (0.15 segundos)
@@ -57,7 +59,6 @@ class Mario extends Phaser.GameObjects.Sprite
 
             // Mejorar la detección de colisiones
             this.body.onWorldBounds = true;
-
         }
         
         this.jumpSound = scene.sound.add('salto');
@@ -200,13 +201,31 @@ class Mario extends Phaser.GameObjects.Sprite
             this.jumpVelocity += this.jumpAcceleration * (delta / 1000);
             
             // Limitar la velocidad máxima
-            this.jumpVelocity = Math.max(this.jumpVelocity, this.maxJumpVelocity);
+            this.jumpVelocity = Phaser.Math.Clamp(this.jumpVelocity, -650, this.maxJumpVelocity);
             
             // Aplicar la velocidad calculada
             this.body.setVelocityY(this.jumpVelocity);
         } else {
             // Tiempo máximo alcanzado
             this.isHoldingJump = false;
+        }
+    }
+
+    // Activar empuje
+    startPush() {
+        this.isBeingPushed = true;
+        this.isStopped = true; // También detener el movimiento automático
+    }
+
+    // Desactivar empuje
+    endPush() {
+        this.isBeingPushed = false;
+        this.isStopped = false;
+        this.isHurt = false; // Asegurar que ya no está en estado hurt
+        
+        // Reanudar movimiento normal
+        if (this.body && !this.body.blocked.right) {
+            this.resume();
         }
     }
 
@@ -242,17 +261,81 @@ class Mario extends Phaser.GameObjects.Sprite
     
 
     //Daña al jugador
-    hurt()
-    {
+    hurt() {
         this.isHurt = true;
-        if (this.body) {
-            this.body.setVelocityX(0);
-        }
+
         // Cambiar a animación idle cuando se detiene
         this.play('mario_hurt', true);
     }
 
+    takeDamage(pushDirection) {
+        // Configurar tiempos
+        const PUSH_DURATION = 200; // Tiempo de empuje
+        const EXTRA_INVULNERABILITY = 150; // Tiempo extra durante el que Mario es invulnerable
+        const TOTAL_INVULNERABILITY = PUSH_DURATION + EXTRA_INVULNERABILITY; // Tiempo total: Tiempo de empuje + Tiempo extra de invulnerabilidad
+        
+        // Desactivar el estado de super tamaño si estaba activo
+        if (this.isSuperSize) {
+            this.isSuperSize = false;
+            this.setScale(this.base.scaleX, this.base.scaleY); // Restaurar tamaño original
+        }
+
+        // Activar estado de daño
+        this.hurt();
+        this.startPush();
+        this.isInvulnerable = true;
+
+        // Empujar a Mario hacia la izquierda
+        const pushSpeed = Phaser.Math.Clamp(500, -650, 650); // Velocidad alta para el empuje
+        this.body.setVelocityX(pushSpeed * pushDirection);
+
+        // Actualizar el cuerpo físico después del cambio de posición
+        this.body.updateFromGameObject();
+    
+        // Restaurar hitbox original si existe
+        if (this.baseBody && this.body) {
+            this.body.setSize(this.baseBody.w, this.baseBody.h);
+            this.body.setOffset(this.baseBody.offsetX, this.baseBody.offsetY);
+        }
+    
+        // Efecto visual temporal (parpadeo)
+        let blinkCount = 0;
+        const maxBlinks = Math.floor(TOTAL_INVULNERABILITY / 50); // Calcular parpadeos basado en tiempo
+        const blinkInterval = setInterval(() => {
+            this.setVisible(!this.visible);
+            blinkCount++;
+            if (blinkCount >= maxBlinks) {
+                clearInterval(blinkInterval);
+                this.setVisible(true);
+            }
+        }, 50);
+
+        // Terminar el empuje después del tiempo configurado
+        this.scene.time.delayedCall(PUSH_DURATION, () => {
+            this.isHurt = false;
+            this.endPush(); // Esto quita isBeingPushed y reanuda movimiento
+        });
+
+        // Quitar la inmunidad después del tiempo total
+        this.scene.time.delayedCall(TOTAL_INVULNERABILITY, () => {
+            this.isInvulnerable = false;
+            this.setVisible(true);
+            clearInterval(blinkInterval);
+            // Asegurarse de que el estado de hurt esté desactivado
+            if (this.isHurt) {
+                this.isHurt = false;
+            }
+        });
+    }
+
     update(time, delta) {
+        // Si está herido, no procesar otras lógicas
+        if (this.isHurt) {
+            // Solo mantener la animación de hurt y salir
+            this.handleAnimations();
+            return;
+        }
+
         // Manejar el salto
         this.handleJump(time, delta);
         
@@ -263,10 +346,15 @@ class Mario extends Phaser.GameObjects.Sprite
             }
             return;
         }
+
+        // Manejo de animaciones
+        this.handleAnimations();
         
         if (this.body && !this.isHurt && !this.hasWon) {
-            // Movimiento horizontal hacia la derecha
-            this.body.setVelocityX(this.speed);
+            // Solo aplicar velocidad hacia la derecha si no está siendo empujado
+            if (!this.isBeingPushed) {
+                this.body.setVelocityX(this.speed);
+            }
 
             // Guardar el estado anterior antes de actualizar
             const previousGrounded = this.isGrounded; // Variable local para este frame
@@ -308,23 +396,41 @@ class Mario extends Phaser.GameObjects.Sprite
 
             // Actualizar el estado anterior para el próximo frame
             this.wasGrounded = previousGrounded;
-
-
-            // Manejo de animaciones basado en el estado
-            if (!this.isHurt && !this.hasWon)
-            {
-                this.handleAnimations();
-            }
             
             // Detectar colisión con paredes
             if (this.body.blocked.right) {
                 this.stop();
             }
         }
+
+        // Limitar velocidades después de todas las actualizaciones
+        if (this.body && !this.isHurt) {
+            // Asegurar que las velocidades sean números válidos
+            if (typeof this.body.velocity.x !== 'number' || isNaN(this.body.velocity.x)) {
+                this.body.velocity.x = this.isBeingPushed ? 0 : this.speed;
+            }
+            if (typeof this.body.velocity.y !== 'number' || isNaN(this.body.velocity.y)) {
+                this.body.velocity.y = 0;
+            }
+
+            // Limitar velocidad X
+            this.body.velocity.x = Phaser.Math.Clamp(this.body.velocity.x, -650, 650);
+        
+            // Limitar velocidad Y
+            this.body.velocity.y = Phaser.Math.Clamp(this.body.velocity.y, -650, 650);
+        }
     }
 
     handleAnimations() {
         if (!this.body) return;
+
+        // Mostrar siempre animación de hurt si está herido
+        if (this.isHurt) {
+            if (this.anims.currentAnim?.key !== 'mario_hurt') {
+                this.play('mario_hurt', true);
+            }
+            return; // Salir inmediatamente - no permitir otras animaciones
+        }
         
         // Animaciones de salto y caída (si está en el aire)
         if (!this.isGrounded) {
@@ -358,8 +464,8 @@ class Mario extends Phaser.GameObjects.Sprite
         }
     }
 
-    // Resetear estado de salto
-    resetJumpState() {
+    // Resetear estados
+    resetStates() {
         this.canJump = true;
         this.isJumping = false;
         this.isHoldingJump = false;
@@ -371,7 +477,9 @@ class Mario extends Phaser.GameObjects.Sprite
         this.wasHoldingJumpWhenBuffered = false;
         this.isHurt = false;
         this.hasWon = false;
-
+        this.setScale(this.base.scaleX, this.base.scaleY);
+        this.isSuperSize = false;
+        this.deactivatePowerUp();
     }
     
     setInvincible(durationMs) {
@@ -446,6 +554,7 @@ class Mario extends Phaser.GameObjects.Sprite
             this.setScale(this.base.scaleX, this.base.scaleY);
             this.body.setSize(this._baseBody.w, this._baseBody.h, true);
             this.body.setOffset(this._baseBody.ox, this._baseBody.oy);
+            this.isSuperSize = false;
         }
 
         // 4. Resetear flags y multiplicadores
@@ -462,8 +571,6 @@ class Mario extends Phaser.GameObjects.Sprite
         this.maxJumpVelocity = this.base.maxJumpVelocity ?? this.maxJumpVelocity;
 
         // 6. Limpieza final
-        this.isSuperSize? 
-        this.activePowerUp = POWERUP_TYPES.MUSHROOM :
         this.activePowerUp = null;
     }
 
@@ -479,6 +586,6 @@ class Mario extends Phaser.GameObjects.Sprite
 
         // Escala visual
         this.setScale(this.base.scaleX * k, this.base.scaleY * k);
-}
+    }
 }
 export default Mario;

@@ -54,10 +54,12 @@ class PreloadScene extends Phaser.Scene {
             frameWidth: 48,
             frameHeight: 56
         });
+        this.load.image('Mario_no_movement', 'assets/GameSprites/Characters/Mario/Mario_no_movement.png');
         this.load.spritesheet('Mario_run', 'assets/GameSprites/Characters/Mario/Mario_run.png', {
             frameWidth: 32,
             frameHeight: 56
         });
+        this.load.image('Mario_victory', 'assets/GameSprites/Characters/Mario/Mario_victory.png');
         this.load.spritesheet('Mario_walk', 'assets/GameSprites/Characters/Mario/Mario_walk.png', {
             frameWidth: 32,
             frameHeight: 56

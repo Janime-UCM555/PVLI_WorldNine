@@ -1,8 +1,8 @@
 import Button from '../gameObjects/Button.js';
 import Mario from '../gameObjects/Mario.js';
 import Fin from '../gameObjects/BarraFin.js';
+import Goomba from '../gameObjects/Goomba.js';
 import { PowerUp, POWERUP_TYPES } from '../gameObjects/PowerUps.js';
-
 class MovimientoScene extends Phaser.Scene
 {
     constructor(){
@@ -26,11 +26,11 @@ class MovimientoScene extends Phaser.Scene
             frameWidth: 32,
             frameHeight: 32
         });
+
         this.load.spritesheet('mario_run', '../../../assets/GameSprites/Characters/Mario/Mario_run.png', {
             frameWidth: 32,
             frameHeight: 56,
         });
-
         this.load.spritesheet('mario_jump', '../../../assets/GameSprites/Characters/Mario/Mario_jump.png', {
             frameWidth: 48,
             frameHeight: 56,
@@ -39,16 +39,24 @@ class MovimientoScene extends Phaser.Scene
             frameWidth: 32,
             frameHeight: 56,
         });
-
+        this.load.spritesheet('mario_hurt', '../../../assets/GameSprites/Characters/Mario/Mario_hurt.png', {
+            frameWidth: 48,
+            frameHeight: 56,
+        });
         this.load.spritesheet('mario_victory', '../../../assets/GameSprites/Characters/Mario/Mario_victory.png', {
             frameWidth: 48,
             frameHeight: 56,
         });
-
         this.load.spritesheet('mario_fall', 'assets/GameSprites/Characters/Mario/Mario_fall.png', {
             frameWidth: 48,
             frameHeight: 56
         });
+
+        this.load.spritesheet('gombrome_walk', 'assets/GameSprites/Characters/Enemigos/Goomba/GombRome_Walk.png', {
+            frameWidth: 30,
+            frameHeight: 30
+        });
+
         this.load.audio('coin_sound', '../../../assets/sonidos/SE/Items/Monedas/coin.wav');
         this.load.audio('purple_coin_sound', '../../../assets/sonidos/SE/Items/Monedas/purpleCoin.wav');
         this.load.audio('purple_coin_all_sound', '../../../assets/sonidos/SE/Items/Monedas/purpleCoinAll.wav');
@@ -73,12 +81,10 @@ class MovimientoScene extends Phaser.Scene
 
         loadFont("super-mario-256", "assets/web/sugo_pro_display/Sugo-Pro-Classic-Bold-trial.ttf");
 
-         this.load.image('mushroom', '../../../assets/GameSprites/PowerUps/mushroom.png');
+        this.load.image('mushroom', '../../../assets/GameSprites/PowerUps/mushroom.png');
     }
 
     create(){
-        
-
         // Crear mapa desde Tiled
         this.map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
         const tileset = this.map.addTilesetImage('MapaTiles', 'mi_tileset');
@@ -87,12 +93,20 @@ class MovimientoScene extends Phaser.Scene
         // Capa de suelo
         const bgLayer = this.map.createLayer('CapaFondo', tilesetBG, 0, 0);
         const decorationsLayer = this.map.createLayer('CapaDecoraciones', tileset, 0, 0);
-        const groundLayer = this.map.createLayer('CapaSuelo', tileset, 0, 0);
-        const blockLayer = this.map.createLayer('CapaBloques', tileset, 0, 0);
+        this.groundLayer = this.map.createLayer('CapaSuelo', tileset, 0, 0);
+        this.blockLayer = this.map.createLayer('CapaBloques', tileset, 0, 0);
         const coins = this.map.getObjectLayer('Monedas').objects;
         const barraFinLayer = this.map.getObjectLayer('BarraFin').objects;
 
-        this.marioAnims()
+        if (this.groundLayer) {
+            this.groundLayer.setCollisionByProperty({ collides: true });
+        }
+        if (this.blockLayer) {
+            this.blockLayer.setCollisionByProperty({ collides: true });
+        }
+
+        // Crear animaciones
+        this.createAnimations();
 
         this.jugador = new Mario(this, 25, 625, 'mario_run', 200, -225, true);
         // Forzar la inicialización de animaciones
@@ -101,13 +115,16 @@ class MovimientoScene extends Phaser.Scene
         }
         const frontLayer = this.map.createLayer('CapaFrente', tileset, 0, 0);
 
-        this.coinsGroup = this.physics.add.group();
+        this.coinsGroup = this.add.group();
         for (const coinObj of coins)
         {
             const coin = this.coinsGroup.create(coinObj.x, coinObj.y, 'coin_tileset');
             coin.setOrigin(0, 1);
-            coin.body.setAllowGravity(false);
-            coin.body.setImmovable(true);
+            // Desactivar cualquier cuerpo físico que pueda haberse creado automáticamente
+            if (coin.body) {
+                coin.body.destroy();
+                coin.body = null;
+            }
             const coinType = coinObj.name;
             if (coinType === 'purple') {
                 coin.play('coin_purple_spin');
@@ -130,21 +147,33 @@ class MovimientoScene extends Phaser.Scene
             );
         }
 
-        this.physics.add.overlap(
-        this.jugador,
-        this.coinsGroup,
-        this.collectCoin,
-        null,
-        this
-        );
+        // Grupo de Goombas - Añadidos manualmente
+        this.goombas = this.physics.add.group();
+        
+        // Posiciones manuales para los Goombas
+        const goombaPositions = [
+            { x: 450, y: 625 },   // Primer Goomba
+            { x: 500, y: 625 },   // Segundo Goomba
+            { x: 800, y: 500 },   // Tercer Goomba
+            { x: 1200, y: 500 },  // Cuarto Goomba
+            { x: 1750, y: 500 }   // Quinto Goomba
+        ];
 
-        this.physics.add.overlap(
-        this.jugador,
-        this.barraFin,
-        this.ganasPartida,
-        null,
-        this
-        );
+        for (const pos of goombaPositions) {
+            const goomba = new Goomba(this, pos.x, pos.y, 'goombarome_walk', 50, true);
+            // Iniciar todos los Goombas moviéndose hacia la derecha
+            goomba.direction = 1;
+            this.goombas.add(goomba);
+        }
+
+        // Configurar las propiedades de física para Goombas
+        this.goombas.getChildren().forEach(goomba => {
+            if (goomba.body) {
+                // Detección de colisiones
+                goomba.body.setCollideWorldBounds(false); // No permitir colisión con bordes
+                goomba.body.onWorldBounds = true; // Detección de límites del mundo para destrucción
+            }
+        });
 
 
         this.powerups = this.add.group();
@@ -152,34 +181,35 @@ class MovimientoScene extends Phaser.Scene
         const w = this.cameras.main.width;
         const h = this.cameras.main.height;
 
-        this.spawnPowerUp(700, h - 100, POWERUP_TYPES.MUSHROOM, 'mushroom');
+        this.spawnPowerUp(300, h - 100, POWERUP_TYPES.MUSHROOM, 'mushroom');
 
-        this.physics.add.overlap(
-            this.jugador,
-            this.powerups,
-            (player, pu) => pu.collect(player),
-            null,
-            this
-        );
-        this.physics.add.collider(this.powerups, groundLayer);
-        this.physics.add.collider(this.powerups, blockLayer);
+        this.setupCollisions();
+
+        this.physics.add.collider(this.powerups, this.groundLayer);
+        this.physics.add.collider(this.powerups, this.blockLayer);
 
         this.createText();
 
         // Configurar colisiones
-        if (groundLayer) {
+        if (this.groundLayer) {
             // Establecer las colisiones
-            groundLayer.setCollisionByExclusion([-1]);
+            this.groundLayer.setCollisionByExclusion([-1]);
         
-            // Añadir el collider
-            this.physics.add.collider(this.jugador, groundLayer);
+            // Colisión jugador con suelo
+            this.physics.add.collider(this.jugador, this.groundLayer);
+            
+            // Colisión Goombas con suelo con callback para cambiar dirección
+            this.physics.add.collider(this.goombas, this.groundLayer, this.handleGoombaWallCollision, null, this);
         }
-        if (blockLayer) {
+        if (this.blockLayer) {
             // Establecer las colisiones
-            blockLayer.setCollisionByExclusion([-1]);
+            this.blockLayer.setCollisionByExclusion([-1]);
         
-            // Añadir el collider
-            this.physics.add.collider(this.jugador, blockLayer);
+            // Colisión jugador con bloques
+            this.physics.add.collider(this.jugador, this.blockLayer);
+            
+            // Colisión Goombas con bloques con callback para cambiar dirección
+            this.physics.add.collider(this.goombas, this.blockLayer, this.handleGoombaWallCollision, null, this);
         }
 
         // Configurar mejor los límites del mundo
@@ -193,8 +223,217 @@ class MovimientoScene extends Phaser.Scene
         this.ui.add([this.buttonPrueba]);
         
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
+    }
+
+    createAnimations() {
+        this.anims.create({
+            key: 'coin_gold_spin',
+            frames: this.anims.generateFrameNumbers('coin_tileset', { start: 0, end: 8 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'coin_purple_spin',
+            frames: this.anims.generateFrameNumbers('coin_tileset', { start: 9, end: 17 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'mario_run',
+            frames: this.anims.generateFrameNumbers('mario_run', { start: 0, end: 3 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mario_idle',
+            frames: [{ key: 'mario_run', frame: 0 }],
+            frameRate: 1
+        });
+        this.anims.create({
+            key: 'mario_jump',
+            frames: this.anims.generateFrameNumbers('mario_jump', { start: 0, end: 1 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mario_fall',
+            frames: this.anims.generateFrameNumbers('mario_fall', { start: 0, end: 1 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mario_hurt',
+            frames: this.anims.generateFrameNumbers('mario_hurt', { start: 0, end: 0 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'mario_stop',
+            frames: this.anims.generateFrameNumbers('mario_stop', { start: 0, end: 0 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'mario_victory',
+            frames: this.anims.generateFrameNumbers('mario_victory', { start: 0, end: 0 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'goombarome_walk',
+            frames: this.anims.generateFrameNumbers('gombrome_walk', { start: 0, end: 1 }),
+            frameRate: 8,
+            repeat: -1
+        });
+    }
     
+    setupCollisions() {
+        // Colisión con monedas
+        //this.physics.add.overlap(
+        //this.jugador,
+        //this.coinsGroup,
+        //this.collectCoin,
+        //null,
+        //this
+        //);
+
+        // Colisión con barra final
+        this.physics.add.overlap(
+        this.jugador,
+        this.barraFin,
+        this.ganasPartida,
+        null,
+        this
+        );
+
+        // Colisión con powerups
+        this.physics.add.overlap(
+            this.jugador,
+            this.powerups,
+            (player, pu) => pu.collect(player),
+            null,
+            this
+        );
+
+        // Colisión con Goombas
+        this.physics.add.overlap(
+            this.jugador,
+            this.goombas,
+            this.handleMarioGoombaCollision,
+            null,
+            this
+        );
+
+        // Colisión entre Goombas
+        this.physics.add.collider(
+            this.goombas,
+            this.goombas,
+            this.handleGoombaGoombaCollision,
+            null,
+            this
+        );
+    }
+
+    // Manejar colisiones de Goombas con paredes
+    handleGoombaWallCollision(goomba, wall) {
+        if (!goomba.isAlive) return;
+    
+        // Verificar si es una colisión lateral (no desde arriba/abajo)
+        const isLateralCollision = 
+            (goomba.body.blocked.right && goomba.direction === 1) ||
+            (goomba.body.blocked.left && goomba.direction === -1) ||
+            (goomba.body.touching.right && goomba.direction === 1) ||
+            (goomba.body.touching.left && goomba.direction === -1);
+
+        if (isLateralCollision) {
+            // Pequeño retroceso para evitar que se peguen
+            const pushBack = 5;
+            if (goomba.direction === 1) {
+                goomba.x -= pushBack;
+            } else {
+                goomba.x += pushBack;
+            }
         
+            goomba.body.updateFromGameObject();
+        
+            // Cambiar dirección
+            goomba.changeDirection();
+        }
+    }
+
+    handleGoombaGoombaCollision(goomba1, goomba2) {
+        // Ignorar si alguno está muerto
+        if (!goomba1.isAlive || !goomba2.isAlive) return;
+
+        // Calcular superposición usando getBounds()
+        const bounds1 = goomba1.getBounds();
+        const bounds2 = goomba2.getBounds();
+
+        const overlapX = Math.min(bounds1.right, bounds2.right) - Math.max(bounds1.left, bounds2.left);
+
+        // Si hay superposición significativa
+        if (overlapX > 5) {
+            // Separación física inmediata
+            const separation = overlapX / 2 + 5;
+
+            // Calcular dirección de la colisión
+            const dx = goomba2.x - goomba1.x;
+
+            if (dx > 0) {
+                // Goomba2 está a la derecha de Goomba1
+                goomba1.x -= separation;
+                goomba2.x += separation;
+            } else {
+                // Goomba1 está a la derecha de Goomba2
+                goomba1.x += separation;
+                goomba2.x -= separation;
+            }
+        }
+
+        // Actualizar cuerpos físicos
+        goomba1.body.updateFromGameObject();
+        goomba2.body.updateFromGameObject();
+
+        // Ambos Goombas cambian de dirección
+        goomba1.changeDirection();
+        goomba2.changeDirection();
+    }
+
+    handleMarioGoombaCollision(mario, goomba) {
+        // Ignorar si el Goomba está muerto
+        if (!goomba.isAlive) return;
+
+        // Verificar si Mario está cayendo y golpea desde arriba
+        if (mario.body.velocity.y > 0 && mario.body.bottom < goomba.body.top + 15) {
+            // Mario aplasta al Goomba
+            goomba.stomp();
+            
+            // Pequeño rebote para Mario
+            mario.body.setVelocityY(-275);
+        } else if (goomba.isAlive && !mario.isBeingPushed && !mario.isInvulnerable) {
+            // Colisión lateral
+            let pushDirection = 0; // Determinar dirección del empuje
+
+            // Calcular la dirección de la colisión
+            if (mario.x < goomba.x) {
+                // Goomba está a la derecha de Mario -> empujar a Mario hacia la izquierda
+                pushDirection = -1;
+            } else {
+                // Goomba está a la izquierda de Mario -> empujar a Mario hacia la derecha
+                pushDirection = 1;
+            }
+
+            const marioWasSuperSize = mario.isSuperSize;
+            mario.takeDamage(pushDirection);
+            if (!marioWasSuperSize) {
+                // Si Mario ha colisionado lateralmente con un Goomba siendo pequeño se reinicia el nivel
+                this.restartLevel();
+            }
+        }
     }
 
     collectCoin(player, coin) {
@@ -372,7 +611,7 @@ class MovimientoScene extends Phaser.Scene
         });
     }
 
-    marioAnims()
+    /*marioAnims()
     {
         this.anims.create({
             key: 'coin_gold_spin',
@@ -435,7 +674,8 @@ class MovimientoScene extends Phaser.Scene
             frameRate: 8,
             repeat: -1
         });
-    }
+    }*/
+   
     increaseScore(points, type = 'score'){
         if (type === 'score') {
             if (this.score < 9999999999) {
@@ -474,26 +714,64 @@ class MovimientoScene extends Phaser.Scene
         // Reiniciar la escena o reposicionar el jugador
         this.jugador.x = 25;
         this.jugador.y = 625;
-        this.jugador.resetJumpState(); // Resetear estado de salto
+        this.jugador.resetStates(); // Resetear estados
         this.jugador.resume(); // Reanudar movimiento
         if (this.jugador.body) {
             this.jugador.body.setVelocity(0, 0);
         }
+        // Resetear estado de daño
+        this.jugador.isHurt = false;
         // Asegurar animación correcta al reiniciar
         this.jugador.play('mario_run', true);
+        // Resetear invulnerabilidad
+        this.jugador.isInvulnerable = false;
+        this.jugador.setVisible(true);
     }
 
     update(time, delta) {
+        // Actualizar jugador
         this.jugador.update(time,delta);
+
+        // Actualizar barra final
         if (this.barraFin)
         {
             this.barraFin.update(time,delta);
         }
+
+        // Actualizar Goombas
+        if (this.goombas) {
+            this.goombas.getChildren().forEach(goomba => {
+                goomba.update(time, delta);
+            });
+        }
+
+        // Detección manual de monedas
+        this.checkCoinCollection();
+
+        // Posicionar bien la cámara respecto al jugador
         this.centerCameraOnPlayerX();
 
+        // Comprobar si el jugador se ha caído
         if (this.jugador.y > this.map.heightInPixels + 100) {
             this.playerFell();
         }
+    }
+
+    // Detección manual de recolección de monedas
+    checkCoinCollection() {
+        const playerBounds = this.jugador.getBounds();
+    
+        this.coinsGroup.getChildren().forEach(coin => {
+            if (coin.active && !coin.collected) {
+                const coinBounds = coin.getBounds();
+            
+                // Verificar superposición
+                if (Phaser.Geom.Rectangle.Overlaps(playerBounds, coinBounds)) {
+                    this.collectCoin(this.jugador, coin);
+                    coin.collected = true;
+                }
+            }
+        });
     }
 
      // Spawner simple (tu PowerUp ya añade físicas y movimiento)
