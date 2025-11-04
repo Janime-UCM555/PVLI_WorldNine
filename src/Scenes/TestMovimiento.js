@@ -278,7 +278,6 @@ class MovimientoScene extends Phaser.Scene
     transition(sceneName)
     {
         const cam = this.cameras.main;
-
         // Fondo negro que cubrirá todo
         const blackout = this.add.rectangle(0, 0, cam.width, cam.height, 0x000000)
             .setOrigin(0)
@@ -289,13 +288,13 @@ class MovimientoScene extends Phaser.Scene
         const circle = this.make.graphics({ x: 0, y: 0, add: false });
 
         // Recogemos la pos del jugador actualmente
-        const playerWorld = this.jugador.getCenter();
+        var playerWorld = this.jugador.getCenter();
 
         var radius = 1500; // Tamaño al principio
 
         // Dibujar círculo blanco
         circle.fillStyle(0xffffff);
-        circle.fillCircle(playerWorld.x, playerWorld.y, radius);
+        circle.fillCircle(playerWorld.x,  playerWorld.y, radius);
 
         // Crear máscara y aplicarla invertida
         const mask = circle.createGeometryMask();
@@ -310,6 +309,10 @@ class MovimientoScene extends Phaser.Scene
             onUpdate: (tween, target) => {
                 this.circleMask.clear();
                 this.circleMask.fillStyle(0xffffff);
+                if(this.jugador)
+                {
+                    playerWorld = this.jugador.getCenter();
+                }
                 this.circleMask.fillCircle(playerWorld.x, playerWorld.y, target.r);
             },
             onComplete:()=>
@@ -347,21 +350,19 @@ class MovimientoScene extends Phaser.Scene
         callback: () => {
             if (!this.endTimer)
             {
-                timer = (timer - 1 + 60) % 60; // reinicia a 60
                 this.textTimer.setText(timer.toString().padStart(2, '0'));
                 if (timer == 0)
                 {
                     this.endTimer=true;
-                    this.jugador.play('mario_hurt', true); 
                     this.jugador.hurt();  
                     this.transition('MainMenu'); // Llamar a la transición cuando se acaba el tiempo
                 }   
+                timer = (timer - 1 + 60) % 60; // reinicia a 60
             }
             else{
                 timer = 0;
                 this.textTimer.setText(timer.toString().padStart(2, '0'));
             }
-
         },
         });
 
