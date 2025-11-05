@@ -109,6 +109,10 @@ class Koopa extends Phaser.GameObjects.Sprite
         this.isAlive = false;
         this.body.setVelocity(0, 0);
         this.body.checkCollision.none = true;
+
+        if (this.anims.isPlaying) {
+            this.anims.stop();
+        }
         
         // Cambiar a sprite de aplastado si existe
         if (this.scene.textures.exists('Koopa_shell')) {

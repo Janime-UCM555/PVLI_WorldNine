@@ -109,10 +109,14 @@ class Goomba extends Phaser.GameObjects.Sprite
         this.isAlive = false;
         this.body.setVelocity(0, 0);
         this.body.checkCollision.none = true;
+
+        if (this.anims.isPlaying) {
+            this.anims.stop();
+        }
         
         // Cambiar a sprite de aplastado si existe
-        if (this.scene.textures.exists('gomb_stomp')) {
-            this.setTexture('gomb_stomp');
+        if (this.scene.textures.exists('GombRome_Stomp')) {
+            this.setTexture('GombRome_Stomp');
         }
 
         // Destruir después de un tiempo
