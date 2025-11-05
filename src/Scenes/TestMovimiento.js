@@ -423,11 +423,19 @@ class MovimientoScene extends Phaser.Scene
 
         // Verificar si Mario está cayendo y golpea desde arriba
         if (mario.body.velocity.y > 0 && mario.body.bottom < goomba.body.top + 15) {
+            // Hacer a Mario invulnerable temporalmente
+            mario.isInvulnerable = true;
+
             // Mario aplasta al Goomba
             goomba.stomp();
             
             // Pequeño rebote para Mario
             mario.body.setVelocityY(-275);
+
+            // Quitar invulnerabilidad temporal a Mario
+            this.time.delayedCall(150, () => {
+                mario.isInvulnerable = false;
+            });
         } else if (goomba.isAlive && !mario.isBeingPushed && !mario.isInvulnerable) {
             // Colisión lateral
             let pushDirection = 0; // Determinar dirección del empuje
