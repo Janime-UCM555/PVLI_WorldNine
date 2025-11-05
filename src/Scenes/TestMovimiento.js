@@ -670,7 +670,7 @@ class MovimientoScene extends Phaser.Scene
 
     timerMethod ()
     {
-        let timer = 3;
+        let timer = 60;
         this.endTimer = false;
         this.timerEvent = this.time.addEvent({
         delay: 1000,
