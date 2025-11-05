@@ -2,6 +2,7 @@ import Button from '../gameObjects/Button.js';
 import Mario from '../gameObjects/Mario.js';
 import Fin from '../gameObjects/BarraFin.js';
 import Goomba from '../gameObjects/Goomba.js';
+import Koopa from '../gameObjects/Koopa.js';
 import { PowerUp, POWERUP_TYPES } from '../gameObjects/PowerUps.js';
 class Nivel_R extends Phaser.Scene
 {
@@ -47,14 +48,8 @@ class Nivel_R extends Phaser.Scene
         this.groundLayer = this.map.createLayer('CapaSuelo', tileset, 0, 0);
         const blocks = this.map.getObjectLayer('Bloques').objects;
         const coins = this.map.getObjectLayer('Monedas').objects;
+        const enemies = this.map.getObjectLayer('Enemigos').objects;
         const barraFinLayer = this.map.getObjectLayer('BarraFin').objects;
-
-        if (this.groundLayer) {
-            this.groundLayer.setCollisionByProperty({ collides: true });
-        }
-        if (this.blockLayer) {
-            this.blockLayer.setCollisionByProperty({ collides: true });
-        }
 
         // Crear animaciones
         this.createAnimations();
@@ -99,25 +94,56 @@ class Nivel_R extends Phaser.Scene
             80
             );
         }
-
-        // Grupo de Goombas - Añadidos manualmente
         this.goombas = this.physics.add.group();
-        
-        // Posiciones manuales para los Goombas
-        const goombaPositions = [
-            { x: 450, y: 625 },   // Primer Goomba
-            { x: 500, y: 625 },   // Segundo Goomba
-            { x: 800, y: 500 },   // Tercer Goomba
-            { x: 1200, y: 500 },  // Cuarto Goomba
-            { x: 1750, y: 500 }   // Quinto Goomba
-        ];
-
-        for (const pos of goombaPositions) {
-            const goomba = new Goomba(this, pos.x, pos.y, 'goombarome_walk', 50, true);
-            // Iniciar todos los Goombas moviéndose hacia la derecha
-            goomba.direction = 1;
-            this.goombas.add(goomba);
+        this.koopas = this.physics.add.group();
+        for (const enemie of enemies)
+        {
+            if (enemie.name === 'Goomba')
+            {
+                const goomba = new Goomba(
+                    this,
+                    enemie.x,
+                    enemie.y -16, 
+                    'goombarome_walk',
+                    50,
+                    true
+                );
+                goomba.direction = 1;
+                this.goombas.add(goomba);
+            }
+            else if (enemie.name === 'Koopa')
+            {
+                const koopa = new Koopa(
+                    this,
+                    enemie.x,
+                    enemie.y - 32, 
+                    'Koopa_walk_R',
+                    70,
+                    true
+                );
+                koopa.direction = -1;
+                this.koopas.add(koopa);
+            }
         }
+
+        // // Grupo de Goombas - Añadidos manualmente
+        // this.goombas = this.physics.add.group();
+        
+        // // Posiciones manuales para los Goombas
+        // const goombaPositions = [
+        //     { x: 450, y: 625 },   // Primer Goomba
+        //     { x: 500, y: 625 },   // Segundo Goomba
+        //     { x: 800, y: 500 },   // Tercer Goomba
+        //     { x: 1200, y: 500 },  // Cuarto Goomba
+        //     { x: 1750, y: 500 }   // Quinto Goomba
+        // ];
+
+        // for (const pos of goombaPositions) {
+        //     const goomba = new Goomba(this, pos.x, pos.y, 'goombarome_walk', 50, true);
+        //     // Iniciar todos los Goombas moviéndose hacia la derecha
+        //     goomba.direction = 1;
+        //     this.goombas.add(goomba);
+        // }
 
         // Configurar las propiedades de física para Goombas
         this.goombas.getChildren().forEach(goomba => {
@@ -125,6 +151,13 @@ class Nivel_R extends Phaser.Scene
                 // Detección de colisiones
                 goomba.body.setCollideWorldBounds(false); // No permitir colisión con bordes
                 goomba.body.onWorldBounds = true; // Detección de límites del mundo para destrucción
+            }
+        });
+        this.koopas.getChildren().forEach(koopa => {
+            if (koopa.body) {
+                // Detección de colisiones
+                koopa.body.setCollideWorldBounds(false); // No permitir colisión con bordes
+                koopa.body.onWorldBounds = true; // Detección de límites del mundo para destrucción
             }
         });
 
@@ -153,6 +186,9 @@ class Nivel_R extends Phaser.Scene
             
             // Colisión Goombas con suelo con callback para cambiar dirección
             this.physics.add.collider(this.goombas, this.groundLayer, this.handleGoombaWallCollision, null, this);
+
+            // Colisión Koopas con suelo con callback para cambiar dirección
+            this.physics.add.collider(this.koopas, this.groundLayer, this.handleGoombaWallCollision, null, this);
         }
         if (this.blockLayer) {
             // Establecer las colisiones
@@ -244,7 +280,13 @@ class Nivel_R extends Phaser.Scene
 
         this.anims.create({
             key: 'goombarome_walk',
-            frames: this.anims.generateFrameNumbers('gombrome_walk', { start: 0, end: 1 }),
+            frames: this.anims.generateFrameNumbers('gombrome_walk', { start: 0, end: 3 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'Koopa_walk_R',
+            frames: this.anims.generateFrameNumbers('Koopa_walk_R', { start: 0, end: 3 }),
             frameRate: 8,
             repeat: -1
         });
@@ -286,11 +328,37 @@ class Nivel_R extends Phaser.Scene
             null,
             this
         );
+        // Colisión con Koopas
+        this.physics.add.overlap(
+            this.jugador,
+            this.koopas,
+            this.handleMarioGoombaCollision,
+            null,
+            this
+        );
 
         // Colisión entre Goombas
         this.physics.add.collider(
             this.goombas,
             this.goombas,
+            this.handleGoombaGoombaCollision,
+            null,
+            this
+        );
+
+        // Colisión entre Koopas
+        this.physics.add.collider(
+            this.koopas,
+            this.koopas,
+            this.handleGoombaGoombaCollision,
+            null,
+            this
+        );
+
+        // Colisión entre Goombas y Koopas
+        this.physics.add.collider(
+            this.goombas,
+            this.koopas,
             this.handleGoombaGoombaCollision,
             null,
             this
@@ -722,6 +790,12 @@ class Nivel_R extends Phaser.Scene
             if (this.goombas) {
                 this.goombas.getChildren().forEach(goomba => {
                     goomba.update(time, delta);
+                });
+            }
+            // Actualizar Koopas
+            if (this.koopas) {
+                this.koopas.getChildren().forEach(koopa => {
+                    koopa.update(time, delta);
                 });
             }
 
