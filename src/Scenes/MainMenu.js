@@ -40,6 +40,7 @@ class MainMenu extends Phaser.Scene
     }
 
     create(){
+    this.openSceneTransition();
 
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
@@ -105,8 +106,8 @@ class MainMenu extends Phaser.Scene
 
     this.buttonMove = new Button(this, 0, -B_SPACING + B_SPACING/2, 'Jugar',() =>{
         this.sound.play('coin_sound', { volume: 0 });
-        this.scene.launch('MovimientoScene');
-        this.scene.stop();
+        this.buttonMove.input.enabled = false;
+        this.transition('MovimientoScene');
     })
 
     // this.buttonPrueba = new Button(this, 0, 0,'Prueba',() =>{
@@ -150,12 +151,97 @@ class MainMenu extends Phaser.Scene
   });
         
     }
-        update(time, delta) {
+    update(time, delta) {
         // Se mueven las estrellas de izquierda a derecha y de arriba a abajo
         if (this.stars) {
             this.stars.tilePositionX -= 0.05;
             this.stars.tilePositionY -= 0.015;
         }
+    }
+    transition(sceneName)
+    {
+        const cam = this.cameras.main;
+        // Fondo negro que cubrirá todo
+        const blackout = this.add.rectangle(0, 0, cam.width, cam.height, 0x000000)
+            .setOrigin(0)
+            .setScrollFactor(0)
+            .setDepth(1000); // Asegura que esté por encima de todo
+
+        // Crear un círculo
+        const circle = this.make.graphics({ x: 0, y: 0, add: false });
+
+        // Recogemos la pos del jugador actualmente
+
+        var radius = 1500; // Tamaño al principio
+
+        // Dibujar círculo blanco
+        circle.fillStyle(0xffffff);
+        circle.fillCircle(cam.width/2,  cam.height/2, radius);
+
+        // Crear máscara y aplicarla invertida
+        const mask = circle.createGeometryMask();
+        mask.invertAlpha = true; //ESTA LÍNEA invierte la visibilidad
+
+        blackout.setMask(mask);
+        this.tweens.add({
+            targets: { r: radius}, 
+            r: 0,
+            duration: 1200,
+            ease: 'Cubic.easeInOut',
+            onUpdate: (tween, target) => {
+                this.circleMask.clear();
+                this.circleMask.fillStyle(0xffffff);
+                this.circleMask.fillCircle(cam.width/2, cam.height/2, target.r);
+            },
+            onComplete:()=>
+            {
+                this.scene.launch(sceneName);
+                this.scene.stop();
+            }
+        });
+        
+        // Guardar referencias para otros métodos
+        this.circleMask = circle;
+        this.blackoutMask = blackout;
+    }
+    openSceneTransition()
+    {
+        const cam = this.cameras.main;
+
+        // Fondo negro que cubrirá todo
+        const blackout = this.add.rectangle(0, 0, cam.width, cam.height, 0x000000)
+            .setOrigin(0)
+            .setScrollFactor(0)
+            .setDepth(1000); // Asegura que esté por encima de todo
+
+        // Crear un círculo
+        const circle = this.make.graphics({ x: 0, y: 0, add: false });
+
+        var radius = 0; // Tamaño al principio
+
+        // Dibujar círculo blanco
+        circle.fillStyle(0xffffff);
+        circle.fillCircle(0,  0, radius);
+
+        // Crear máscara y aplicarla invertida
+        const mask = circle.createGeometryMask();
+        mask.invertAlpha = true; //ESTA LÍNEA invierte la visibilidad
+
+        blackout.setMask(mask);
+        this.tweens.add({
+            targets: { r: radius}, 
+            r: cam.width,
+            duration: 1000,
+            ease: 'Cubic.easeInOut',
+            onUpdate: (tween, target) => {
+                this.circleMask.clear();
+                this.circleMask.fillStyle(0xffffff);
+                this.circleMask.fillCircle(cam.width/2, cam.height/2, target.r);
+            },
+        });
+        // Guardar referencias para otros métodos
+        this.circleMask = circle;
+        // this.blackoutMask = blackout;
     }
 }
 

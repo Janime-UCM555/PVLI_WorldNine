@@ -114,7 +114,9 @@ class MovimientoScene extends Phaser.Scene
         // Crear animaciones
         this.createAnimations();
 
+
         this.jugador = new Mario(this, 25, 625, 'mario_run', 200, -225, true);
+
         // Forzar la inicialización de animaciones
         if (this.anims.exists('mario_run')) {
             this.jugador.play('mario_run');
@@ -221,14 +223,20 @@ class MovimientoScene extends Phaser.Scene
         // Configurar mejor los límites del mundo
         this.physics.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
 
-        this.buttonPrueba = new Button(this, 0, 0,'Prueba',() =>{
-            this.transition('MainMenu'); // Llamar a la transición cuando se acaba el tiempo
-        });
+        // this.buttonPrueba = new Button(this, 0, 0,'Prueba',() =>{
+        //     this.transition('MainMenu'); // Llamar a la transición cuando se acaba el tiempo
+        // });
 
         this.ui = this.add.container(this.cameras.main.width/2, this.cameras.main.height/2);
-        this.ui.add([this.buttonPrueba]);
+        // this.ui.add([this.buttonPrueba]);
         
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
+
+        var openedScene = false;
+        if (!openedScene)
+        {
+            this.openSceneTransition();
+        }
     }
 
     createAnimations() {
@@ -435,7 +443,7 @@ class MovimientoScene extends Phaser.Scene
 
             const marioWasSuperSize = mario.isSuperSize;
             mario.takeDamage(pushDirection);
-            if (!marioWasSuperSize) {
+            if (!marioWasSuperSize && !this.endTimer) {
                 // Si Mario ha colisionado lateralmente con un Goomba siendo pequeño se reinicia el nivel
                 this.sound.play('muerte');
                 this.restartLevel();
@@ -474,7 +482,6 @@ class MovimientoScene extends Phaser.Scene
 
     createText()
     {
-
         this.textTimer = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -');
         this.textTimer.setOrigin(0.5,7);
         this.textTimer.setFont('sugoDisplay');
@@ -524,6 +531,7 @@ class MovimientoScene extends Phaser.Scene
     transition(sceneName)
     {
         const cam = this.cameras.main;
+
         // Fondo negro que cubrirá todo
         const blackout = this.add.rectangle(0, 0, cam.width, cam.height, 0x000000)
             .setOrigin(0)
@@ -535,7 +543,9 @@ class MovimientoScene extends Phaser.Scene
 
         // Recogemos la pos del jugador actualmente
         var playerWorld = this.jugador.getCenter();
-
+        this.jugador.body.setVelocity(0, 0);
+        this.jugador.body.setGravityY(-700);
+        this.jugador.body=false;
         var radius = 1500; // Tamaño al principio
 
         // Dibujar círculo blanco
@@ -586,9 +596,81 @@ class MovimientoScene extends Phaser.Scene
         this.blackoutMask = blackout;
     }
 
+    openSceneTransition()
+    {
+        const cam = this.cameras.main;
+
+        // Recogemos la pos del jugador actualmente
+        if(this.jugador)
+        {
+            var playerWorld = this.jugador.getCenter();
+        }
+        // Fondo negro que cubrirá todo
+        const blackout = this.add.rectangle(0, 0, cam.width, cam.height, 0x000000)
+            .setOrigin(0)
+            .setScrollFactor(0)
+            .setDepth(1000); // Asegura que esté por encima de todo
+
+        // Crear un círculo
+        const circle = this.make.graphics({ x: 0, y: 0, add: false });
+
+        var radius = 0; // Tamaño al principio
+
+        // Dibujar círculo blanco
+        circle.fillStyle(0xffffff);
+        circle.fillCircle(playerWorld.x,  playerWorld.y, radius);
+
+        // Crear máscara y aplicarla invertida
+        const mask = circle.createGeometryMask();
+        mask.invertAlpha = true; //ESTA LÍNEA invierte la visibilidad
+
+        blackout.setMask(mask);
+        this.tweens.add({
+            targets: { r: radius}, 
+            r: 120,
+            duration: 1000,
+            ease: 'Cubic.easeInOut',
+            onUpdate: (tween, target) => {
+                this.circleMask.clear();
+                this.circleMask.fillStyle(0xffffff);
+                this.circleMask.fillCircle(playerWorld.x, playerWorld.y, target.r);
+                this.jugador.x = 25;
+                this.jugador.y = 625;
+                this.jugador.body.setVelocity(0, 0);    
+            },
+            onComplete:()=>
+            {
+                this.tweens.add({
+                    targets: { r: 120, py:playerWorld.y}, 
+                    r: Math.max(cam.width*2,cam.height*2),  
+                    py: playerWorld.y+10, // Se dirige a los pies el círculo.
+                    duration: 1500,
+                    ease: 'Cubic.easeInOut',
+                    onUpdate: (tween, target) => {
+                        this.circleMask.clear();
+                        this.circleMask.fillStyle(0xffffff);
+                        this.circleMask.fillCircle(playerWorld.x, target.py, target.r);
+                    },
+                    onComplete: () => {
+                        this.openedScene=true;
+                        blackout.clearMask(true);
+                        if(blackout)
+                        {
+                            blackout.destroy();
+                        }
+                        this.jugador.resume(); // Reanudar movimiento
+                    }
+                });
+            }
+        });
+        // Guardar referencias para otros métodos
+        this.circleMask = circle;
+        // this.blackoutMask = blackout;
+    }
+
     timerMethod ()
     {
-        let timer = 60;
+        let timer = 3;
         this.endTimer = false;
         this.timerEvent = this.time.addEvent({
         delay: 1000,
@@ -601,7 +683,7 @@ class MovimientoScene extends Phaser.Scene
                 {
                     this.endTimer=true;
                     this.sound.play('muerte');
-                    this.jugador.hurt();  
+                    this.jugador.hurt();
                     this.transition('MainMenu'); // Llamar a la transición cuando se acaba el tiempo
                 }   
                 timer = (timer - 1 + 60) % 60; // reinicia a 60
@@ -737,32 +819,35 @@ class MovimientoScene extends Phaser.Scene
     }
 
     update(time, delta) {
-        // Actualizar jugador
-        this.jugador.update(time,delta);
-
-        // Actualizar barra final
-        if (this.barraFin)
+        if (!this.endTimer)
         {
-            this.barraFin.update(time,delta);
-        }
+            // Actualizar jugador
+            this.jugador.update(time,delta);
 
-        // Actualizar Goombas
-        if (this.goombas) {
-            this.goombas.getChildren().forEach(goomba => {
-                goomba.update(time, delta);
-            });
-        }
+            // Actualizar barra final
+            if (this.barraFin)
+            {
+                this.barraFin.update(time,delta);
+            }
 
-        // Detección manual de monedas
-        this.checkCoinCollection();
+            // Actualizar Goombas
+            if (this.goombas) {
+                this.goombas.getChildren().forEach(goomba => {
+                    goomba.update(time, delta);
+                });
+            }
 
-        // Posicionar bien la cámara respecto al jugador
-        this.centerCameraOnPlayerX();
+            // Detección manual de monedas
+            this.checkCoinCollection();
 
-        // Comprobar si el jugador se ha caído
-        if (this.jugador.y > this.map.heightInPixels + 100) {
-            this.sound.play('muerte');
-            this.playerFell();
+            // Posicionar bien la cámara respecto al jugador
+            this.centerCameraOnPlayerX();
+
+            // Comprobar si el jugador se ha caído
+            if (this.jugador.y > this.map.heightInPixels + 100) {
+                this.sound.play('muerte');
+                this.playerFell();
+            }
         }
     }
 
