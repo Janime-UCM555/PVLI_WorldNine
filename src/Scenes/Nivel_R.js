@@ -3,10 +3,10 @@ import Mario from '../gameObjects/Mario.js';
 import Fin from '../gameObjects/BarraFin.js';
 import Goomba from '../gameObjects/Goomba.js';
 import { PowerUp, POWERUP_TYPES } from '../gameObjects/PowerUps.js';
-class MovimientoScene extends Phaser.Scene
+class Nivel_R extends Phaser.Scene
 {
     constructor(){
-        super({key:'MovimientoScene'});
+        super({key:'Nivel_R'});
     }
     
     init(){
@@ -14,7 +14,7 @@ class MovimientoScene extends Phaser.Scene
     }
 
     preload(){
-        this.load.tilemapTiledJSON('map', '../../../TestMapaTiled/ElMapa.json');
+        this.load.tilemapTiledJSON('map', 'MapaDeTiled/ElMapa.json');
         this.load.image('mi_tileset', '../../../assets/GameSprites/Tilesets/base_tileset.png');
         this.load.image('bg_tileset', '../../../assets/GameSprites/Tilesets/Rome_BG.png');
 
@@ -708,71 +708,6 @@ class MovimientoScene extends Phaser.Scene
         this.timerEvent?.remove(false);
         });
     }
-
-    /*marioAnims()
-    {
-        this.anims.create({
-            key: 'coin_gold_spin',
-            frames: this.anims.generateFrameNumbers('coin_tileset', { start: 0, end: 8 }),
-            frameRate: 8,
-            repeat: -1
-        });
-        this.anims.create({
-            key: 'coin_purple_spin',
-            frames: this.anims.generateFrameNumbers('coin_tileset', { start: 9, end: 17 }),
-            frameRate: 8,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: 'mario_run',
-            frames: this.anims.generateFrameNumbers('mario_run', { start: 0, end: 3 }),
-            frameRate: 8,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: 'mario_idle',
-            frames: [{ key: 'mario_run', frame: 0 }],
-            frameRate: 1
-        });
-
-        this.anims.create({
-            key: 'mario_jump',
-            frames: this.anims.generateFrameNumbers('mario_jump', { start: 0, end: 1 }),
-            frameRate: 8,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: 'mario_fall',
-            frames: this.anims.generateFrameNumbers('mario_fall', { start: 0, end: 1 }),
-            frameRate: 8,
-            repeat: -1
-        });
-
-        
-        this.anims.create({
-            key: 'mario_hurt',
-            frames: this.anims.generateFrameNumbers('mario_hurt', { start: 0, end: 0 }),
-            frameRate: 8,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: 'mario_stop',
-            frames: this.anims.generateFrameNumbers('mario_stop', { start: 0, end: 0 }),
-            frameRate: 8,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: 'mario_victory',
-            frames: this.anims.generateFrameNumbers('mario_victory', { start: 0, end: 0 }),
-            frameRate: 8,
-            repeat: -1
-        });
-    }*/
    
     increaseScore(points, type = 'score'){
         if (type === 'score') {
@@ -898,4 +833,4 @@ class MovimientoScene extends Phaser.Scene
     }
 }
 
-export default MovimientoScene;
+export default Nivel_R;

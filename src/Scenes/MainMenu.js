@@ -107,7 +107,7 @@ class MainMenu extends Phaser.Scene
     this.buttonMove = new Button(this, 0, -B_SPACING + B_SPACING/2, 'Jugar',() =>{
         this.sound.play('coin_sound', { volume: 0 });
         this.buttonMove.input.enabled = false;
-        this.transition('MovimientoScene');
+        this.transition('Nivel_R');
     })
 
     // this.buttonPrueba = new Button(this, 0, 0,'Prueba',() =>{
