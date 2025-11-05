@@ -15,59 +15,6 @@ class Nivel_R extends Phaser.Scene
 
     preload(){
         this.load.tilemapTiledJSON('map', 'MapaDeTiled/ElMapa.json');
-        this.load.image('mi_tileset', '../../../assets/GameSprites/Tilesets/base_tileset.png');
-        this.load.image('bg_tileset', '../../../assets/GameSprites/Tilesets/Rome_BG.png');
-
-        this.load.spritesheet('barra_tileset', '../../../assets/GameSprites/Items/barraFin.png', {
-            frameWidth: 64,
-            frameHeight: 32
-        });
-        this.load.spritesheet('coin_tileset', '../../../assets/GameSprites/Items/Coins.png', {
-            frameWidth: 32,
-            frameHeight: 32
-        });
-
-        this.load.spritesheet('mario_run', '../../../assets/GameSprites/Characters/Mario/Mario_run.png', {
-            frameWidth: 32,
-            frameHeight: 56,
-        });
-        this.load.spritesheet('mario_jump', '../../../assets/GameSprites/Characters/Mario/Mario_jump.png', {
-            frameWidth: 48,
-            frameHeight: 56,
-        });
-        this.load.spritesheet('mario_stop', '../../../assets/GameSprites/Characters/Mario/Mario_no_movement.png', {
-            frameWidth: 32,
-            frameHeight: 56,
-        });
-        this.load.spritesheet('mario_hurt', '../../../assets/GameSprites/Characters/Mario/Mario_hurt.png', {
-            frameWidth: 48,
-            frameHeight: 56,
-        });
-        this.load.spritesheet('mario_victory', '../../../assets/GameSprites/Characters/Mario/Mario_victory.png', {
-            frameWidth: 48,
-            frameHeight: 56,
-        });
-        this.load.spritesheet('mario_fall', 'assets/GameSprites/Characters/Mario/Mario_fall.png', {
-            frameWidth: 48,
-            frameHeight: 56
-        });
-
-        this.load.spritesheet('gombrome_walk', 'assets/GameSprites/Characters/Enemigos/Goomba/GombRome_Walk.png', {
-            frameWidth: 30,
-            frameHeight: 30
-        });
-
-        this.load.audio('coin_sound', '../../../assets/sonidos/SE/Items/Monedas/coin.wav');
-        this.load.audio('purple_coin_sound', '../../../assets/sonidos/SE/Items/Monedas/purpleCoin.wav');
-        this.load.audio('purple_coin_all_sound', '../../../assets/sonidos/SE/Items/Monedas/purpleCoinAll.wav');
-        this.load.audio('victory_music', '../../../assets/sonidos/BGM/Nivel_Completado.wav');
-        this.load.audio('salto', '../../../assets/sonidos/SE/Mario/Acciones/salto.wav');
-        this.load.audio('aplastar', '../../../assets/sonidos/SE/Mario/Acciones/Stomp.wav');
-        this.load.audio('muerte', '../../../assets/sonidos/SE/Mario/Acciones/Muerte.wav');
-        this.load.audio('PowerUp', '../../../assets/sonidos/SE/Items/PowerUps/PowerUp.wav');
-        this.load.audio('PowerDown', '../../../assets/sonidos/SE/Items/PowerUps/PowerDown.wav');
-        this.load.audio('paso1', '../../../assets/sonidos/SE/Mario/Acciones/pisadaBloque1.wav');
-        this.load.audio('paso2', '../../../assets/sonidos/SE/Mario/Acciones/pisadaBloque2.wav');
         this.score=0;
         this.coinScore = 0;
         this.purpleCoinScore = 0;
@@ -85,8 +32,6 @@ class Nivel_R extends Phaser.Scene
         }
 
         loadFont("super-mario-256", "assets/web/sugo_pro_display/Sugo-Pro-Classic-Bold-trial.ttf");
-
-        this.load.image('mushroom', '../../../assets/GameSprites/PowerUps/mushroom.png');
     }
 
     create(){
