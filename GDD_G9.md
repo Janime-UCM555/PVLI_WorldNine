@@ -1,7 +1,6 @@
 ***Super Mario:Lost Kingdoms***
 
-![](media/image9.png){width="2.2083333333333335in"
-height="3.2678871391076116in"}
+![Portada](./assets/GDD_Images/Portada.png "PortadaImag")
 
 > World Nine
 >
