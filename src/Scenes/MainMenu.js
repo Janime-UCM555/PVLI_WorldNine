@@ -102,9 +102,18 @@ class MainMenu extends Phaser.Scene
     this.mario5 = this.add.sprite(this.cameras.main.width - 250, this.cameras.main.height - 50, 'mario_throw');
     this.mario5.play('mario_Throw');
 
+    // Música de fondo del menú
+    if (!this.menuMusic || !this.menuMusic.isPlaying) {
+        this.menuMusic = this.sound.add('menu_music', { loop: true, volume: 1 });
+        this.menuMusic.play();
+    }
+
 
 
     this.buttonMove = new Button(this, 0, -B_SPACING + B_SPACING/2, 'Jugar',() =>{
+        if (this.menuMusic && this.menuMusic.isPlaying) {
+            this.menuMusic.stop();
+        }
         this.sound.play('coin_sound', { volume: 0 });
         this.buttonMove.input.enabled = false;
         this.transition('Nivel_R');

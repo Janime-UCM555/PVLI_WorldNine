@@ -185,10 +185,10 @@ class Nivel_R extends Phaser.Scene
             this.physics.add.collider(this.jugador, this.groundLayer);
             
             // Colisión Goombas con suelo con callback para cambiar dirección
-            this.physics.add.collider(this.goombas, this.groundLayer, this.handleGoombaWallCollision, null, this);
+            this.physics.add.collider(this.goombas, this.groundLayer, (goomba, wall) => goomba.handleWallCollision(wall), null, this);
 
             // Colisión Koopas con suelo con callback para cambiar dirección
-            this.physics.add.collider(this.koopas, this.groundLayer, this.handleGoombaWallCollision, null, this);
+            this.physics.add.collider(this.koopas, this.groundLayer, (koopa, wall) => koopa.handleWallCollision(wall), null, this);
         }
         if (this.blockLayer) {
             // Establecer las colisiones
@@ -198,7 +198,10 @@ class Nivel_R extends Phaser.Scene
             this.physics.add.collider(this.jugador, this.blockLayer);
             
             // Colisión Goombas con bloques con callback para cambiar dirección
-            this.physics.add.collider(this.goombas, this.blockLayer, this.handleGoombaWallCollision, null, this);
+            this.physics.add.collider(this.goombas, this.blockLayer, (goomba, wall) => goomba.handleWallCollision(wall), null, this);
+
+            // Colisión Koopas con bloques con callback para cambiar dirección
+            this.physics.add.collider(this.koopas, this.blockLayer, (koopa, wall) => koopa.handleWallCollision(wall), null, this);
         }
 
         // Configurar mejor los límites del mundo
@@ -212,6 +215,12 @@ class Nivel_R extends Phaser.Scene
         // this.ui.add([this.buttonPrueba]);
         
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
+
+        // Música de fondo del nivel
+        if (!this.levelMusic || !this.levelMusic.isPlaying) {
+            this.levelMusic = this.sound.add('level_music', { loop: true, volume: 1 });
+            this.levelMusic.play();
+        }
 
         var openedScene = false;
         if (!openedScene)
@@ -293,15 +302,6 @@ class Nivel_R extends Phaser.Scene
     }
     
     setupCollisions() {
-        // Colisión con monedas
-        //this.physics.add.overlap(
-        //this.jugador,
-        //this.coinsGroup,
-        //this.collectCoin,
-        //null,
-        //this
-        //);
-
         // Colisión con barra final
         this.physics.add.overlap(
         this.jugador,
@@ -324,15 +324,16 @@ class Nivel_R extends Phaser.Scene
         this.physics.add.overlap(
             this.jugador,
             this.goombas,
-            this.handleMarioGoombaCollision,
+            (player, goomba) => goomba.handlePlayerCollision(player),
             null,
             this
         );
+        
         // Colisión con Koopas
         this.physics.add.overlap(
             this.jugador,
             this.koopas,
-            this.handleMarioGoombaCollision,
+            (player, koopa) => koopa.handlePlayerCollision(player),
             null,
             this
         );
@@ -341,7 +342,7 @@ class Nivel_R extends Phaser.Scene
         this.physics.add.collider(
             this.goombas,
             this.goombas,
-            this.handleGoombaGoombaCollision,
+            (goomba1, goomba2) => goomba1.handleEnemyCollision(goomba2),
             null,
             this
         );
@@ -350,7 +351,7 @@ class Nivel_R extends Phaser.Scene
         this.physics.add.collider(
             this.koopas,
             this.koopas,
-            this.handleGoombaGoombaCollision,
+            (koopa1, koopa2) => koopa1.handleEnemyCollision(koopa2),
             null,
             this
         );
@@ -359,117 +360,10 @@ class Nivel_R extends Phaser.Scene
         this.physics.add.collider(
             this.goombas,
             this.koopas,
-            this.handleGoombaGoombaCollision,
+            (goomba, koopa) => goomba.handleEnemyCollision(koopa),
             null,
             this
         );
-    }
-
-    // Manejar colisiones de Goombas con paredes
-    handleGoombaWallCollision(goomba, wall) {
-        if (!goomba.isAlive) return;
-    
-        // Verificar si es una colisión lateral (no desde arriba/abajo)
-        const isLateralCollision = 
-            (goomba.body.blocked.right && goomba.direction === 1) ||
-            (goomba.body.blocked.left && goomba.direction === -1) ||
-            (goomba.body.touching.right && goomba.direction === 1) ||
-            (goomba.body.touching.left && goomba.direction === -1);
-
-        if (isLateralCollision) {
-            // Pequeño retroceso para evitar que se peguen
-            const pushBack = 5;
-            if (goomba.direction === 1) {
-                goomba.x -= pushBack;
-            } else {
-                goomba.x += pushBack;
-            }
-        
-            goomba.body.updateFromGameObject();
-        
-            // Cambiar dirección
-            goomba.changeDirection();
-        }
-    }
-
-    handleGoombaGoombaCollision(goomba1, goomba2) {
-        // Ignorar si alguno está muerto
-        if (!goomba1.isAlive || !goomba2.isAlive) return;
-
-        // Calcular superposición usando getBounds()
-        const bounds1 = goomba1.getBounds();
-        const bounds2 = goomba2.getBounds();
-
-        const overlapX = Math.min(bounds1.right, bounds2.right) - Math.max(bounds1.left, bounds2.left);
-
-        // Si hay superposición significativa
-        if (overlapX > 5) {
-            // Separación física inmediata
-            const separation = overlapX / 2 + 5;
-
-            // Calcular dirección de la colisión
-            const dx = goomba2.x - goomba1.x;
-
-            if (dx > 0) {
-                // Goomba2 está a la derecha de Goomba1
-                goomba1.x -= separation;
-                goomba2.x += separation;
-            } else {
-                // Goomba1 está a la derecha de Goomba2
-                goomba1.x += separation;
-                goomba2.x -= separation;
-            }
-        }
-
-        // Actualizar cuerpos físicos
-        goomba1.body.updateFromGameObject();
-        goomba2.body.updateFromGameObject();
-
-        // Ambos Goombas cambian de dirección
-        goomba1.changeDirection();
-        goomba2.changeDirection();
-    }
-
-    handleMarioGoombaCollision(mario, goomba) {
-        // Ignorar si el Goomba está muerto
-        if (!goomba.isAlive) return;
-
-        // Verificar si Mario está cayendo y golpea desde arriba
-        if (mario.body.velocity.y > 0 && mario.body.bottom < goomba.body.top + 15) {
-            // Hacer a Mario invulnerable temporalmente
-            mario.isInvulnerable = true;
-
-            // Mario aplasta al Goomba
-            goomba.stomp();
-            
-            // Pequeño rebote para Mario
-            mario.body.setVelocityY(-275);
-
-            // Quitar invulnerabilidad temporal a Mario
-            this.time.delayedCall(150, () => {
-                mario.isInvulnerable = false;
-            });
-        } else if (goomba.isAlive && !mario.isBeingPushed && !mario.isInvulnerable) {
-            // Colisión lateral
-            let pushDirection = 0; // Determinar dirección del empuje
-
-            // Calcular la dirección de la colisión
-            if (mario.x < goomba.x) {
-                // Goomba está a la derecha de Mario -> empujar a Mario hacia la izquierda
-                pushDirection = -1;
-            } else {
-                // Goomba está a la izquierda de Mario -> empujar a Mario hacia la derecha
-                pushDirection = 1;
-            }
-
-            const marioWasSuperSize = mario.isSuperSize;
-            mario.takeDamage(pushDirection);
-            if (!marioWasSuperSize && !this.endTimer) {
-                // Si Mario ha colisionado lateralmente con un Goomba siendo pequeño se reinicia el nivel
-                this.sound.play('muerte');
-                this.restartLevel();
-            }
-        }
     }
 
     collectCoin(player, coin) {
@@ -491,6 +385,10 @@ class Nivel_R extends Phaser.Scene
         this.endTimer=true;
         this.jugador.win();
         this.jugador.play('mario_stop', true);
+        // Detener música de nivel al ganar
+        if (this.levelMusic && this.levelMusic.isPlaying) {
+            this.levelMusic.stop();
+        }
         const victoryMusic = this.sound.add('victory_music');
         victoryMusic.play();
         victoryMusic.once('complete', () => {
@@ -551,6 +449,11 @@ class Nivel_R extends Phaser.Scene
     
     transition(sceneName)
     {
+        // Detener música al salir de la escena
+        if (this.levelMusic && this.levelMusic.isPlaying) {
+            this.levelMusic.stop();
+        }
+
         const cam = this.cameras.main;
 
         // Fondo negro que cubrirá todo

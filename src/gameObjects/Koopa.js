@@ -99,6 +99,115 @@ class Koopa extends Phaser.GameObjects.Sprite
         this.body.setVelocityX(this.speed * this.direction);
     }
 
+    // Manejar colisiones con paredes
+    handleWallCollision(wall) {
+        if (!this.isAlive) return;
+
+        // Verificar si es una colisión lateral (no desde arriba/abajo)
+        const isLateralCollision = 
+            (this.body.blocked.right && this.direction === 1) ||
+            (this.body.blocked.left && this.direction === -1) ||
+            (this.body.touching.right && this.direction === 1) ||
+            (this.body.touching.left && this.direction === -1);
+
+        if (isLateralCollision) {
+            // Pequeño retroceso para evitar que se peguen
+            const pushBack = 5;
+            if (this.direction === 1) {
+                this.x -= pushBack;
+            } else {
+                this.x += pushBack;
+            }
+    
+            this.body.updateFromGameObject();
+    
+            // Cambiar dirección
+            this.changeDirection();
+        }
+    }
+
+    // Manejar colisiones con otros enemigos
+    handleEnemyCollision(otherEnemy) {
+        // Ignorar si alguno está muerto
+        if (!this.isAlive || !otherEnemy.isAlive) return;
+
+        // Calcular superposición usando getBounds()
+        const bounds1 = this.getBounds();
+        const bounds2 = otherEnemy.getBounds();
+
+        const overlapX = Math.min(bounds1.right, bounds2.right) - Math.max(bounds1.left, bounds2.left);
+
+        // Si hay superposición significativa
+        if (overlapX > 5) {
+            // Separación física inmediata
+            const separation = overlapX / 2 + 5;
+
+            // Calcular dirección de la colisión
+            const dx = otherEnemy.x - this.x;
+
+            if (dx > 0) {
+                // otherEnemy está a la derecha de this
+                this.x -= separation;
+                otherEnemy.x += separation;
+            } else {
+                // this está a la derecha de otherEnemy
+                this.x += separation;
+                otherEnemy.x -= separation;
+            }
+        }
+
+        // Actualizar cuerpos físicos
+        this.body.updateFromGameObject();
+        otherEnemy.body.updateFromGameObject();
+
+        // Ambos cambian de dirección
+        this.changeDirection();
+        otherEnemy.changeDirection();
+    }
+
+    // Manejar colisiones con Mario
+    handlePlayerCollision(player) {
+        // Ignorar si está muerto
+        if (!this.isAlive) return;
+
+        // Verificar si Mario está cayendo y golpea desde arriba
+        if (player.body.velocity.y > 0 && player.body.bottom < this.body.top + 15) {
+            // Hacer a Mario invulnerable temporalmente
+            player.isInvulnerable = true;
+
+            // Mario aplasta al Koopa
+            this.stomp();
+        
+            // Pequeño rebote para Mario
+            player.body.setVelocityY(-275);
+
+            // Quitar invulnerabilidad temporal a Mario
+            this.scene.time.delayedCall(150, () => {
+                player.isInvulnerable = false;
+            });
+        } else if (this.isAlive && !player.isBeingPushed && !player.isInvulnerable) {
+            // Colisión lateral
+            let pushDirection = 0; // Determinar dirección del empuje
+
+            // Calcular la dirección de la colisión
+            if (player.x < this.x) {
+                // Koopa está a la derecha de Mario -> empujar a Mario hacia la izquierda
+                pushDirection = -1;
+            } else {
+                // Koopa está a la izquierda de Mario -> empujar a Mario hacia la derecha
+                pushDirection = 1;
+            }
+
+            const playerWasSuperSize = player.isSuperSize;
+            player.takeDamage(pushDirection);
+            if (!playerWasSuperSize && !this.scene.endTimer) {
+                // Si Mario ha colisionado lateralmente con un Koopa siendo pequeño se reinicia el nivel
+                this.scene.sound.play('muerte');
+                this.scene.restartLevel();
+            }
+        }
+    }
+
     // Ser aplastado por Mario
     stomp() {
         // Si está muerto o marcado para destrucción, no aplicar empuje

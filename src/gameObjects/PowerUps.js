@@ -31,6 +31,12 @@ export class PowerUp extends Phaser.Physics.Arcade.Sprite {
     this.body.setAllowGravity(true);
     this.body.setCollideWorldBounds(true);
 
+    // Configuración de colisiones específica
+    this.body.checkCollision.left = true;
+    this.body.checkCollision.right = true;
+    this.body.checkCollision.up = false;  // No colisiona por arriba para que Mario no pueda saltar encima de los Power-Ups
+    this.body.checkCollision.down = true;
+
     // Movimiento básico (rebote ligero y desplazamiento)
     this.body.setBounce(1, 0.2);
     this.setVelocityX(Phaser.Math.RND.sign() * 50);
