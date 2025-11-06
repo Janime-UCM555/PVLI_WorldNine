@@ -93,8 +93,8 @@ class PreloadScene extends Phaser.Scene {
         this.load.audio('coin_sound', '../../../assets/sonidos/SE/Items/Monedas/coin.wav');
         this.load.audio('purple_coin_sound', '../../../assets/sonidos/SE/Items/Monedas/purpleCoin.wav');
         this.load.audio('purple_coin_all_sound', '../../../assets/sonidos/SE/Items/Monedas/purpleCoinAll.wav');
-        this.load.audio('level_music', '../../../assets/sonidos/BGM/level_theme.wav');
-        this.load.audio('menu_music', '../../../assets/sonidos/BGM/menu_theme.wav');
+        this.load.audio('level_music', '../../../assets/sonidos/BGM/level_theme.mp3');
+        this.load.audio('menu_music', '../../../assets/sonidos/BGM/menu_theme.mp3');
         this.load.audio('victory_music', '../../../assets/sonidos/BGM/Nivel_Completado.wav');
         this.load.audio('salto', '../../../assets/sonidos/SE/Mario/Acciones/salto.wav');
         this.load.audio('aplastar', '../../../assets/sonidos/SE/Mario/Acciones/Stomp.wav');
