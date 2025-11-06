@@ -44,7 +44,7 @@ class Koopa extends Phaser.GameObjects.Sprite
         const camera = this.scene.cameras.main;
         
         // Verificar si está dentro de los límites de la cámara con un margen
-        const margin = 15;
+        const margin = 21;
         const isVisible = this.x >= camera.scrollX - margin && this.x <= camera.scrollX + camera.width + margin && this.y >= camera.scrollY - margin && this.y <= camera.scrollY + camera.height + margin;
         
         return isVisible;

@@ -32,7 +32,7 @@ class Mario extends Phaser.GameObjects.Sprite
         this.jumpAcceleration = -800; // Aceleración hacia arriba durante el salto
         
         // Coyote time
-        this.coyoteTime = 75; // Tiempo en ms para permitir salto después de dejar el suelo (75 ms)
+        this.coyoteTime = 50; // Tiempo en ms para permitir salto después de dejar el suelo (50 ms)
         this.coyoteTimeCounter = 0; // Contador para el coyote time
 
         // Control de entrada
