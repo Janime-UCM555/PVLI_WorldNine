@@ -1,3 +1,5 @@
+const B_SPACING = 100 ;
+
 class PreloadScene extends Phaser.Scene {
     constructor() {
         super({ key: 'PreloadScene' });
@@ -107,11 +109,38 @@ class PreloadScene extends Phaser.Scene {
         this.load.on('complete', () => {
             // Se cambia a la escena del menú pricipal medio segundo después de terminar la precarga
             this.time.delayedCall(500, () => {
-                this.scene.start('MainMenu');
+                // this.scene.start('MainMenu');
+                this.showPlayButton();
             });
         });
     }
+    showPlayButton()
+    {
+        const button = this.add.text(this.cameras.main.width/2, this.cameras.main.height/2, 'Play Game', {
+            fontFamily: 'chlorinap',
+            fontSize: '32px',
+            color: '#ffffff',
+            align: 'center',
+            fixedWidth: 260,
+            backgroundColor: '#444545'
+        }).setPadding(32).setOrigin(0.5);
 
+        button.setInteractive({ useHandCursor: true });
+
+        button.on('pointerover', () => {
+            button.setBackgroundColor('#8d8d8d');
+        });
+
+        button.on('pointerout', () => {
+            button.setBackgroundColor('#444545');
+        });
+        button.on('pointerdown', ()=>
+        {
+            this.scene.launch('MainMenu');
+            this.scene.stop();
+        });
+
+    }
     create() {
         const width = this.cameras.main.width;
         const height = this.cameras.main.height;
