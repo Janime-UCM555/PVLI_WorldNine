@@ -90,6 +90,9 @@ class PreloadScene extends Phaser.Scene {
             frameHeight: 32
         });
 
+        //Logo
+        this.load.image('TitleName', 'assets/web/TituloPNG.png');
+
         // Sonidos
         this.load.audio('MarioYell', 'assets/sonidos/MarioYell.mp3');
         this.load.audio('coin_sound', '../../../assets/sonidos/SE/Items/Monedas/coin.wav');
