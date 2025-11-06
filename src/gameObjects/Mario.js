@@ -277,7 +277,7 @@ class Mario extends Phaser.GameObjects.Sprite
     takeDamage(pushDirection) {
         // Configurar tiempos
         const PUSH_DURATION = 200; // Tiempo de empuje
-        const EXTRA_INVULNERABILITY = 150; // Tiempo extra durante el que Mario es invulnerable
+        const EXTRA_INVULNERABILITY = 1550; // Tiempo extra durante el que Mario es invulnerable
         const TOTAL_INVULNERABILITY = PUSH_DURATION + EXTRA_INVULNERABILITY; // Tiempo total: Tiempo de empuje + Tiempo extra de invulnerabilidad
         
         // Desactivar el estado de super tamaño si estaba activo
