@@ -16,6 +16,14 @@ class Koopa extends Phaser.GameObjects.Sprite
         // Configuración de física
         if (this.body) {
             this.body.setGravityY(700);
+            this.body.setSize(
+                32,
+                30
+            );
+            this.body.setOffset(
+                0,
+                30
+            );
             this.body.setCollideWorldBounds(false); // Desactivar colisión con bordes del mundo
 
             // Asegurar que el cuerpo es dinámico y puede colisionar
