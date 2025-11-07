@@ -523,7 +523,7 @@ class Nivel_R extends Phaser.Scene
         this.textCoins.setScrollFactor(0);
 
         this.textPurpleCoins = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -');
-        this.textPurpleCoins.setOrigin(-10.6,5);
+        this.textPurpleCoins.setOrigin(-10.25,5);
         this.textPurpleCoins.setFont('sugoDisplay');
         this.textPurpleCoins.setFontSize(fontSize + 'px');
         this.textPurpleCoins.setAlign('center');
