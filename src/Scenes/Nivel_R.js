@@ -200,8 +200,6 @@ class Nivel_R extends Phaser.Scene
 
         this.powerups = this.add.group();
 
-        this.spawnPowerUp(200, 600, POWERUP_TYPES.STAR, 'star');
-
         this.setupCollisions();
 
         this.createText();
@@ -403,14 +401,38 @@ class Nivel_R extends Phaser.Scene
         this.physics.add.collider(
             this.jugador, 
             this.blocks,
-            (player, block) => this.blockHit(player, block),
-            (player, block) => player.body.velocity.y < 0 && player.y > block.y, // Solo al golpear desde abajo
+            (player, block) => {
+                if (player.body.velocity.y < 0 && player.y > block.y) return; // Solo al golpear desde abajo
+                
+                
+                const aim = this.findSpawnBlockAbovePlayer(player, 16, 10); // (toleranciaX, toleranciaY)
+                const target = aim || block; // prioriza spawn si hay uno “casi”
+                this.blockHit(player, target);
+            }, 
             null,
             this
         );
 
     }
 
+    findSpawnBlockAbovePlayer(player, toleranciaX = 16, toleranciaY = 10) {
+        let best = null;
+        let bestDx = Infinity;
+        this.blocks.getChildren().forEach(
+        block => {
+            const props = block._props || {};
+            if (!props.spawn) return;
+            // condiciones: está por encima del player y cerca en X/Y
+                const dx = Math.abs(block.x - player.x);
+                const isAbove = player.y > block.y;
+                const closeX = dx <= (block.displayWidth / 2 + toleranciaX);
+                const closeY = (player.body.y <= block.body.bottom + toleranciaY);
+                if (isAbove && closeX && closeY) {
+                    if (dx < bestDx) { bestDx = dx; best = b; }
+                }
+        });
+        return best;
+    }
     blockHit(player, block) {
         // Lógica al golpear un bloque
         const props = block._props;
