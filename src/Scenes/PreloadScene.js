@@ -104,6 +104,7 @@ class PreloadScene extends Phaser.Scene {
 
         // Blocks
         this.load.image('block?', 'GameSprites/Items/blockint.png');
+        this.load.image('blockempty', 'GameSprites/Items/blockempty.png');
         this.load.image('block', 'GameSprites/Items/blockBreakable.png');
 
         // Tilesets

@@ -453,7 +453,10 @@ class Nivel_R extends Phaser.Scene
             {
                 this.spawnPowerUp(block.x + block.width / 2, block.y - block.height, POWERUP_TYPES.MUSHROOM, 'mushroom');
             }
-           
+
+           block._props.Spawn = false; // Evitar respawn
+
+           block.setTexture('blockempty'); // Cambiar textura a bloque vacío
         }
     }
 
