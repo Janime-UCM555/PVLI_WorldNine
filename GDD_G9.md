@@ -1,4 +1,4 @@
-***Super Mario:Lost Kingdoms***
+# ***Super Mario: Lost Kingdoms***
 
 ![Portada](./assets/GDD_Images/Portada.png "PortadaImag")
 
