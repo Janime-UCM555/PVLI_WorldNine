@@ -11,34 +11,34 @@ class MainMenu extends Phaser.Scene
     }
     
     preload(){
-        this.load.image('menu_pattern', '../../../../assets/GameSprites/Precarga/menu_pattern.jpg');
-        this.load.spritesheet('mario_walk', '../../../../assets/GameSprites/Characters/Mario/Mario_walk.png', {
+        this.load.image('menu_pattern', 'assets/GameSprites/Precarga/menu_pattern.jpg');
+        this.load.spritesheet('mario_walk', 'assets/GameSprites/Characters/Mario/Mario_walk.png', {
             frameWidth: 32,
             frameHeight: 55,
         });
         
-        this.load.spritesheet('mario_run', '../../../../assets/GameSprites/Characters/Mario/Mario_run.png', {
+        this.load.spritesheet('mario_run', 'assets/GameSprites/Characters/Mario/Mario_run.png', {
             frameWidth: 32,
             frameHeight: 55,
         });
 
-        this.load.spritesheet('mario_jump', '../../../../assets/GameSprites/Characters/Mario/Mario_jump.png', {
+        this.load.spritesheet('mario_jump', 'assets/GameSprites/Characters/Mario/Mario_jump.png', {
             frameWidth: 45,
             frameHeight: 55,
         });
 
-        this.load.spritesheet('mario_hurt', '../../../../assets/GameSprites/Characters/Mario/Mario_hurt.png', {
+        this.load.spritesheet('mario_hurt', 'assets/GameSprites/Characters/Mario/Mario_hurt.png', {
             frameWidth: 45,
             frameHeight: 55,
         });
         
-        this.load.spritesheet('mario_throw', '../../../../assets/GameSprites/Characters/Mario/Mario_hammer_throw.png', {
+        this.load.spritesheet('mario_throw', 'assets/GameSprites/Characters/Mario/Mario_hammer_throw.png', {
             frameWidth: 48,
             frameHeight: 55,
         });
-        this.load.audio('coin_sound', '../../../../assets/sonidos/SE/Items/Monedas/coin.wav');
+        this.load.audio('coin_sound', 'assets/sonidos/SE/Items/Monedas/coin.wav');
 
-        this.load.image('TitleName', '../../../../assets/web/TituloPNG.png');
+        this.load.image('TitleName', 'assets/web/TituloPNG.png');
     }
 
     create(){
