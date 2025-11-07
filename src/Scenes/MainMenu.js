@@ -67,31 +67,31 @@ class MainMenu extends Phaser.Scene
       key: 'mario_Walk',
       frames: this.anims.generateFrameNumbers('mario_walk', { start: 0, end: 3 }),
       frameRate: 8,
-      repeat: -1
+      repeat: 1
     });
     this.anims.create({
       key: 'mario_Run',
       frames: this.anims.generateFrameNumbers('mario_run', { start: 0, end: 3 }),
       frameRate: 12,
-      repeat: -1
+      repeat: 1
     });
     this.anims.create({
       key: 'mario_Jump',
       frames: this.anims.generateFrameNumbers('mario_jump', { start: 0, end: 1 }),
       frameRate: 6,
-      repeat: -1
+      repeat: 1
     });
     this.anims.create({
       key: 'mario_Hurt',
       frames: this.anims.generateFrameNumbers('mario_hurt', { start: 0, end: 0 }),
       frameRate: 1,
-      repeat: -1
+      repeat: 1
     });
     this.anims.create({
       key: 'mario_Throw',
       frames: this.anims.generateFrameNumbers('mario_throw', { start: 0, end: 3 }),
       frameRate: 8,
-      repeat: -1
+      repeat: 1
     });
 
     this.mario = this.add.sprite(this.cameras.main.width - 50, this.cameras.main.height - 50, 'mario_walk');
