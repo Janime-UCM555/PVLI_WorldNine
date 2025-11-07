@@ -6,41 +6,41 @@ class PreloadScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('star_pattern', '../../../assets/GameSprites/Precarga/star_pattern.png');
+        this.load.image('star_pattern', 'assets/GameSprites/Precarga/star_pattern.png');
 
         // Goomba
-        this.load.spritesheet('Gomb_Bite', '../../../assets/GameSprites/Characters/Enemigos/Goomba/Gomb_Bite.png', {
+        this.load.spritesheet('Gomb_Bite', 'assets/GameSprites/Characters/Enemigos/Goomba/Gomb_Bite.png', {
             frameWidth: 32,
             frameHeight: 30
         });
-        this.load.image('Gomb_Stomp', '../../../assets/GameSprites/Characters/Enemigos/Goomba/Gomb_Stomp.png');
-        this.load.spritesheet('Gomb_Walk', '../../../assets/GameSprites/Characters/Enemigos/Goomba/Gomb_Walk.png', {
+        this.load.image('Gomb_Stomp', 'assets/GameSprites/Characters/Enemigos/Goomba/Gomb_Stomp.png');
+        this.load.spritesheet('Gomb_Walk', 'assets/GameSprites/Characters/Enemigos/Goomba/Gomb_Walk.png', {
             frameWidth: 30,
             frameHeight: 30
         });
-        this.load.spritesheet('gombrome_walk', '../../../assets/GameSprites/Characters/Enemigos/Goomba/GombRome_Walk.png', {
+        this.load.spritesheet('gombrome_walk', 'assets/GameSprites/Characters/Enemigos/Goomba/GombRome_Walk.png', {
             frameWidth: 30,
             frameHeight: 30
         });
-        this.load.spritesheet('GombRome_Bite', '../../../assets/GameSprites/Characters/Enemigos/Goomba/GombRome_Bite.png', {
+        this.load.spritesheet('GombRome_Bite', 'assets/GameSprites/Characters/Enemigos/Goomba/GombRome_Bite.png', {
             frameWidth: 32,
             frameHeight: 30
         });
-        this.load.image('GombRome_Stomp', '../../../assets/GameSprites/Characters/Enemigos/Goomba/GombRome_Stomp.png');
-        this.load.spritesheet('GombRome_Walk', '../../../assets/GameSprites/Characters/Enemigos/Goomba/GombRome_Walk.png', {
+        this.load.image('GombRome_Stomp', 'assets/GameSprites/Characters/Enemigos/Goomba/GombRome_Stomp.png');
+        this.load.spritesheet('GombRome_Walk', 'assets/GameSprites/Characters/Enemigos/Goomba/GombRome_Walk.png', {
             frameWidth: 30,
             frameHeight: 30
         });
 
         // Koopa
-        this.load.image('Koopa_idle_R', '../../../assets/GameSprites/Characters/Enemigos/Koopa/Koopa_idle_R.png');
-        this.load.image('Koopa_idle', '../../../assets/GameSprites/Characters/Enemigos/Koopa/Koopa_idle.png');
-        this.load.image('Koopa_shell', '../../../assets/GameSprites/Characters/Enemigos/Koopa/Koopa_shell.png');
-        this.load.spritesheet('Koopa_walk_R', '../../../assets/GameSprites/Characters/Enemigos/Koopa/Koopa_walk_R.png', {
+        this.load.image('Koopa_idle_R', 'assets/GameSprites/Characters/Enemigos/Koopa/Koopa_idle_R.png');
+        this.load.image('Koopa_idle', 'assets/GameSprites/Characters/Enemigos/Koopa/Koopa_idle.png');
+        this.load.image('Koopa_shell', 'assets/GameSprites/Characters/Enemigos/Koopa/Koopa_shell.png');
+        this.load.spritesheet('Koopa_walk_R', 'assets/GameSprites/Characters/Enemigos/Koopa/Koopa_walk_R.png', {
             frameWidth: 41,
             frameHeight: 60
         });
-        this.load.spritesheet('Koopa_walk', '../../../assets/GameSprites/Characters/Enemigos/Koopa/Koopa_walk.png', {
+        this.load.spritesheet('Koopa_walk', 'assets/GameSprites/Characters/Enemigos/Koopa/Koopa_walk.png', {
             frameWidth: 41,
             frameHeight: 50
         });
@@ -66,11 +66,11 @@ class PreloadScene extends Phaser.Scene {
             frameWidth: 48,
             frameHeight: 56,
         });
-        this.load.spritesheet('mario_fall', '../../../assets/GameSprites/Characters/Mario/Mario_fall.png', {
+        this.load.spritesheet('mario_fall', 'assets/GameSprites/Characters/Mario/Mario_fall.png', {
             frameWidth: 48,
             frameHeight: 56
         });
-        this.load.spritesheet('Mario_walk', '../../../assets/GameSprites/Characters/Mario/Mario_walk.png', {
+        this.load.spritesheet('Mario_walk', 'assets/GameSprites/Characters/Mario/Mario_walk.png', {
             frameWidth: 32,
             frameHeight: 56
         });
@@ -100,7 +100,7 @@ class PreloadScene extends Phaser.Scene {
         });
 
         //Logo
-        this.load.image('TitleName', '../../../assets/web/TituloPNG.png');
+        this.load.image('TitleName', 'assets/web/TituloPNG.png');
 
         // Sonidos
         this.load.audio('MarioYell', 'assets/sonidos/MarioYell.mp3');
