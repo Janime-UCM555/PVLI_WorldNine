@@ -64,6 +64,7 @@ class Mario extends Phaser.GameObjects.Sprite
         this.jumpSound = scene.sound.add('salto');
         this.hurtSound = scene.sound.add('PowerDown');
         this.powerUpSound = scene.sound.add('PowerUp');
+        this.starman = scene.sound.add('starman');
         this.paso1 = scene.sound.add('paso1');
         this.paso2 = scene.sound.add('paso2');
         this.nextFootstep = 1;
@@ -74,9 +75,11 @@ class Mario extends Phaser.GameObjects.Sprite
             jumpForce: jumpForce,
             minJumpVelocity: this.minJumpVelocity,
             maxJumpVelocity: this.maxJumpVelocity,
-            scaleX: this.scaleX,
-            scaleY: this.scaleY
+            scaleX: 0.85,
+            scaleY: 0.85
         }
+
+        this.setScale(this.base.scaleX, this.base.scaleY);
 
         if(this.body){
             this.baseBody = {
@@ -86,6 +89,11 @@ class Mario extends Phaser.GameObjects.Sprite
                 offsetY: this.body.offset.y || 0
             };
         }
+
+        this.body.setSize(
+            this.baseBody.w * this.base.scaleX,
+            this.baseBody.h * this.base.scaleY
+        );
 
         this.activePowerUp = null;
 
@@ -113,7 +121,7 @@ class Mario extends Phaser.GameObjects.Sprite
 
         //Seta
         this.isSuperSize = false;
-        this.scaleMultiplier = 1.5;
+        this.scaleMultiplier = 1.35;
 
         // Configurar entrada del ratón para saltar
         this.setupMouseInput();
@@ -512,7 +520,8 @@ class Mario extends Phaser.GameObjects.Sprite
 
         this.isInvincible = true;
         this.activePowerUp = POWERUP_TYPES.STAR;
-
+        this.scene.levelMusic.pause();
+        this.starman.play();
         const rainbowColors = [
             0xFF0000, // Rojo
             0xFF7F00, // Naranja
@@ -532,6 +541,17 @@ class Mario extends Phaser.GameObjects.Sprite
                 this.setTint(rainbowColors[colorIndex]);
                 colorIndex = (colorIndex + 1) % rainbowColors.length;
             }
+        });
+
+    const warningTime = 1000; // 3 segundos antes del final
+    const timeUntilWarning = durationMs - warningTime;
+    
+    this.warningTimer = this.scene.time.delayedCall(timeUntilWarning, () => {
+        // Crear y reproducir el sonido de advertencia si no existe
+        if (!this.starEndingSound) {
+            this.starEndingSound = this.scene.sound.add('starEnding');
+        }
+        this.starEndingSound.play();
     });
 
         this.invTimer = this.scene.time.delayedCall(durationMs, () => {
@@ -567,6 +587,22 @@ class Mario extends Phaser.GameObjects.Sprite
             this._invTimer = null;
         } 
 
+        if (this.warningTimer?.remove){
+            this.warningTimer.remove(false);
+            this.warningTimer = null;
+        }
+
+        if (this.starman && this.starman.isPlaying) {
+            this.starman.stop();
+        }
+        if (this.starEndingSound && this.starEndingSound.isPlaying) {
+            this.starEndingSound.stop();
+        }
+        if (this.scene.levelMusic && this.scene.levelMusic.isPaused) {
+            this.scene.levelMusic.resume();
+        }
+
+
         // 2. Restaurar apariencia
         this.clearTint();
         this.alpha = 1;
@@ -580,7 +616,7 @@ class Mario extends Phaser.GameObjects.Sprite
         }
 
         // 4. Resetear flags y multiplicadores
-        this.invincible = false;
+        this.isInvincible = false;
         this.hammerEnabled = false;
         this.doubleJumpEnabled = false;
         this.doubleJumpAvailable = false;
@@ -603,7 +639,7 @@ class Mario extends Phaser.GameObjects.Sprite
             return;
         }
         this.powerUpSound.play();
-        const k = this.scaleMultiplier || 1.5;
+        const k = this.scaleMultiplier;
         this.activePowerUp = POWERUP_TYPES.MUSHROOM;
         this.isSuperSize = true;
 

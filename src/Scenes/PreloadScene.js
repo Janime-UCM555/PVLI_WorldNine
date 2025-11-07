@@ -76,7 +76,16 @@ class PreloadScene extends Phaser.Scene {
         });
 
         //PowerUps
+        this.load.image('star', '../../../assets/GameSprites/PowerUps/star.png');
+        this.load.image('hammer', '../../../assets/GameSprites/PowerUps/hammer.png');
+        this.load.image('double_jump', '../../../assets/GameSprites/PowerUps/double_jump.png');
+        this.load.image('dash', '../../../assets/GameSprites/PowerUps/dash.png');
+        this.load.image('jump_boots', '../../../assets/GameSprites/PowerUps/jump_boots.png');
         this.load.image('mushroom', '../../../assets/GameSprites/PowerUps/mushroom.png');
+
+        // Blocks
+        this.load.image('block?', '../../../assets/GameSprites/Items/blockint.png');
+        this.load.image('block', '../../../assets/GameSprites/Items/blockBreakable.png');
 
         // Tilesets
         this.load.image('mi_tileset', '../../../assets/GameSprites/Tilesets/base_tileset.png');
@@ -98,9 +107,6 @@ class PreloadScene extends Phaser.Scene {
         this.load.audio('coin_sound', '../../../assets/sonidos/SE/Items/Monedas/coin.wav');
         this.load.audio('purple_coin_sound', '../../../assets/sonidos/SE/Items/Monedas/purpleCoin.wav');
         this.load.audio('purple_coin_all_sound', '../../../assets/sonidos/SE/Items/Monedas/purpleCoinAll.wav');
-        this.load.audio('level_music', '../../../assets/sonidos/BGM/level_theme.mp3');
-        this.load.audio('menu_music', '../../../assets/sonidos/BGM/menu_theme.mp3');
-        this.load.audio('victory_music', '../../../assets/sonidos/BGM/Nivel_Completado.wav');
         this.load.audio('salto', '../../../assets/sonidos/SE/Mario/Acciones/salto.wav');
         this.load.audio('aplastar', '../../../assets/sonidos/SE/Mario/Acciones/Stomp.wav');
         this.load.audio('muerte', '../../../assets/sonidos/SE/Mario/Acciones/Muerte.wav');
@@ -108,6 +114,16 @@ class PreloadScene extends Phaser.Scene {
         this.load.audio('PowerDown', '../../../assets/sonidos/SE/Items/PowerUps/PowerDown.wav');
         this.load.audio('paso1', '../../../assets/sonidos/SE/Mario/Acciones/pisadaBloque1.wav');
         this.load.audio('paso2', '../../../assets/sonidos/SE/Mario/Acciones/pisadaBloque2.wav');
+        this.load.audio('starJump', '../../../assets/sonidos/SE/Mario/Acciones/saltoEstrella.wav');
+        this.load.audio('starEnding', '../../../assets/sonidos/SE/Items/PowerUps/estrellaSeAcaba.wav');
+        this.load.audio('BrickBlock', '../../../assets/sonidos/SE/Items/Bloques/BrickBlock.wav');
+        this.load.audio('Bump', '../../../assets/sonidos/SE/Items/Bloques/Bump.wav');
+
+        // Música
+        this.load.audio('level_music', '../../../assets/sonidos/BGM/level_theme.mp3');
+        this.load.audio('menu_music', '../../../assets/sonidos/BGM/menu_theme.mp3');
+        this.load.audio('victory_music', '../../../assets/sonidos/BGM/Nivel_Completado.wav');
+        this.load.audio('starman', '../../../assets/sonidos/BGM/Starman.wav');
 
         this.load.on('complete', () => {
             // Se cambia a la escena del menú pricipal medio segundo después de terminar la precarga

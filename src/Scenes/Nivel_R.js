@@ -63,6 +63,42 @@ class Nivel_R extends Phaser.Scene
         }
         const frontLayer = this.map.createLayer('CapaFrente', tileset, 0, 0);
 
+        // Crear bloques a partir de objetos Tiled
+        this.blocks = this.add.group();
+
+        blocks.forEach(obj => {
+            // Coordenadas de Tiled → Phaser
+            const x = obj.x + obj.width / 2;
+            const y = obj.y - obj.height / 2;
+
+            // Propiedades del objeto en Tiled → convertir a objeto plano
+            const props = {};
+            obj.properties?.forEach(p => props[p.name] = p.value);
+
+            // Si tiene propiedad 'texture', úsalo
+            if(props.Breakable){
+                props.texture = 'block';
+            }
+            else{
+                props.texture = 'block?';
+            }
+
+            const tex = props.texture || 'bloque'; // si no tiene, usa la por defecto
+
+            // Crear sprite con esa textura
+            const block = this.add.sprite(x, y, tex);
+            this.physics.add.existing(block, true);
+
+            // Ajustar el hitbox al tamaño del objeto
+            block.body.setSize(obj.width, obj.height);
+            block.body.updateFromGameObject();
+
+            // Guardar sus props para blockHit()
+            block._props = props;
+
+            this.blocks.add(block);
+        });
+
         this.coinsGroup = this.add.group();
         for (const coinObj of coins)
         {
@@ -164,15 +200,7 @@ class Nivel_R extends Phaser.Scene
 
         this.powerups = this.add.group();
 
-        const w = this.cameras.main.width;
-        const h = this.cameras.main.height;
-
-        this.spawnPowerUp(300, h - 100, POWERUP_TYPES.MUSHROOM, 'mushroom');
-
         this.setupCollisions();
-
-        this.physics.add.collider(this.powerups, this.groundLayer);
-        this.physics.add.collider(this.powerups, this.blockLayer);
 
         this.createText();
 
@@ -190,18 +218,15 @@ class Nivel_R extends Phaser.Scene
             // Colisión Koopas con suelo con callback para cambiar dirección
             this.physics.add.collider(this.koopas, this.groundLayer, (koopa, wall) => koopa.handleWallCollision(wall), null, this);
         }
-        if (this.blockLayer) {
-            // Establecer las colisiones
-            this.blockLayer.setCollisionByExclusion([-1]);
-        
+        if (this.blocks) {
             // Colisión jugador con bloques
-            this.physics.add.collider(this.jugador, this.blockLayer);
+            this.physics.add.collider(this.jugador, this.blocks);
             
             // Colisión Goombas con bloques con callback para cambiar dirección
-            this.physics.add.collider(this.goombas, this.blockLayer, (goomba, wall) => goomba.handleWallCollision(wall), null, this);
+            this.physics.add.collider(this.goombas, this.blocks, (goomba, wall) => goomba.handleWallCollision(wall), null, this);
 
             // Colisión Koopas con bloques con callback para cambiar dirección
-            this.physics.add.collider(this.koopas, this.blockLayer, (koopa, wall) => koopa.handleWallCollision(wall), null, this);
+            this.physics.add.collider(this.koopas, this.blocks, (koopa, wall) => koopa.handleWallCollision(wall), null, this);
         }
 
         // Configurar mejor los límites del mundo
@@ -215,6 +240,9 @@ class Nivel_R extends Phaser.Scene
         // this.ui.add([this.buttonPrueba]);
         
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
+
+        // Zoom más cercano (1.65 es 65% más cercano)
+        this.cameras.main.setZoom(1.65);
 
         // Música de fondo del nivel
         if (!this.levelMusic || !this.levelMusic.isPlaying) {
@@ -364,7 +392,75 @@ class Nivel_R extends Phaser.Scene
             null,
             this
         );
+
+        // Colisiones powerups con suelo y bloques        
+        this.physics.add.collider(this.powerups, this.groundLayer);
+
+        this.physics.add.collider(this.powerups, this.blocks);
+
+        this.physics.add.collider(
+            this.jugador, 
+            this.blocks,
+            (player, block) => {
+                if (player.body.velocity.y < 0 && player.y > block.y) return; // Solo al golpear desde abajo
+                
+                
+                const aim = this.findSpawnBlockAbovePlayer(player, 16, 10); // (toleranciaX, toleranciaY)
+                const target = aim || block; // prioriza spawn si hay uno “casi”
+                this.blockHit(player, target);
+            }, 
+            null,
+            this
+        );
+
     }
+
+    findSpawnBlockAbovePlayer(player, toleranciaX = 16, toleranciaY = 10) {
+        let best = null;
+        let bestDx = Infinity;
+        this.blocks.getChildren().forEach(
+        block => {
+            const props = block._props || {};
+            if (!props.spawn) return;
+            // condiciones: está por encima del player y cerca en X/Y
+                const dx = Math.abs(block.x - player.x);
+                const isAbove = player.y > block.y;
+                const closeX = dx <= (block.displayWidth / 2 + toleranciaX);
+                const closeY = (player.body.y <= block.body.bottom + toleranciaY);
+                if (isAbove && closeX && closeY) {
+                    if (dx < bestDx) { bestDx = dx; best = b; }
+                }
+        });
+        return best;
+    }
+    blockHit(player, block) {
+        // Lógica al golpear un bloque
+        const props = block._props;
+        if (props.Breakable && player.isSuperSize) {
+            this.sound.play('BrickBlock');
+            block.destroy();
+            // this.sound.play('block_break');
+            return;
+        }
+        else
+        {
+            this.sound.play('Bump')
+        }
+
+        if (props.Spawn){
+            // Spawn power-up
+            if(player.isSuperSize){
+                this.spawnPowerUp(block.x + block.width / 2, block.y - block.height, props.PowerUp, props.PowerUp);
+                // this.sound.play('powerup_appears');
+            }
+            else
+            {
+                this.spawnPowerUp(block.x + block.width / 2, block.y - block.height, POWERUP_TYPES.MUSHROOM, 'mushroom');
+            }
+           
+        }
+    }
+
 
     collectCoin(player, coin) {
         coin.destroy();
@@ -383,12 +479,31 @@ class Nivel_R extends Phaser.Scene
         barra.destroy();
         this.increaseScore(Math.round(barra.y * 10), 'score');
         this.endTimer=true;
+
+        this.moveCameraToBottomRight();
+
+        // Destruir todos los Goombas
+        this.goombas.getChildren().forEach(goomba => {
+            if (goomba.safeDestroy && !goomba.shouldBeDestroyed) {
+                goomba.safeDestroy();
+            }
+        });
+    
+        // Destruir todos los Koopas
+        this.koopas.getChildren().forEach(koopa => {
+            if (koopa.safeDestroy && !koopa.shouldBeDestroyed) {
+                koopa.safeDestroy();
+            }
+        });
+
         this.jugador.win();
         this.jugador.play('mario_stop', true);
+
         // Detener música de nivel al ganar
         if (this.levelMusic && this.levelMusic.isPlaying) {
             this.levelMusic.stop();
         }
+
         const victoryMusic = this.sound.add('victory_music');
         victoryMusic.play();
         victoryMusic.once('complete', () => {
@@ -399,12 +514,39 @@ class Nivel_R extends Phaser.Scene
         });
     }
 
+    moveCameraToBottomRight() {
+        const camera = this.cameras.main;
+    
+        // Calcular las dimensiones de la vista de la cámara considerando el zoom
+        const cameraViewWidth = camera.width / camera.zoom;
+        const cameraViewHeight = camera.height / camera.zoom;
+    
+        // Calcular la posición objetivo (esquina inferior derecha)
+        const targetX = this.map.widthInPixels - cameraViewWidth;
+        const targetY = this.map.heightInPixels - cameraViewHeight;
+    
+        // Asegurarse de no salirse de los límites del mapa
+        const clampedX = Phaser.Math.Clamp(targetX, 0, this.map.widthInPixels - cameraViewWidth);
+        const clampedY = Phaser.Math.Clamp(targetY, 0, this.map.heightInPixels - cameraViewHeight);
+    
+        // Movimiento suave
+        this.tweens.add({
+            targets: camera,
+            scrollX: clampedX,
+            scrollY: clampedY,
+            duration: 4000, // 4 segundos para el movimiento
+            ease: 'Cubic.Out', // Suavizado al final
+        });
+    }
+
     createText()
     {
+        const fontSize = 29; // 50 / 1.65 ≈ 29
+
         this.textTimer = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -');
         this.textTimer.setOrigin(0.5,7);
         this.textTimer.setFont('sugoDisplay');
-        this.textTimer.setFontSize(50);
+        this.textTimer.setFontSize(fontSize + 'px');
         this.textTimer.setAlign('center');
         this.textTimer.setStroke('#000000ff', 6)
         this.textTimer.setFill('#ffffffff');
@@ -416,7 +558,7 @@ class Nivel_R extends Phaser.Scene
         this.textScore = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -');
         this.textScore.setOrigin(-0.4,7);
         this.textScore.setFont('sugoDisplay');
-        this.textScore.setFontSize(50);
+        this.textScore.setFontSize(fontSize + 'px');
         this.textScore.setAlign('center');
         this.textScore.setStroke('#000000ff', 6)
         this.textScore.setFill('#ffffffff');
@@ -427,7 +569,7 @@ class Nivel_R extends Phaser.Scene
         this.textCoins = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -');
         this.textCoins.setOrigin(-5.4,6);
         this.textCoins.setFont('sugoDisplay');
-        this.textCoins.setFontSize(50);
+        this.textCoins.setFontSize(fontSize + 'px');
         this.textCoins.setAlign('center');
         this.textCoins.setStroke('#000000ff', 6)
         this.textCoins.setFill('#DBC716');
@@ -435,9 +577,9 @@ class Nivel_R extends Phaser.Scene
         this.textCoins.setScrollFactor(0);
 
         this.textPurpleCoins = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -');
-        this.textPurpleCoins.setOrigin(-10.6,5);
+        this.textPurpleCoins.setOrigin(-10.25,5);
         this.textPurpleCoins.setFont('sugoDisplay');
-        this.textPurpleCoins.setFontSize(50);
+        this.textPurpleCoins.setFontSize(fontSize + 'px');
         this.textPurpleCoins.setAlign('center');
         this.textPurpleCoins.setStroke('#000000ff', 6)
         this.textPurpleCoins.setFill('#621C87');
@@ -702,11 +844,11 @@ class Nivel_R extends Phaser.Scene
                 });
             }
 
+            // Posicionar bien la cámara respecto al jugador
+            this.centerCameraOnPlayer();
+
             // Detección manual de monedas
             this.checkCoinCollection();
-
-            // Posicionar bien la cámara respecto al jugador
-            this.centerCameraOnPlayerX();
 
             // Comprobar si el jugador se ha caído
             if (this.jugador.y > this.map.heightInPixels + 100) {
@@ -735,23 +877,52 @@ class Nivel_R extends Phaser.Scene
 
      // Spawner simple (tu PowerUp ya añade físicas y movimiento)
     spawnPowerUp(x, y, type, textureKey) {
-        this.powerups.add(new PowerUp(this, x, y, type, textureKey));
+        let power = new PowerUp(this, x, y, type, textureKey)
+        power.body.setVelocity(power.body.velocity.x * 3,-150); // Salir del bloque hacia arriba
+        this.powerups.add(power);
         return this.powerups;
     }
 
 
-    centerCameraOnPlayerX() {
-        let targetX = this.jugador.x - this.cameras.main.width / 4;
-        targetX = Phaser.Math.Clamp(targetX, 0, this.map.widthInPixels - this.cameras.main.width);
+    centerCameraOnPlayer() {
+        // Obtener las dimensiones reales de la vista de la cámara considerando el zoom
+        const cameraViewWidth = this.cameras.main.width / this.cameras.main.zoom;
+        const cameraViewHeight = this.cameras.main.height / this.cameras.main.zoom;
+
+        // Seguimiento horizontal
+        let targetX;
     
-        // Suavizado lineal
-        this.cameras.main.scrollX = Phaser.Math.Linear(
-            this.cameras.main.scrollX,
-            targetX,
-            0.1
-        );
+        if (this.jugador.x < cameraViewWidth / 4) {
+            targetX = -200;
+        } else {
+            targetX = this.jugador.x - cameraViewWidth / 1.5;
+        }
+
+        // Seguimiento vertical
+        let targetY;
     
-        this.cameras.main.scrollY = this.map.heightInPixels / 4;
+        // Calcular la posición vertical ideal
+        const baseTargetY = this.jugador.y - cameraViewHeight * 0.65;
+    
+        if (!(this.jugador.isGrounded || this.jugador.body.blocked.down)) {
+            // Cuando salta, mantener la cámara un poco más alta
+            targetY = this.jugador.y - cameraViewHeight * 0.7;
+        } else {
+            // Cuando está en el suelo, mantenerlo en la posición vertical ideal
+            targetY = baseTargetY
+        }
+
+        // Suavizado tipo "spring"
+        const springFactorX = 0.05;
+        const springFactorY = 0.015;
+        const dx = targetX - this.cameras.main.scrollX;
+        const dy = targetY - this.cameras.main.scrollY;
+
+        const maxSpeedY = 15;
+        const moveY = Phaser.Math.Clamp(dy * springFactorY, -maxSpeedY, maxSpeedY);
+
+        this.cameras.main.scrollX += dx * springFactorX;
+        this.cameras.main.scrollY += moveY;
     }
 }
 
