@@ -6,13 +6,20 @@ class PreloadScene extends Phaser.Scene {
     }
 
     preload() {
-          const basePath = location.hostname.endsWith("github.io")
-            ? location.pathname.replace(/index\.html?$/, "").replace(/\/$/, "") + "/"
-            : "./";
+          const isPages = /github\.io$/.test(location.hostname);
+  // Ej.: https://user.github.io/tu-repo/  (o http://localhost:xxxx/… en local)
+  const absoluteBase =
+    location.origin +
+    location.pathname
+      // si estás en /tu-repo/index.html -> lo deja en /tu-repo/
+      .replace(/index\.html?$/i, '')
+      // si estás en /tu-repo/subcarpeta/archivo.html -> lo deja en /tu-repo/subcarpeta/
+      .replace(/[^/]*$/, '');
 
-            this.load.setBaseURL(basePath);   // ej: /tu-repo/
-            this.load.setPath("assets/");     // ej: /tu-repo/assets/
-
+  // En Pages usamos URL absoluta; en local también funciona
+  this.load.setBaseURL(absoluteBase);
+  // Todo lo que cargues a partir de aquí será relativo a /assets/
+  this.load.setPath('assets/');
         this.load.image('star_pattern', 'GameSprites/Precarga/star_pattern.png');
 
         // Goomba
