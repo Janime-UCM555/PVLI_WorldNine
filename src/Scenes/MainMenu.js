@@ -37,9 +37,13 @@ class MainMenu extends Phaser.Scene
             frameHeight: 55,
         });
         this.load.audio('coin_sound', '../../../assets/sonidos/SE/Items/Monedas/coin.wav');
+
+        this.load.image('TitleName', 'assets/web/TituloPNG.png');
     }
 
     create(){
+
+
     this.openSceneTransition();
 
     const width = this.cameras.main.width;
@@ -52,7 +56,10 @@ class MainMenu extends Phaser.Scene
         'menu_pattern'
     );
     this.stars.setOrigin(0, 0);
-        
+
+    this.title = this.add.sprite(this.cameras.main.width/2,this.cameras.main.height/3, 'TitleName');
+    this.title.setScale(0.8);
+
     // Para que las estrellas cubran toda la pantalla
     this.stars.setDisplaySize(width, height);
 
@@ -110,7 +117,7 @@ class MainMenu extends Phaser.Scene
 
 
 
-    this.buttonMove = new Button(this, 0, -B_SPACING + B_SPACING/2, 'Jugar',() =>{
+    this.buttonMove = new Button(this, 0, this.cameras.main.height/5, 'Jugar',() =>{
         if (this.menuMusic && this.menuMusic.isPlaying) {
             this.menuMusic.stop();
         }

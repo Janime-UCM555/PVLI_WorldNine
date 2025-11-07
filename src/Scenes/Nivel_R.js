@@ -255,6 +255,7 @@ class Nivel_R extends Phaser.Scene
         {
             this.openSceneTransition();
         }
+        this.irisSound = this.sound.add('iris-out');
     }
 
     createAnimations() {
@@ -639,6 +640,7 @@ class Nivel_R extends Phaser.Scene
             },
             onComplete:()=>
             {
+                this.irisSound.play();
                 this.tweens.add({
                     targets: { r: 120, py:playerWorld.y}, 
                     r: 0,

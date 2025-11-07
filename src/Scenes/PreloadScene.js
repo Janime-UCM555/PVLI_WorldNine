@@ -99,6 +99,9 @@ class PreloadScene extends Phaser.Scene {
             frameHeight: 32
         });
 
+        //Logo
+        this.load.image('TitleName', 'assets/web/TituloPNG.png');
+
         // Sonidos
         this.load.audio('MarioYell', 'assets/sonidos/MarioYell.mp3');
         this.load.audio('coin_sound', '../../../assets/sonidos/SE/Items/Monedas/coin.wav');
@@ -121,6 +124,9 @@ class PreloadScene extends Phaser.Scene {
         this.load.audio('menu_music', '../../../assets/sonidos/BGM/menu_theme.mp3');
         this.load.audio('victory_music', '../../../assets/sonidos/BGM/Nivel_Completado.wav');
         this.load.audio('starman', '../../../assets/sonidos/BGM/Starman.wav');
+
+        // Menu SFX
+        this.load.audio('iris-out', '../../../assets/sonidos/SE/MenuSFX/smw_goal_iris-out.wav');
 
         this.load.on('complete', () => {
             // Se cambia a la escena del menú pricipal medio segundo después de terminar la precarga
