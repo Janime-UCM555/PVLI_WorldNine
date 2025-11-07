@@ -113,6 +113,8 @@ class PreloadScene extends Phaser.Scene {
         this.load.audio('paso2', '../../../assets/sonidos/SE/Mario/Acciones/pisadaBloque2.wav');
         this.load.audio('starJump', '../../../assets/sonidos/SE/Mario/Acciones/saltoEstrella.wav');
         this.load.audio('starEnding', '../../../assets/sonidos/SE/Items/PowerUps/estrellaSeAcaba.wav');
+        this.load.audio('BrickBlock', '../../../assets/sonidos/SE/Items/Bloques/BrickBlock.wav');
+        this.load.audio('Bump', '../../../assets/sonidos/SE/Items/Bloques/Bump.wav');
 
         // Música
         this.load.audio('level_music', '../../../assets/sonidos/BGM/level_theme.mp3');

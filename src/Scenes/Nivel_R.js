@@ -437,9 +437,14 @@ class Nivel_R extends Phaser.Scene
         // Lógica al golpear un bloque
         const props = block._props;
         if (props.Breakable && player.isSuperSize) {
+            this.sound.play('BrickBlock');
             block.destroy();
             // this.sound.play('block_break');
             return;
+        }
+        else
+        {
+            this.sound.play('Bump')
         }
 
         if (props.Spawn){
