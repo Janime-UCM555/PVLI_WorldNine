@@ -580,7 +580,7 @@ class Mario extends Phaser.GameObjects.Sprite
         }
 
         // 4. Resetear flags y multiplicadores
-        this.invincible = false;
+        this.isInvincible = false;
         this.hammerEnabled = false;
         this.doubleJumpEnabled = false;
         this.doubleJumpAvailable = false;

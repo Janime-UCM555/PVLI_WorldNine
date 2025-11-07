@@ -178,7 +178,7 @@ class Koopa extends Phaser.GameObjects.Sprite
         // Ignorar si está muerto
         if (!this.isAlive) return;
 
-        if (player.invincible) {
+        if (player.isInvincible) {
             this.stomp();
             return;
         }
