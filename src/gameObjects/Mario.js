@@ -75,9 +75,11 @@ class Mario extends Phaser.GameObjects.Sprite
             jumpForce: jumpForce,
             minJumpVelocity: this.minJumpVelocity,
             maxJumpVelocity: this.maxJumpVelocity,
-            scaleX: this.scaleX,
-            scaleY: this.scaleY
+            scaleX: 0.85,
+            scaleY: 0.85
         }
+
+        this.setScale(this.base.scaleX, this.base.scaleY);
 
         if(this.body){
             this.baseBody = {
@@ -87,6 +89,11 @@ class Mario extends Phaser.GameObjects.Sprite
                 offsetY: this.body.offset.y || 0
             };
         }
+
+        this.body.setSize(
+            this.baseBody.w * this.base.scaleX,
+            this.baseBody.h * this.base.scaleY
+        );
 
         this.activePowerUp = null;
 
@@ -114,7 +121,7 @@ class Mario extends Phaser.GameObjects.Sprite
 
         //Seta
         this.isSuperSize = false;
-        this.scaleMultiplier = 1.5;
+        this.scaleMultiplier = 1.35;
 
         // Configurar entrada del ratón para saltar
         this.setupMouseInput();
@@ -632,7 +639,7 @@ class Mario extends Phaser.GameObjects.Sprite
             return;
         }
         this.powerUpSound.play();
-        const k = this.scaleMultiplier || 1.5;
+        const k = this.scaleMultiplier;
         this.activePowerUp = POWERUP_TYPES.MUSHROOM;
         this.isSuperSize = true;
 

@@ -480,6 +480,8 @@ class Nivel_R extends Phaser.Scene
         this.increaseScore(Math.round(barra.y * 10), 'score');
         this.endTimer=true;
 
+        this.moveCameraToBottomRight();
+
         // Destruir todos los Goombas
         this.goombas.getChildren().forEach(goomba => {
             if (goomba.safeDestroy && !goomba.shouldBeDestroyed) {
@@ -509,6 +511,31 @@ class Nivel_R extends Phaser.Scene
         setTimeout(() => {
         this.transition('MainMenu'); // Llamar a la transición cuando se acaba el tiempo
         }, 1000);
+        });
+    }
+
+    moveCameraToBottomRight() {
+        const camera = this.cameras.main;
+    
+        // Calcular las dimensiones de la vista de la cámara considerando el zoom
+        const cameraViewWidth = camera.width / camera.zoom;
+        const cameraViewHeight = camera.height / camera.zoom;
+    
+        // Calcular la posición objetivo (esquina inferior derecha)
+        const targetX = this.map.widthInPixels - cameraViewWidth;
+        const targetY = this.map.heightInPixels - cameraViewHeight;
+    
+        // Asegurarse de no salirse de los límites del mapa
+        const clampedX = Phaser.Math.Clamp(targetX, 0, this.map.widthInPixels - cameraViewWidth);
+        const clampedY = Phaser.Math.Clamp(targetY, 0, this.map.heightInPixels - cameraViewHeight);
+    
+        // Movimiento suave
+        this.tweens.add({
+            targets: camera,
+            scrollX: clampedX,
+            scrollY: clampedY,
+            duration: 4000, // 4 segundos para el movimiento
+            ease: 'Cubic.Out', // Suavizado al final
         });
     }
 
@@ -817,6 +844,9 @@ class Nivel_R extends Phaser.Scene
                 });
             }
 
+            // Posicionar bien la cámara respecto al jugador
+            this.centerCameraOnPlayer();
+
             // Detección manual de monedas
             this.checkCoinCollection();
 
@@ -826,9 +856,6 @@ class Nivel_R extends Phaser.Scene
                 this.playerFell();
             }
         }
-
-        // Posicionar bien la cámara respecto al jugador
-        this.centerCameraOnPlayer();
     }
 
     // Detección manual de recolección de monedas
