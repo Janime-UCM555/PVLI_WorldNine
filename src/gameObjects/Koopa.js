@@ -241,6 +241,8 @@ class Koopa extends Phaser.GameObjects.Sprite
             this.setTexture('Koopa_shell');
         }
 
+        this.scene.increaseScore(100, 'score');
+
         // Destruir después de un tiempo
         this.scene.time.delayedCall(2000, () => {
             this.safeDestroy();
