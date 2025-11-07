@@ -197,6 +197,8 @@ class Nivel_R extends Phaser.Scene
 
         this.powerups = this.add.group();
 
+        this.spawnPowerUp(200, 600, POWERUP_TYPES.MUSHROOM, 'mushroom');
+
         this.setupCollisions();
 
         // Configurar colisiones
