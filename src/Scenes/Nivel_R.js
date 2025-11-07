@@ -19,20 +19,17 @@ class Nivel_R extends Phaser.Scene
         this.score=0;
         this.coinScore = 0;
         this.purpleCoinScore = 0;
-
         // this.load.bitmapFont('UIFont', 'assets/web/sugo_pro_display/Sugo_pro_by_Zetafonts.png',
         // 'assets/web/sugo_pro_display/Sugo-Pro-Classic-Bold-trial.ttf');
 
-        function loadFont(name, url) {
-            var newFont = new FontFace(name, `url(${url})`);
-            newFont.load().then(function (loaded) {
-                document.fonts.add(loaded);
-            }).catch(function (error) {
-                return error;
-            });
-        }
-
-        loadFont("super-mario-256", "assets/web/sugo_pro_display/Sugo-Pro-Classic-Bold-trial.ttf");
+        // function loadFont(name, url) {
+        //     var newFont = new FontFace(name, `url(${url})`);
+        //     newFont.load().then(function (loaded) {
+        //         document.fonts.add(loaded);
+        //     }).catch(function (error) {
+        //         return error;
+        //     });
+        // }
     }
 
     create(){
@@ -53,7 +50,7 @@ class Nivel_R extends Phaser.Scene
 
         // Crear animaciones
         this.createAnimations();
-
+        this.createText();
 
         this.jugador = new Mario(this, 25, 625, 'mario_run', 200, -225, true);
 
@@ -201,8 +198,6 @@ class Nivel_R extends Phaser.Scene
         this.powerups = this.add.group();
 
         this.setupCollisions();
-
-        this.createText();
 
         // Configurar colisiones
         if (this.groundLayer) {
@@ -542,50 +537,57 @@ class Nivel_R extends Phaser.Scene
 
     createText()
     {
+
+
+        // Este gráfico representa la línea dónde se alinea la UI por la derecha
+
+        // var graphics = this.add.graphics();
+
+        const posUI = this.cameras.main.centerX+this.cameras.main.centerX/2; // Posición UI por la derecha
+        // graphics.lineStyle(1, 0xffffff, 1);
+        // graphics.lineBetween(posUI, 0,posUI, 600);
+        // graphics.setScrollFactor(0);
+
         const fontSize = 29; // 50 / 1.65 ≈ 29
 
-        this.textTimer = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -');
-        this.textTimer.setOrigin(0.5,7);
-        this.textTimer.setFont('sugoDisplay');
-        this.textTimer.setFontSize(fontSize + 'px');
-        this.textTimer.setAlign('center');
-        this.textTimer.setStroke('#000000ff', 6)
-        this.textTimer.setFill('#ffffffff');
-        this.textTimer.setText("60");
-        this.textTimer.setScrollFactor(0);
-        // textTimer.setShadow(5, 5, 'rgba(0,0,0,0.5)', 5);
+        this.textTimer = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -',{fontFamily: 'aku-kamu'})
+        .setOrigin(0.5,5)
+        .setStroke('#000000ff', 6)
+        .setFill('#ffffffff')
+        // .setText("60")
+        .setFontSize(fontSize + 'px')
+        .setScrollFactor(0)
+        .setShadow(5, 5, 'rgba(0,0,0,0.5)', 5);
 
 
-        this.textScore = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -');
-        this.textScore.setOrigin(-0.4,7);
-        this.textScore.setFont('sugoDisplay');
-        this.textScore.setFontSize(fontSize + 'px');
-        this.textScore.setAlign('center');
-        this.textScore.setStroke('#000000ff', 6)
-        this.textScore.setFill('#ffffffff');
-        this.textScore.setText("".padStart(10,"0"));
-        this.textScore.setScrollFactor(0);
+
+        this.textScore = this.add.text(posUI, this.cameras.main.centerY,"".padStart(10,"0"),{fontFamily: 'aku-kamu'})
+        .setOrigin(1,5)
+        .setStroke('#000000ff', 6)
+        .setFill('#ffffffff')
+        .setFontSize(fontSize + 'px')
+        .setScrollFactor(0);
         // textScore.setShadow(10, 10, 'rgba(0,0,0,0.5)', 10); 
+        // this.textScore.setText("".padStart(10,"0"))
 
-        this.textCoins = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -');
-        this.textCoins.setOrigin(-5.4,6);
-        this.textCoins.setFont('sugoDisplay');
-        this.textCoins.setFontSize(fontSize + 'px');
-        this.textCoins.setAlign('center');
-        this.textCoins.setStroke('#000000ff', 6)
-        this.textCoins.setFill('#DBC716');
-        this.textCoins.setText("".padStart(2,"0"));
-        this.textCoins.setScrollFactor(0);
+        this.textCoins = this.add.text(posUI, this.cameras.main.centerY, "".padStart(2,"0"),{fontFamily: 'aku-kamu'})
+        .setOrigin(1,4)
+        .setStroke('#000000ff', 6)
+        .setFill('#DBC716')
+        // .setText("".padStart(2,"0"))
+        .setFontSize(fontSize + 'px')
+        .setScrollFactor(0);
+        // this.textCoins.setText("".padStart(2,"0"));
 
-        this.textPurpleCoins = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -');
-        this.textPurpleCoins.setOrigin(-10.25,5);
-        this.textPurpleCoins.setFont('sugoDisplay');
-        this.textPurpleCoins.setFontSize(fontSize + 'px');
-        this.textPurpleCoins.setAlign('center');
-        this.textPurpleCoins.setStroke('#000000ff', 6)
-        this.textPurpleCoins.setFill('#621C87');
-        this.textPurpleCoins.setText("".padStart(1,"0"));
-        this.textPurpleCoins.setScrollFactor(0);
+        this.textPurpleCoins = this.add.text(posUI, this.cameras.main.centerY,"".padStart(1,"0"),{fontFamily: 'aku-kamu'})
+        .setOrigin(1,3)
+        .setFontSize(fontSize + 'px')
+        .setAlign('center')
+        .setStroke('#000000ff', 6)
+        .setFill('#621C87')
+        .setScrollFactor(0);
+
+        // this.textPurpleCoins.setText("".padStart(1,"0"));
 
         this.timerMethod();
     }

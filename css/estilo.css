@@ -15,6 +15,11 @@
   src: url('../assets/web/sugo_pro_display/Sugo-Pro-Display-Regular-trial.ttf')
 }
 
+@font-face{
+  font-family: 'aku-kamu';
+  src: url('../assets/web/aku_kamu/Aku&Kamu.otf')
+}
+
 
 :root{
   --bg: #0b0d14;
