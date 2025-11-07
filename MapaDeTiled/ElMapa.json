@@ -2016,7 +2016,7 @@
                         {
                          "name":"PowerUp",
                          "type":"string",
-                         "value":"hammer"
+                         "value":"star"
                         }, 
                         {
                          "name":"Spawn",
@@ -2039,7 +2039,7 @@
                         {
                          "name":"PowerUp",
                          "type":"string",
-                         "value":"hammer"
+                         "value":"star"
                         }, 
                         {
                          "name":"Spawn",
@@ -2062,7 +2062,7 @@
                         {
                          "name":"PowerUp",
                          "type":"string",
-                         "value":"hammer"
+                         "value":"star"
                         }, 
                         {
                          "name":"Spawn",
@@ -2085,7 +2085,7 @@
                         {
                          "name":"PowerUp",
                          "type":"string",
-                         "value":"hammer"
+                         "value":"star"
                         }, 
                         {
                          "name":"Spawn",

@@ -8,6 +8,7 @@ export const POWERUP_TYPES = {
 };
 
 const STAR_DURATION = 8000; // ms
+const POWERUP_SPEED = 70;  // Velocidad horizontal básica de los Power-Ups
 
 export class PowerUp extends Phaser.Physics.Arcade.Sprite {
   /**
@@ -39,7 +40,7 @@ export class PowerUp extends Phaser.Physics.Arcade.Sprite {
 
     // Movimiento básico (rebote ligero y desplazamiento)
     this.body.setBounce(1, 0.2);
-    this.setVelocityX(Phaser.Math.RND.sign() * 50);
+    this.setVelocityX(POWERUP_SPEED);
   }
 
   /** Llamado al recogerlo por el jugador. */

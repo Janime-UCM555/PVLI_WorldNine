@@ -823,7 +823,9 @@ class Nivel_R extends Phaser.Scene
 
      // Spawner simple (tu PowerUp ya añade físicas y movimiento)
     spawnPowerUp(x, y, type, textureKey) {
-        this.powerups.add(new PowerUp(this, x, y, type, textureKey));
+        let power = new PowerUp(this, x, y, type, textureKey)
+        power.body.setVelocity(power.body.velocity.x * 3,-150); // Salir del bloque hacia arriba
+        this.powerups.add(power);
         return this.powerups;
     }
 

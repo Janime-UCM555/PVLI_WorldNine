@@ -170,6 +170,11 @@ class Koopa extends Phaser.GameObjects.Sprite
         // Ignorar si está muerto
         if (!this.isAlive) return;
 
+        if (player.invincible) {
+            this.stomp();
+            return;
+        }
+
         // Verificar si Mario está cayendo y golpea desde arriba
         if (player.body.velocity.y > 0 && player.body.bottom < this.body.top + 15) {
             // Hacer a Mario invulnerable temporalmente
