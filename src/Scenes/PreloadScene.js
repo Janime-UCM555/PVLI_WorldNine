@@ -125,6 +125,9 @@ class PreloadScene extends Phaser.Scene {
         this.load.audio('victory_music', '../../../assets/sonidos/BGM/Nivel_Completado.wav');
         this.load.audio('starman', '../../../assets/sonidos/BGM/Starman.wav');
 
+        // Menu SFX
+        this.load.audio('iris-out', '../../../assets/sonidos/SE/MenuSFX/smw_goal_iris-out.wav');
+
         this.load.on('complete', () => {
             // Se cambia a la escena del menú pricipal medio segundo después de terminar la precarga
             this.time.delayedCall(500, () => {
