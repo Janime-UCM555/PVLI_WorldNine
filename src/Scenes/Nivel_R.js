@@ -398,9 +398,9 @@ class Nivel_R extends Phaser.Scene
             this.jugador, 
             this.blocks,
             (player, block) => {
-                if (player.body.velocity.y < 0 && player.y > block.y) return; // Solo al golpear desde abajo
-                
-                
+                if (!(player.body.velocity.y >= 0 && player.body.center.y > block.body.bottom)){
+                    return; // Solo al golpear desde abajo
+                } 
                 const aim = this.findSpawnBlockAbovePlayer(player, 16, 10); // (toleranciaX, toleranciaY)
                 const target = aim || block; // prioriza spawn si hay uno “casi”
                 this.blockHit(player, target);
