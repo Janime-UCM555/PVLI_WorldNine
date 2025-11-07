@@ -64,6 +64,7 @@ class Mario extends Phaser.GameObjects.Sprite
         this.jumpSound = scene.sound.add('salto');
         this.hurtSound = scene.sound.add('PowerDown');
         this.powerUpSound = scene.sound.add('PowerUp');
+        this.starman = scene.sound.add('starman');
         this.paso1 = scene.sound.add('paso1');
         this.paso2 = scene.sound.add('paso2');
         this.nextFootstep = 1;
@@ -512,7 +513,8 @@ class Mario extends Phaser.GameObjects.Sprite
 
         this.isInvincible = true;
         this.activePowerUp = POWERUP_TYPES.STAR;
-
+        this.scene.levelMusic.pause();
+        this.starman.play();
         const rainbowColors = [
             0xFF0000, // Rojo
             0xFF7F00, // Naranja
@@ -532,6 +534,17 @@ class Mario extends Phaser.GameObjects.Sprite
                 this.setTint(rainbowColors[colorIndex]);
                 colorIndex = (colorIndex + 1) % rainbowColors.length;
             }
+        });
+
+    const warningTime = 1000; // 3 segundos antes del final
+    const timeUntilWarning = durationMs - warningTime;
+    
+    this.warningTimer = this.scene.time.delayedCall(timeUntilWarning, () => {
+        // Crear y reproducir el sonido de advertencia si no existe
+        if (!this.starEndingSound) {
+            this.starEndingSound = this.scene.sound.add('starEnding');
+        }
+        this.starEndingSound.play();
     });
 
         this.invTimer = this.scene.time.delayedCall(durationMs, () => {
@@ -566,6 +579,22 @@ class Mario extends Phaser.GameObjects.Sprite
             this._invTimer.remove(false);
             this._invTimer = null;
         } 
+
+        if (this.warningTimer?.remove){
+            this.warningTimer.remove(false);
+            this.warningTimer = null;
+        }
+
+        if (this.starman && this.starman.isPlaying) {
+            this.starman.stop();
+        }
+        if (this.starEndingSound && this.starEndingSound.isPlaying) {
+            this.starEndingSound.stop();
+        }
+        if (this.scene.levelMusic && this.scene.levelMusic.isPaused) {
+            this.scene.levelMusic.resume();
+        }
+
 
         // 2. Restaurar apariencia
         this.clearTint();
