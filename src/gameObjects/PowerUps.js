@@ -8,6 +8,7 @@ export const POWERUP_TYPES = {
 };
 
 const STAR_DURATION = 8000; // ms
+const POWERUP_SPEED = 70;  // Velocidad horizontal básica de los Power-Ups
 
 export class PowerUp extends Phaser.Physics.Arcade.Sprite {
   /**
@@ -31,9 +32,15 @@ export class PowerUp extends Phaser.Physics.Arcade.Sprite {
     this.body.setAllowGravity(true);
     this.body.setCollideWorldBounds(true);
 
+    // Configuración de colisiones específica
+    this.body.checkCollision.left = true;
+    this.body.checkCollision.right = true;
+    this.body.checkCollision.up = false;  // No colisiona por arriba para que Mario no pueda saltar encima de los Power-Ups
+    this.body.checkCollision.down = true;
+
     // Movimiento básico (rebote ligero y desplazamiento)
     this.body.setBounce(1, 0.2);
-    this.setVelocityX(Phaser.Math.RND.sign() * 50);
+    this.setVelocityX(POWERUP_SPEED);
   }
 
   /** Llamado al recogerlo por el jugador. */

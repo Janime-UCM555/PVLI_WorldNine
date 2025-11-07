@@ -12,9 +12,6 @@ class NivelScene extends Phaser.Scene
     init(){}
     
     preload(){
-        // this.load.tilemapTiledJSON('map', '../../../src/Scenes/maps/desert.tmj');
-        // this.load.image('tiles', '../../../src/Scenes/maps/tmw_desert_spacing.png'); // Patrones
-
         this.load.tilemapTiledJSON('map1', '../../../TestMapaTiled/ElMapa.json');
         this.load.image('tiles1', '../../../assets/GameSprites/Tilesets/base_tileset.png'); // Patrones
         this.load.image('tileBG', '../../../assets/GameSprites/Tilesets/Rome_BG.png');
@@ -23,13 +20,6 @@ class NivelScene extends Phaser.Scene
     }
 
     create(){
-        // this.map = this.make.tilemap({ 
-        //     key: 'map', 
-        //     tileWidth: 32, 
-        //     tileHeight: 32 
-        // });
-        // const tileset1 = this.map.addTilesetImage('Desert', 'tiles');
-        // this.ground = this.map.createLayer('Ground', tileset1);
         let textScore;
 
         this.map1 = this.make.tilemap({ 

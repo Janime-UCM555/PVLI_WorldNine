@@ -22,7 +22,8 @@ El juego termina al completar todos los niveles, derrotar a los bosses y haber r
 </div>
 
 ## $${\color{#F3D301}Inspiración}$$
-Nos inspiramos de la estética Romana, Egipcia y Griega. De momento tenemos diseños de la Romana y la Egipcia. Con acueductos, edificios y el interior de una pirámide.
+
+Nos inspiramos de la estética Romana, Egipcia y Griega. De momento tenemos diseños de la Romana y la Egipcia. Con acueductos y edificios.
 <img width="550" height="303" alt="image" src="https://github.com/user-attachments/assets/54faa2bd-e346-47ca-a139-a294de7ae4f6" />
 <img width="440" height="303" alt="image" src="https://github.com/user-attachments/assets/6fb84b05-b52c-4bfd-906a-ef27015e45fe" />
 <img width="848" height="292" alt="NivelEjemplo" src="https://github.com/user-attachments/assets/44d802f1-5b59-4dfe-8990-2e95d6722a5b" />

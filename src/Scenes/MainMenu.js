@@ -11,6 +11,7 @@ class MainMenu extends Phaser.Scene
     }
     
     preload(){
+        this.load.image('menu_pattern', 'assets/GameSprites/Precarga/menu_pattern.jpg');
         this.load.spritesheet('mario_walk', '../../../assets/GameSprites/Characters/Mario/Mario_walk.png', {
             frameWidth: 32,
             frameHeight: 55,
@@ -35,9 +36,33 @@ class MainMenu extends Phaser.Scene
             frameWidth: 48,
             frameHeight: 55,
         });
+        this.load.audio('coin_sound', '../../../assets/sonidos/SE/Items/Monedas/coin.wav');
+
+        this.load.image('TitleName', 'assets/web/TituloPNG.png');
     }
 
     create(){
+
+
+    this.openSceneTransition();
+
+    const width = this.cameras.main.width;
+    const height = this.cameras.main.height;
+    this.stars = this.add.tileSprite(
+        0,
+        0,
+        width,
+        height,
+        'menu_pattern'
+    );
+    this.stars.setOrigin(0, 0);
+
+    this.title = this.add.sprite(this.cameras.main.width/2,this.cameras.main.height/3, 'TitleName');
+    this.title.setScale(0.8);
+
+    // Para que las estrellas cubran toda la pantalla
+    this.stars.setDisplaySize(width, height);
+
       this.anims.create({
       key: 'mario_Walk',
       frames: this.anims.generateFrameNumbers('mario_walk', { start: 0, end: 3 }),
@@ -84,19 +109,29 @@ class MainMenu extends Phaser.Scene
     this.mario5 = this.add.sprite(this.cameras.main.width - 250, this.cameras.main.height - 50, 'mario_throw');
     this.mario5.play('mario_Throw');
 
+    // Música de fondo del menú
+    if (!this.menuMusic || !this.menuMusic.isPlaying) {
+        this.menuMusic = this.sound.add('menu_music', { loop: true, volume: 1 });
+        this.menuMusic.play();
+    }
 
 
-    this.buttonMove = new Button(this, 0, -B_SPACING, 'Move',() =>{
-        this.scene.launch('MovimientoScene');
-        this.scene.stop();
+
+    this.buttonMove = new Button(this, 0, this.cameras.main.height/5, 'Jugar',() =>{
+        if (this.menuMusic && this.menuMusic.isPlaying) {
+            this.menuMusic.stop();
+        }
+        this.sound.play('coin_sound', { volume: 0 });
+        this.buttonMove.input.enabled = false;
+        this.transition('Nivel_R');
     })
 
-    this.buttonPrueba = new Button(this, 0, 0,'Prueba',() =>{
-        this.scene.launch('NivelScene');
-        this.scene.stop();
-    });
+    // this.buttonPrueba = new Button(this, 0, 0,'Prueba',() =>{
+    //     this.scene.launch('NivelScene');
+    //     this.scene.stop();
+    // });
 
-    this.buttonFullScreen = new Button(this, 0, B_SPACING, "Pantalla \nCompleta",
+    this.buttonFullScreen = new Button(this, 0, B_SPACING / 2, "Pantalla \nCompleta",
         () => this.scale.toggleFullscreen()
     );
 
@@ -105,14 +140,13 @@ class MainMenu extends Phaser.Scene
     this.ui.add([
         //Añadir aqui los elementos de la ui
         this.buttonFullScreen,
-        this.buttonPrueba,
+        // this.buttonPrueba,
         this.buttonMove
     ])
 
     this.scale.on('resize', (gameSize) => {this.UIResize(gameSize.width, gameSize.height)});
     this.scale.on('enterFullscreen', () => {this.UIResize(this.scale.gameSize.width, this.scale.gameSize.height)});
     this.scale.on('leaveFullscreen', () => {this.UIResize(this.scale.gameSize.width, this.scale.gameSize.height)});
-
     }
 
     UIResize(width, height){
@@ -132,6 +166,98 @@ class MainMenu extends Phaser.Scene
         if(this.physics?.world) this.physics.world.setBounds(0, 0, width, height);
   });
         
+    }
+    update(time, delta) {
+        // Se mueven las estrellas de izquierda a derecha y de arriba a abajo
+        if (this.stars) {
+            this.stars.tilePositionX -= 0.05;
+            this.stars.tilePositionY -= 0.015;
+        }
+    }
+    transition(sceneName)
+    {
+        const cam = this.cameras.main;
+        // Fondo negro que cubrirá todo
+        const blackout = this.add.rectangle(0, 0, cam.width, cam.height, 0x000000)
+            .setOrigin(0)
+            .setScrollFactor(0)
+            .setDepth(1000); // Asegura que esté por encima de todo
+
+        // Crear un círculo
+        const circle = this.make.graphics({ x: 0, y: 0, add: false });
+
+        // Recogemos la pos del jugador actualmente
+
+        var radius = 1500; // Tamaño al principio
+
+        // Dibujar círculo blanco
+        circle.fillStyle(0xffffff);
+        circle.fillCircle(cam.width/2,  cam.height/2, radius);
+
+        // Crear máscara y aplicarla invertida
+        const mask = circle.createGeometryMask();
+        mask.invertAlpha = true; //ESTA LÍNEA invierte la visibilidad
+
+        blackout.setMask(mask);
+        this.tweens.add({
+            targets: { r: radius}, 
+            r: 0,
+            duration: 1200,
+            ease: 'Cubic.easeInOut',
+            onUpdate: (tween, target) => {
+                this.circleMask.clear();
+                this.circleMask.fillStyle(0xffffff);
+                this.circleMask.fillCircle(cam.width/2, cam.height/2, target.r);
+            },
+            onComplete:()=>
+            {
+                this.scene.launch(sceneName);
+                this.scene.stop();
+            }
+        });
+        
+        // Guardar referencias para otros métodos
+        this.circleMask = circle;
+        this.blackoutMask = blackout;
+    }
+    openSceneTransition()
+    {
+        const cam = this.cameras.main;
+
+        // Fondo negro que cubrirá todo
+        const blackout = this.add.rectangle(0, 0, cam.width, cam.height, 0x000000)
+            .setOrigin(0)
+            .setScrollFactor(0)
+            .setDepth(1000); // Asegura que esté por encima de todo
+
+        // Crear un círculo
+        const circle = this.make.graphics({ x: 0, y: 0, add: false });
+
+        var radius = 0; // Tamaño al principio
+
+        // Dibujar círculo blanco
+        circle.fillStyle(0xffffff);
+        circle.fillCircle(0,  0, radius);
+
+        // Crear máscara y aplicarla invertida
+        const mask = circle.createGeometryMask();
+        mask.invertAlpha = true; //ESTA LÍNEA invierte la visibilidad
+
+        blackout.setMask(mask);
+        this.tweens.add({
+            targets: { r: radius}, 
+            r: cam.width,
+            duration: 1000,
+            ease: 'Cubic.easeInOut',
+            onUpdate: (tween, target) => {
+                this.circleMask.clear();
+                this.circleMask.fillStyle(0xffffff);
+                this.circleMask.fillCircle(cam.width/2, cam.height/2, target.r);
+            },
+        });
+        // Guardar referencias para otros métodos
+        this.circleMask = circle;
+        // this.blackoutMask = blackout;
     }
 }
 
