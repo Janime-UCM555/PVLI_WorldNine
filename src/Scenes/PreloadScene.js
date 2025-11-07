@@ -74,7 +74,16 @@ class PreloadScene extends Phaser.Scene {
         });
 
         //PowerUps
+        this.load.image('star', '../../../assets/GameSprites/PowerUps/star.png');
+        this.load.image('hammer', '../../../assets/GameSprites/PowerUps/hammer.png');
+        this.load.image('double_jump', '../../../assets/GameSprites/PowerUps/double_jump.png');
+        this.load.image('dash', '../../../assets/GameSprites/PowerUps/dash.png');
+        this.load.image('jump_boots', '../../../assets/GameSprites/PowerUps/jump_boots.png');
         this.load.image('mushroom', '../../../assets/GameSprites/PowerUps/mushroom.png');
+
+        // Blocks
+        this.load.image('block?', '../../../assets/GameSprites/Items/blockint.png');
+        this.load.image('block', '../../../assets/GameSprites/Items/blockBreakable.png');
 
         // Tilesets
         this.load.image('mi_tileset', '../../../assets/GameSprites/Tilesets/base_tileset.png');

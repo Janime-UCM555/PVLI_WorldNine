@@ -63,6 +63,42 @@ class Nivel_R extends Phaser.Scene
         }
         const frontLayer = this.map.createLayer('CapaFrente', tileset, 0, 0);
 
+        // Crear bloques a partir de objetos Tiled
+        this.blocks = this.add.group();
+
+        blocks.forEach(obj => {
+            // Coordenadas de Tiled → Phaser
+            const x = obj.x + obj.width / 2;
+            const y = obj.y - obj.height / 2;
+
+            // Propiedades del objeto en Tiled → convertir a objeto plano
+            const props = {};
+            obj.properties?.forEach(p => props[p.name] = p.value);
+
+            // Si tiene propiedad 'texture', úsalo
+            if(props.Breakable){
+                props.texture = 'block';
+            }
+            else{
+                props.texture = 'block?';
+            }
+
+            const tex = props.texture || 'bloque'; // si no tiene, usa la por defecto
+
+            // Crear sprite con esa textura
+            const block = this.add.sprite(x, y, tex);
+            this.physics.add.existing(block, true);
+
+            // Ajustar el hitbox al tamaño del objeto
+            block.body.setSize(obj.width, obj.height);
+            block.body.updateFromGameObject();
+
+            // Guardar sus props para blockHit()
+            block._props = props;
+
+            this.blocks.add(block);
+        });
+
         this.coinsGroup = this.add.group();
         for (const coinObj of coins)
         {
@@ -164,15 +200,9 @@ class Nivel_R extends Phaser.Scene
 
         this.powerups = this.add.group();
 
-        const w = this.cameras.main.width;
-        const h = this.cameras.main.height;
-
-        this.spawnPowerUp(300, h - 100, POWERUP_TYPES.MUSHROOM, 'mushroom');
+        this.spawnPowerUp(200, 600, POWERUP_TYPES.MUSHROOM, 'mushroom');
 
         this.setupCollisions();
-
-        this.physics.add.collider(this.powerups, this.groundLayer);
-        this.physics.add.collider(this.powerups, this.blockLayer);
 
         this.createText();
 
@@ -190,18 +220,15 @@ class Nivel_R extends Phaser.Scene
             // Colisión Koopas con suelo con callback para cambiar dirección
             this.physics.add.collider(this.koopas, this.groundLayer, (koopa, wall) => koopa.handleWallCollision(wall), null, this);
         }
-        if (this.blockLayer) {
-            // Establecer las colisiones
-            this.blockLayer.setCollisionByExclusion([-1]);
-        
+        if (this.blocks) {
             // Colisión jugador con bloques
-            this.physics.add.collider(this.jugador, this.blockLayer);
+            this.physics.add.collider(this.jugador, this.blocks);
             
             // Colisión Goombas con bloques con callback para cambiar dirección
-            this.physics.add.collider(this.goombas, this.blockLayer, (goomba, wall) => goomba.handleWallCollision(wall), null, this);
+            this.physics.add.collider(this.goombas, this.blocks, (goomba, wall) => goomba.handleWallCollision(wall), null, this);
 
             // Colisión Koopas con bloques con callback para cambiar dirección
-            this.physics.add.collider(this.koopas, this.blockLayer, (koopa, wall) => koopa.handleWallCollision(wall), null, this);
+            this.physics.add.collider(this.koopas, this.blocks, (koopa, wall) => koopa.handleWallCollision(wall), null, this);
         }
 
         // Configurar mejor los límites del mundo
@@ -364,7 +391,46 @@ class Nivel_R extends Phaser.Scene
             null,
             this
         );
+
+        // Colisiones powerups con suelo y bloques        
+        this.physics.add.collider(this.powerups, this.groundLayer);
+
+        this.physics.add.collider(this.powerups, this.blocks);
+
+        this.physics.add.collider(
+            this.jugador, 
+            this.blocks,
+            (player, block) => this.blockHit(player, block),
+            (player, block) => player.body.velocity.y < 0 && player.y > block.y, // Solo al golpear desde abajo
+            null,
+            this
+        );
+
     }
+
+    blockHit(player, block) {
+        // Lógica al golpear un bloque
+        const props = block._props;
+        if (props.Breakable && player.isSuperSize) {
+            block.destroy();
+            // this.sound.play('block_break');
+            return;
+        }
+
+        if (props.Spawn){
+            // Spawn power-up
+            if(player.isSuperSize){
+                this.spawnPowerUp(block.x + block.width / 2, block.y - block.height, props.PowerUp, props.PowerUp);
+                // this.sound.play('powerup_appears');
+            }
+            else
+            {
+                this.spawnPowerUp(block.x + block.width / 2, block.y - block.height, POWERUP_TYPES.MUSHROOM, 'mushroom');
+            }
+           
+        }
+    }
+
 
     collectCoin(player, coin) {
         coin.destroy();
