@@ -1775,60 +1775,6 @@
                 {
                  "gid":369,
                  "height":32,
-                 "id":210,
-                 "name":"",
-                 "properties":[
-                        {
-                         "name":"Breakable",
-                         "type":"bool",
-                         "value":true
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":32,
-                 "x":3712,
-                 "y":576
-                }, 
-                {
-                 "gid":369,
-                 "height":32,
-                 "id":211,
-                 "name":"",
-                 "properties":[
-                        {
-                         "name":"Breakable",
-                         "type":"bool",
-                         "value":true
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":32,
-                 "x":3776,
-                 "y":576
-                }, 
-                {
-                 "gid":369,
-                 "height":32,
-                 "id":212,
-                 "name":"",
-                 "properties":[
-                        {
-                         "name":"Breakable",
-                         "type":"bool",
-                         "value":true
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":32,
-                 "x":3840,
-                 "y":576
-                }, 
-                {
-                 "gid":369,
-                 "height":32,
                  "id":213,
                  "name":"",
                  "properties":[
@@ -2051,52 +1997,6 @@
                  "width":32,
                  "x":3776,
                  "y":448
-                }, 
-                {
-                 "gid":370,
-                 "height":32,
-                 "id":225,
-                 "name":"?",
-                 "properties":[
-                        {
-                         "name":"PowerUp",
-                         "type":"string",
-                         "value":"star"
-                        }, 
-                        {
-                         "name":"Spawn",
-                         "type":"bool",
-                         "value":true
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":32,
-                 "x":3744,
-                 "y":576
-                }, 
-                {
-                 "gid":370,
-                 "height":32,
-                 "id":226,
-                 "name":"?",
-                 "properties":[
-                        {
-                         "name":"PowerUp",
-                         "type":"string",
-                         "value":"star"
-                        }, 
-                        {
-                         "name":"Spawn",
-                         "type":"bool",
-                         "value":true
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":32,
-                 "x":3808,
-                 "y":576
                 }],
          "opacity":1,
          "type":"objectgroup",
