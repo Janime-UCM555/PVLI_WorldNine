@@ -243,6 +243,9 @@ class Nivel_R extends Phaser.Scene
         
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
 
+        // Zoom más cercano (1.65 es 65% más cercano)
+        this.cameras.main.setZoom(1.65);
+
         // Música de fondo del nivel
         if (!this.levelMusic || !this.levelMusic.isPlaying) {
             this.levelMusic = this.sound.add('level_music', { loop: true, volume: 1 });
@@ -449,12 +452,29 @@ class Nivel_R extends Phaser.Scene
         barra.destroy();
         this.increaseScore(Math.round(barra.y * 10), 'score');
         this.endTimer=true;
+
+        // Destruir todos los Goombas
+        this.goombas.getChildren().forEach(goomba => {
+            if (goomba.safeDestroy && !goomba.shouldBeDestroyed) {
+                goomba.safeDestroy();
+            }
+        });
+    
+        // Destruir todos los Koopas
+        this.koopas.getChildren().forEach(koopa => {
+            if (koopa.safeDestroy && !koopa.shouldBeDestroyed) {
+                koopa.safeDestroy();
+            }
+        });
+
         this.jugador.win();
         this.jugador.play('mario_stop', true);
+
         // Detener música de nivel al ganar
         if (this.levelMusic && this.levelMusic.isPlaying) {
             this.levelMusic.stop();
         }
+
         const victoryMusic = this.sound.add('victory_music');
         victoryMusic.play();
         victoryMusic.once('complete', () => {
@@ -467,10 +487,12 @@ class Nivel_R extends Phaser.Scene
 
     createText()
     {
+        const fontSize = 29; // 50 / 1.65 ≈ 29
+
         this.textTimer = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -');
         this.textTimer.setOrigin(0.5,7);
         this.textTimer.setFont('sugoDisplay');
-        this.textTimer.setFontSize(50);
+        this.textTimer.setFontSize(fontSize + 'px');
         this.textTimer.setAlign('center');
         this.textTimer.setStroke('#000000ff', 6)
         this.textTimer.setFill('#ffffffff');
@@ -482,7 +504,7 @@ class Nivel_R extends Phaser.Scene
         this.textScore = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -');
         this.textScore.setOrigin(-0.4,7);
         this.textScore.setFont('sugoDisplay');
-        this.textScore.setFontSize(50);
+        this.textScore.setFontSize(fontSize + 'px');
         this.textScore.setAlign('center');
         this.textScore.setStroke('#000000ff', 6)
         this.textScore.setFill('#ffffffff');
@@ -493,7 +515,7 @@ class Nivel_R extends Phaser.Scene
         this.textCoins = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -');
         this.textCoins.setOrigin(-5.4,6);
         this.textCoins.setFont('sugoDisplay');
-        this.textCoins.setFontSize(50);
+        this.textCoins.setFontSize(fontSize + 'px');
         this.textCoins.setAlign('center');
         this.textCoins.setStroke('#000000ff', 6)
         this.textCoins.setFill('#DBC716');
@@ -503,7 +525,7 @@ class Nivel_R extends Phaser.Scene
         this.textPurpleCoins = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -');
         this.textPurpleCoins.setOrigin(-10.6,5);
         this.textPurpleCoins.setFont('sugoDisplay');
-        this.textPurpleCoins.setFontSize(50);
+        this.textPurpleCoins.setFontSize(fontSize + 'px');
         this.textPurpleCoins.setAlign('center');
         this.textPurpleCoins.setStroke('#000000ff', 6)
         this.textPurpleCoins.setFill('#621C87');
@@ -771,15 +793,15 @@ class Nivel_R extends Phaser.Scene
             // Detección manual de monedas
             this.checkCoinCollection();
 
-            // Posicionar bien la cámara respecto al jugador
-            this.centerCameraOnPlayerX();
-
             // Comprobar si el jugador se ha caído
             if (this.jugador.y > this.map.heightInPixels + 100) {
                 this.sound.play('muerte');
                 this.playerFell();
             }
         }
+
+        // Posicionar bien la cámara respecto al jugador
+        this.centerCameraOnPlayer();
     }
 
     // Detección manual de recolección de monedas
@@ -806,18 +828,45 @@ class Nivel_R extends Phaser.Scene
     }
 
 
-    centerCameraOnPlayerX() {
-        let targetX = this.jugador.x - this.cameras.main.width / 4;
-        targetX = Phaser.Math.Clamp(targetX, 0, this.map.widthInPixels - this.cameras.main.width);
+    centerCameraOnPlayer() {
+        // Obtener las dimensiones reales de la vista de la cámara considerando el zoom
+        const cameraViewWidth = this.cameras.main.width / this.cameras.main.zoom;
+        const cameraViewHeight = this.cameras.main.height / this.cameras.main.zoom;
+
+        // Seguimiento horizontal
+        let targetX;
     
-        // Suavizado lineal
-        this.cameras.main.scrollX = Phaser.Math.Linear(
-            this.cameras.main.scrollX,
-            targetX,
-            0.1
-        );
+        if (this.jugador.x < cameraViewWidth / 4) {
+            targetX = -200;
+        } else {
+            targetX = this.jugador.x - cameraViewWidth / 1.5;
+        }
+
+        // Seguimiento vertical
+        let targetY;
     
-        this.cameras.main.scrollY = this.map.heightInPixels / 4;
+        // Calcular la posición vertical ideal
+        const baseTargetY = this.jugador.y - cameraViewHeight * 0.65;
+    
+        if (!(this.jugador.isGrounded || this.jugador.body.blocked.down)) {
+            // Cuando salta, mantener la cámara un poco más alta
+            targetY = this.jugador.y - cameraViewHeight * 0.7;
+        } else {
+            // Cuando está en el suelo, mantenerlo en la posición vertical ideal
+            targetY = baseTargetY
+        }
+
+        // Suavizado tipo "spring"
+        const springFactorX = 0.05;
+        const springFactorY = 0.015;
+        const dx = targetX - this.cameras.main.scrollX;
+        const dy = targetY - this.cameras.main.scrollY;
+
+        const maxSpeedY = 15;
+        const moveY = Phaser.Math.Clamp(dy * springFactorY, -maxSpeedY, maxSpeedY);
+
+        this.cameras.main.scrollX += dx * springFactorX;
+        this.cameras.main.scrollY += moveY;
     }
 }
 
