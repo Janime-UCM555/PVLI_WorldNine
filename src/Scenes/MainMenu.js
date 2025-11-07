@@ -1,4 +1,4 @@
-import Button from 'gameObjects/Button.js';
+import Button from '../gameObjects/Button.js';
 const B_SPACING = 100 ;
 class MainMenu extends Phaser.Scene
 {
