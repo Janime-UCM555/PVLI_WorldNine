@@ -83,17 +83,17 @@ class Nivel_R extends Phaser.Scene
             const tex = props.texture || 'bloque'; // si no tiene, usa la por defecto
 
             // Crear sprite con esa textura
-            const block = this.add.sprite(x, y, tex);
-            this.physics.add.existing(block, true);
+            const block = this.matter.add.sprite(x, y, tex);
+            // this.physics.add.existing(block, true);
 
             // Ajustar el hitbox al tamaño del objeto
-            block.body.setSize(obj.width, obj.height);
-            block.body.updateFromGameObject();
+            // block.body.setSize(obj.width, obj.height);
+            // block.body.updateFromGameObject();
 
             // Guardar sus props para blockHit()
-            block._props = props;
+            // block._props = props;
 
-            this.blocks.add(block);
+            // this.blocks.add(block);
         });
 
         this.coinsGroup = this.add.group();

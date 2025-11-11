@@ -4,7 +4,7 @@ class Koopa extends Phaser.GameObjects.Sprite
         super(scene, x, y, texture);
 
         scene.add.existing(this);
-        scene.physics.add.existing(this);
+        scene.matter.add.gameObject(this);
 
         this.speed = speed; // Velocidad del Koopa
         this.isRome = isRome; // Es romano o no
@@ -14,31 +14,61 @@ class Koopa extends Phaser.GameObjects.Sprite
         this.shouldBeDestroyed = false; // Control de destrucción
 
         // Configuración de física
+        this.blocked= {
+            bottom: false,
+        },
+        this.numTouching= {
+                bottom: 0,
+        };    
+        const sx = this.width/2;
+        const sy = this.height/2;
+        const w = this.width;
+        const h = this.height/2;
+        const M = Phaser.Physics.Matter.Matter;
+        this.enemyBody = M.Bodies.rectangle(sx,sy, w * 0.75, h,1);
+        this.sensors = {
+            bottom: Phaser.Physics.Matter.Matter.Bodies.rectangle(sx, h, sx, 5, { isSensor: true }),
+        };
+        const compoundBody = M.Body.create({
+        parts: [this.enemyBody,this.sensors.bottom],
+        friction: 0,
+        frictionAir: 0,
+        restitution: 0.05 // El jugador no se pega a paredes
+        });
+        this.setExistingBody(compoundBody);
+
+        this.setFixedRotation();
         if (this.body) {
-            this.body.setGravityY(700);
-            this.body.setSize(
-                32,
-                30
-            );
-            this.body.setOffset(
-                0,
-                30
-            );
-            this.body.setCollideWorldBounds(false); // Desactivar colisión con bordes del mundo
+            // this.body.setSize(
+            //     32,
+            //     30
+            // );
+            // this.body.setOffset(
+            //     0,
+            //     30
+            // );
+            // this.body.setCollideWorldBounds(false); // Desactivar colisión con bordes del mundo
 
             // Asegurar que el cuerpo es dinámico y puede colisionar
-            this.body.setImmovable(false);
+            // this.body.setImmovable(false);
             this.body.moves = true;
 
             // Mejorar la detección de colisiones
             this.body.onWorldBounds = true;
 
-            this.body.setVelocityX(0); // Inicialmente detenido
+            this.setVelocityX(0); // Inicialmente detenido
 
             // Configurar las propiedades de colisión
-            this.body.setBounce(0, 0);
-            this.body.setDrag(200, 0);
-            
+            this.setBounce(0, 0);
+            // this.setDrag(200, 0);
+            // El cuerpo a la posición inicial
+            M.Body.setPosition(compoundBody, { x, y });
+
+            // Asociamos el cuerpo al sprite
+            this.setExistingBody(compoundBody);
+            this.setPosition(x, y); // sincronizar la posición del sprite
+            this.setFixedRotation();
+
             this.stompSound = scene.sound.add('aplastar');
 
         }
@@ -73,7 +103,7 @@ class Koopa extends Phaser.GameObjects.Sprite
 
                 // Solo cambiar la velocidad si es diferente a la actual
                 if (this.body.velocity.x !== targetVelocity) {
-                    this.body.setVelocityX(targetVelocity);
+                    this.setVelocityX(targetVelocity);
                 }
             
                 if (!this.anims.isPlaying || (this.isRome && this.anims.currentAnim.key !== 'Koopa_walk_R')) {
@@ -83,7 +113,7 @@ class Koopa extends Phaser.GameObjects.Sprite
                 }
             } else {
                 // Detenerse completamente si no es visible
-                this.body.setVelocityX(0);
+                this.setVelocityX(0);
                 if (this.anims.isPlaying) {
                     this.anims.stop();
                 }
@@ -104,7 +134,7 @@ class Koopa extends Phaser.GameObjects.Sprite
         this.flipX = (this.direction === 1);
 
         // Aplicar la nueva dirección inmediatamente
-        this.body.setVelocityX(this.speed * this.direction);
+        this.setVelocityX(this.speed * this.direction);
     }
 
     // Manejar colisiones con paredes
@@ -229,8 +259,8 @@ class Koopa extends Phaser.GameObjects.Sprite
         this.stompSound.play();
 
         this.isAlive = false;
-        this.body.setVelocity(0, 0);
-        this.body.checkCollision.none = true;
+        this.setVelocity(0, 0);
+        // this.body.checkCollision.none = true;
 
         if (this.anims.isPlaying) {
             this.anims.stop();
@@ -251,7 +281,7 @@ class Koopa extends Phaser.GameObjects.Sprite
 
     // Detectar bordes de plataformas
     checkForLedges() {
-        if (!this.body || !this.body.blocked.down) return;
+        if (!this.body || !this.blocked.bottom) return;
     
         // Raycast para detectar si hay suelo adelante
         const checkDistance = 5;
@@ -304,8 +334,8 @@ class Koopa extends Phaser.GameObjects.Sprite
         
         // Detener todas las físicas inmediatamente
         if (this.body) {
-            this.body.setVelocity(0, 0);
-            this.body.checkCollision.none = true;
+            this.setVelocity(0, 0);
+            // this.body.checkCollision.none = true;
             this.body.enable = false;
         }
         
@@ -328,6 +358,32 @@ class Koopa extends Phaser.GameObjects.Sprite
 
         const camera = this.scene.cameras.main;
 
+        
+        this.scene.matter.world.on('beforeupdate', function (event) {
+            this.numTouching.bottom = 0;
+        },this);
+
+        this.scene.matter.world.on('collisionactive', (event) => {
+            for (let i = 0; i < event.pairs.length; i++)            
+            {
+                const bodyA = event.pairs[i].bodyA;
+                const bodyB = event.pairs[i].bodyB;
+                if (bodyA === this.enemyBody || bodyB === this.enemyBody)
+                {
+                    continue;
+                }
+                if (bodyA === this.sensors.bottom || bodyB === this.sensors.bottom)
+                {
+                    this.numTouching.bottom += 1;
+                }
+            };
+        });
+        this.scene.matter.world.on('afterupdate', function (event) {
+            this.blocked.bottom = this.numTouching.bottom > 0 ? true : false;
+        },this);
+
+
+
         // Destruir si se sale por la izquierda de la cámara
         if (this.x < camera.scrollX - 15) {
             this.safeDestroy();
@@ -335,13 +391,13 @@ class Koopa extends Phaser.GameObjects.Sprite
         }
         
         // Destruir si se cae al vacío
-        if (this.y > this.scene.physics.world.bounds.bottom + 100) {
+        if (this.y > this.scene.matter.world.bounds + 100) {
             this.safeDestroy();
             return; // Salir inmediatamente después de marcar para destrucción
         }
 
         // Verificar bordes
-        if (this.isAlive && !this.shouldBeDestroyed && this.body.blocked.down) {
+        if (this.isAlive && !this.shouldBeDestroyed && this.blocked.bottom) {
             this.checkForLedges();
         }
 

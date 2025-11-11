@@ -10,7 +10,7 @@ export const POWERUP_TYPES = {
 const STAR_DURATION = 8000; // ms
 const POWERUP_SPEED = 70;  // Velocidad horizontal básica de los Power-Ups
 
-export class PowerUp extends Phaser.Physics.Arcade.Sprite {
+export class PowerUp extends Phaser.Physics.Matter.Sprite {
   /**
    * @param {Phaser.Scene} scene
    * @param {number} x
@@ -20,27 +20,95 @@ export class PowerUp extends Phaser.Physics.Arcade.Sprite {
    * @param {string|number} frame - frame inicial opcional
    */
   constructor(scene, x, y, type, textureKey, frame) {
-    super(scene, x, y, textureKey, frame);
+    super(scene.matter.world, x, y, textureKey, frame);
+    
     this.scene = scene;
     this.type = type;
 
     scene.add.existing(this);
-    scene.physics.add.existing(this);
-
-    this.setOrigin(0.5, 1);
-    this.setActive(true).setVisible(true);
-    this.body.setAllowGravity(true);
-    this.body.setCollideWorldBounds(true);
-
+    scene.matter.add.gameObject(this);
+    this.setOrigin(0.5, 0.5);
+    // this.setActive(true).setVisible(true);
+    // this.body.setAllowGravity(true);
+    // this.body.setCollideWorldBounds(true);
     // Configuración de colisiones específica
-    this.body.checkCollision.left = true;
-    this.body.checkCollision.right = true;
-    this.body.checkCollision.up = false;  // No colisiona por arriba para que Mario no pueda saltar encima de los Power-Ups
-    this.body.checkCollision.down = true;
+    // this.body.checkCollision.left = true;
+    // this.body.checkCollision.right = true;
+    // this.body.checkCollision.up = false;  // No colisiona por arriba para que Mario no pueda saltar encima de los Power-Ups
+    // this.body.checkCollision.down = true;
+    this.blocked= {
+      left: false,
+      right: false,
+      bottom: false,
+      up: false
+    },
+    this.numTouching= {
+      left: 0,
+      right: 0,
+      bottom: 0,
+      up:0
+    };   
+
+
+    const sx = this.width/2;
+    const sy = this.height/2;
+    const w = this.width;
+    const h = this.height;
+    const M = Phaser.Physics.Matter.Matter;
+    this.playerBody = M.Bodies.rectangle(sx,sy, w * 0.75, h, { chamfer: { radius: 10 } });
+    this.sensors = {
+        bottom: M.Bodies.rectangle(sx, h, sx, 5, { isSensor: true }),
+        left: M.Bodies.rectangle(sx-w*0.45, sy, 5, h*0.25, { isSensor: true }),
+        right: M.Bodies.rectangle(sx+w*0.45, sy, 5, h*0.25, { isSensor: true }),
+    };
+    const compoundBody = M.Body.create({
+    parts: [this.playerBody,this.sensors.bottom, this.sensors.left, this.sensors.right/*, this.sensors.up*/],
+    friction: 0,
+    frictionAir: 0,
+    restitution: 0.05 // El jugador no se pega a paredes
+    });
+    M.Body.setPosition(compoundBody, { x, y });
+    this.setExistingBody(compoundBody);
+    this.setPosition(x, y); // sincronizar la posición del sprite
 
     // Movimiento básico (rebote ligero y desplazamiento)
-    this.body.setBounce(1, 0.2);
+    this.setBounce(0.1, 0.2);
     this.setVelocityX(POWERUP_SPEED);
+    this.setFixedRotation();
+
+    this.scene.matter.world.on('beforeupdate', function (event) {
+      this.numTouching.left = 0;
+      this.numTouching.right = 0;
+      this.numTouching.bottom = 0;
+    }, this);
+    this.scene.matter.world.on('collisionactive', (event) => {
+      for (let i = 0; i < event.pairs.length; i++)            
+      {
+        const bodyA = event.pairs[i].bodyA;
+        const bodyB = event.pairs[i].bodyB;
+        if (bodyA === this.playerBody || bodyB === this.playerBody)
+        {
+            continue;
+        }
+        if (bodyA === this.sensors.left || bodyB === this.sensors.left)
+        {
+          this.numTouching.left += 1;
+        }
+        if (bodyA === this.sensors.right || bodyB === this.sensors.right)
+        {
+          this.numTouching.right += 1;
+        }
+        if (bodyA === this.sensors.bottom || bodyB === this.sensors.bottom)
+        {
+          this.numTouching.bottom += 1;
+        }
+      }
+    });
+    this.scene.matter.world.on('afterupdate', function (event) {
+      this.blocked.right = this.numTouching.right > 0 ? true : false;
+      this.blocked.left = this.numTouching.left > 0 ? true : false;
+      this.blocked.bottom = this.numTouching.bottom > 0 ? true : false;
+    }, this);
   }
 
   /** Llamado al recogerlo por el jugador. */
@@ -89,7 +157,7 @@ export class PowerUp extends Phaser.Physics.Arcade.Sprite {
     //   if (sfxKey) this.scene.sound.play(sfxKey, { volume: 0.6 });
     // }
 
-    this.disableBody(true, true);
+    // this.disableBody(true, true);
     this.destroy();
   }
 
@@ -97,8 +165,8 @@ export class PowerUp extends Phaser.Physics.Arcade.Sprite {
   preUpdate(time, delta) {
     super.preUpdate(time, delta);
 
-    if (this.body.blocked.left) this.setVelocityX(Math.abs(this.body.velocity.x));
-    else if (this.body.blocked.right) this.setVelocityX(-Math.abs(this.body.velocity.x));
+    if (this.blocked.left) this.setVelocityX(Math.abs(this.body.velocity.x));
+    else if (this.blocked.right) this.setVelocityX(-Math.abs(this.body.velocity.x));
   }
 }
 
