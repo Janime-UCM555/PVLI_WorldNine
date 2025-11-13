@@ -33,6 +33,12 @@ class Nivel_R extends Phaser.Scene
     }
 
     create(){
+
+            this.keys = this.input.keyboard.addKeys({
+        hammer: 'X'  // o la tecla que quieras
+    });
+
+
         // this.cameras.main.setZoom(2);
         // Crear mapa desde Tiled
         this.map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
@@ -159,6 +165,12 @@ class Nivel_R extends Phaser.Scene
             }
         }
 
+        this.hammers = this.physics.add.group({
+            defaultKey: 'hammer',
+            maxSize: 5
+        });
+
+
         // // Grupo de Goombas - Añadidos manualmente
         // this.goombas = this.physics.add.group();
         
@@ -197,7 +209,7 @@ class Nivel_R extends Phaser.Scene
 
         this.powerups = this.add.group();
 
-        this.spawnPowerUp(200, 600, POWERUP_TYPES.MUSHROOM, 'mushroom');
+        this.spawnPowerUp(200, 600, POWERUP_TYPES.HAMMER, POWERUP_TYPES.HAMMER);
 
         this.setupCollisions();
 
@@ -391,7 +403,41 @@ class Nivel_R extends Phaser.Scene
             this
         );
 
-        // Colisiones powerups con suelo y bloques        
+           this.physics.add.collider(
+            this.hammers,
+            this.blocks,
+            (hammers, block) => {
+                this.recycleHammer(hammers);
+                this.blockHit(this.jugador, block);
+            },
+            null,
+            this
+        );
+
+        this.physics.add.overlap(
+            this.hammers,
+            this.goombas,
+            (hammer, goomba) => {
+                goomba.stomp();
+                this.recycleHammer(hammer);
+            },
+            null,
+            this
+        );
+
+        this.physics.add.overlap(
+            this.hammers,
+            this.koopas,
+            (hammer, koopa) => {
+                koopa.stomp();
+                this.recycleHammer(hammer);
+            },
+            null,
+            this
+        );
+
+
+        // Colisiones powerups con suelo y bloques
         this.physics.add.collider(this.powerups, this.groundLayer);
 
         this.physics.add.collider(this.powerups, this.blocks);
@@ -400,7 +446,7 @@ class Nivel_R extends Phaser.Scene
             this.jugador, 
             this.blocks,
             (player, block) => {
-                if (!(player.body.velocity.y >= 0 && player.body.center.y > block.body.bottom)){
+                if (!(player.body.velocity.y == 0 && player.body.center.y > block.body.bottom)){
                     return; // Solo al golpear desde abajo
                 } 
                 const aim = this.findSpawnBlockAbovePlayer(player, 16, 10); // (toleranciaX, toleranciaY)
@@ -864,6 +910,28 @@ class Nivel_R extends Phaser.Scene
                 this.sound.play('muerte');
                 this.playerFell();
             }
+
+            if (Phaser.Input.Keyboard.JustDown(this.keys.hammer)) {
+    this.jugador.tryThrowHammer();
+}
+
+
+            if (this.hammers) {
+                const cam = this.cameras.main;
+                const margin = 64;
+
+                this.hammers.children.iterate(hammer => {
+                    if (!hammer || !hammer.active) return;
+
+                    if (
+                        hammer.x < cam.worldView.x - margin ||
+                        hammer.x > cam.worldView.x + cam.worldView.width + margin ||
+                        hammer.y > cam.worldView.y + cam.worldView.height + margin
+                    ) {
+                        this.recycleHammer(hammer);
+                    }
+                });
+            }
         }
     }
 
@@ -932,6 +1000,27 @@ class Nivel_R extends Phaser.Scene
 
         this.cameras.main.scrollX += dx * springFactorX;
         this.cameras.main.scrollY += moveY;
+    }
+
+    requestHammer(player) {
+        if (!this.hammers) return null;
+
+        const hammer = this.hammers.get(player.x, player.y, 'hammer');
+        if (!hammer) return null; // no hay libres en la pool
+
+        hammer.setActive(true).setVisible(true);
+        hammer.body.enable = true;
+
+        // Opcional: tamaño del cuerpo físico
+        hammer.body.setSize(hammer.width, hammer.height);
+
+        return hammer;
+    }
+    
+    recycleHammer(hammer) {
+        hammer.setActive(false).setVisible(false);
+        hammer.body.stop();
+        hammer.body.enable = false;
     }
 }
 

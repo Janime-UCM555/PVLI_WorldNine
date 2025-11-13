@@ -104,6 +104,8 @@ class Mario extends Phaser.GameObjects.Sprite
 
         //Martillo
         this.canThrowHammer = false;
+        this.hammerCooldown = 0;
+        const HAMMER_COOLDOWN_TIME = 1000; // 1 segundo de cooldown
 
         //Doble Salto
         this.canDoubleJump = false;
@@ -560,7 +562,37 @@ class Mario extends Phaser.GameObjects.Sprite
     }
 
     enableHammer() {
+        this.activePowerUp = POWERUP_TYPES.HAMMER;
+        this.canThrowHammer = true;
+    }
 
+    tryThrowHammer() {
+        if (!this.canThrowHammer || !this.body) return;
+        const currentTime = this.scene.time.now;
+        if(currentTime < this.hammerCooldown) return;
+        this.hammerCooldown = currentTime + 1000;
+
+        if(!this.scene.hammers){
+            console.warn("No hay grupo de martillos en la escena.");
+            return;
+        }
+
+        const hammer = this.scene.requestHammer(this);
+        if (!hammer) return;
+
+        const dir = 1;
+        const offsetX = this.body.width * 0.6 * dir;
+        const offsetY = this.body.height * 0.2;
+
+        hammer.setPosition(this.x + offsetX, this.y - offsetY);
+
+        const hammerSpeedX = 400 * dir;
+        const hammerSpeedY = -300; // Ligeramente hacia arriba
+        hammer.body.setVelocity(hammerSpeedX, hammerSpeedY);
+
+        if (this.scene.anims.exists('mario_Throw')) {
+            this.play('mario_Throw');
+        }
     }
 
     enableDoubleJump() {
@@ -617,7 +649,7 @@ class Mario extends Phaser.GameObjects.Sprite
 
         // 4. Resetear flags y multiplicadores
         this.isInvincible = false;
-        this.hammerEnabled = false;
+        this.canThrowHammer = false;
         this.doubleJumpEnabled = false;
         this.doubleJumpAvailable = false;
         this.dashMultiplier = 1;
