@@ -145,6 +145,11 @@ class Mario extends Phaser.GameObjects.Sprite
                     this.wasHoldingJumpWhenBuffered = true; // Recordar que se estaba manteniendo el botón
                 }
             }
+            if (pointer.rightButtonDown() && this.scene.scene.isActive()) {
+                if (this.canThrowHammer) {
+                this.tryThrowHammer();
+            }
+    }
         });
 
         // Al soltar el ratón

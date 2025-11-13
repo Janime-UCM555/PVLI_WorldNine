@@ -34,9 +34,8 @@ class Nivel_R extends Phaser.Scene
 
     create(){
 
-            this.keys = this.input.keyboard.addKeys({
-        hammer: 'X'  // o la tecla que quieras
-    });
+window.addEventListener('contextmenu', e => e.preventDefault());
+this.input.mouse?.disableContextMenu();
 
 
         // this.cameras.main.setZoom(2);
@@ -910,10 +909,6 @@ class Nivel_R extends Phaser.Scene
                 this.sound.play('muerte');
                 this.playerFell();
             }
-
-            if (Phaser.Input.Keyboard.JustDown(this.keys.hammer)) {
-    this.jugador.tryThrowHammer();
-}
 
 
             if (this.hammers) {
