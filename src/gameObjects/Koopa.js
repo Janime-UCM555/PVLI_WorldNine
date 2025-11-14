@@ -14,29 +14,37 @@ class Koopa extends Phaser.GameObjects.Sprite
         this.shouldBeDestroyed = false; // Control de destrucción
 
         // Configuración de física
+        //Sensores
         this.blocked= {
-            bottom: true,
+            left: false,
+            right: false,
+            bottom: false,
+            up: false
         },
         this.numTouching= {
+                left: 0,
+                right: 0,
                 bottom: 0,
-        };    
+                up:0
+        }; 
         const sx = this.width/2;
         const sy = this.height/2;
         const w = this.width;
         const h = this.height/2;
         const M = Phaser.Physics.Matter.Matter;
-        this.enemyBody = M.Bodies.rectangle(sx,sy*1.5, w * 0.75, h,1);
+        this.enemyBody = M.Bodies.rectangle(sx,sy*1.5, w, h, { chamfer: { radius: 10 } });
         this.sensors = {
-            bottom: Phaser.Physics.Matter.Matter.Bodies.rectangle(sx, h, sx, 5, { isSensor: true }),
+            bottom: M.Bodies.rectangle(sx, h, sx, 5, { isSensor: true }),
+            left: M.Bodies.rectangle(sx-w*0.45, sy, 5, h, { isSensor: true }),
+            right: M.Bodies.rectangle(sx+w*0.45, sy, 5, h, { isSensor: true }),
         };
         const compoundBody = M.Body.create({
-        parts: [this.enemyBody,this.sensors.bottom],
+        parts: [this.enemyBody,this.sensors.bottom, this.sensors.left, this.sensors.right],
         friction: 0,
         frictionAir: 0,
         restitution: 0.05 // El jugador no se pega a paredes
         });
         this.setExistingBody(compoundBody);
-
         this.setFixedRotation();
         if (this.body) {
             // this.body.setSize(
@@ -143,10 +151,10 @@ class Koopa extends Phaser.GameObjects.Sprite
 
         // Verificar si es una colisión lateral (no desde arriba/abajo)
         const isLateralCollision = 
-            (this.body.blocked.right && this.direction === 1) ||
-            (this.body.blocked.left && this.direction === -1) ||
-            (this.body.touching.right && this.direction === 1) ||
-            (this.body.touching.left && this.direction === -1);
+            (this.blocked.right && this.direction === 1) ||
+            (this.blocked.left && this.direction === -1) ||
+            (this.blocked.right && this.direction === 1) ||
+            (this.blocked.left && this.direction === -1);
 
         if (isLateralCollision) {
             // Pequeño retroceso para evitar que se peguen
@@ -157,7 +165,7 @@ class Koopa extends Phaser.GameObjects.Sprite
                 this.x += pushBack;
             }
     
-            this.body.updateFromGameObject();
+            // this.body.updateFromGameObject();
     
             // Cambiar dirección
             this.changeDirection();
@@ -214,15 +222,15 @@ class Koopa extends Phaser.GameObjects.Sprite
         }
 
         // Verificar si Mario está cayendo y golpea desde arriba
-        if (player.body.velocity.y > 0 && player.body.bottom < this.body.top + 15) {
+        if (player.body.velocity.y > 0 && /*player.blocked.bottom &&*/ player.y > this.y/1.35) {
             // Hacer a Mario invulnerable temporalmente
             player.isInvulnerable = true;
 
-            // Mario aplasta al Koopa
+            // Mario aplasta al Goomba
             this.stomp();
         
             // Pequeño rebote para Mario
-            player.body.setVelocityY(-275);
+            player.setVelocityY(-4.5);
 
             // Quitar invulnerabilidad temporal a Mario
             this.scene.time.delayedCall(150, () => {
@@ -260,6 +268,7 @@ class Koopa extends Phaser.GameObjects.Sprite
 
         this.isAlive = false;
         this.setVelocity(0, 0);
+        this.body.collisionFilter.mask = 0;
         // this.body.checkCollision.none = true;
 
         if (this.anims.isPlaying) {
@@ -271,7 +280,7 @@ class Koopa extends Phaser.GameObjects.Sprite
             this.setTexture('Koopa_shell');
         }
 
-        this.scene.increaseScore(100, 'score');
+        this.scene.increaseScore(200, 'score');
 
         // Destruir después de un tiempo
         this.scene.time.delayedCall(2000, () => {
@@ -298,31 +307,31 @@ class Koopa extends Phaser.GameObjects.Sprite
         ];
 
         // Verificar en groundLayer
-        if (this.scene.groundLayer) {
-            for (const point of checkPoints) {
-                const tile = this.scene.groundLayer.getTileAtWorldXY(point.x, point.y);
-                if (tile && tile.collides) {
-                    hasGroundAhead = true;
-                    break;
-                }
-            }
-        }
+        // if (this.scene.groundLayer) {
+        //     for (const point of checkPoints) {
+        //         const tile = this.scene.groundLayer.getTileAtWorldXY(point.x, point.y);
+        //         if (tile && tile.collides) {
+        //             hasGroundAhead = true;
+        //             break;
+        //         }
+        //     }
+        // }
     
-        // Si no ha encontrado en groundLayer, verificar en blockLayer
-        if (!hasGroundAhead && this.scene.blockLayer) {
-            for (const point of checkPoints) {
-                const tile = this.scene.blockLayer.getTileAtWorldXY(point.x, point.y);
-                if (tile && tile.collides) {
-                    hasGroundAhead = true;
-                    break;
-                }
-            }
-        }
+        // // Si no ha encontrado en groundLayer, verificar en blockLayer
+        // if (!hasGroundAhead && this.scene.blockLayer) {
+        //     for (const point of checkPoints) {
+        //         const tile = this.scene.blockLayer.getTileAtWorldXY(point.x, point.y);
+        //         if (tile && tile.collides) {
+        //             hasGroundAhead = true;
+        //             break;
+        //         }
+        //     }
+        // }
 
-        // Si no hay suelo adelante, cambiar dirección
-        if (!hasGroundAhead) {
-            this.changeDirection();
-        }
+        // // Si no hay suelo adelante, cambiar dirección
+        // if (!hasGroundAhead) {
+        //     this.changeDirection();
+        // }
     }
 
     // Destrucción segura
@@ -358,22 +367,40 @@ class Koopa extends Phaser.GameObjects.Sprite
 
         const camera = this.scene.cameras.main;
 
-        
         this.scene.matter.world.on('beforeupdate', function (event) {
+            this.numTouching.left = 0;
+            this.numTouching.right = 0;
             this.numTouching.bottom = 0;
         },this);
 
-        this.scene.matter.world.on('collisionactive', (event, bodyA, bodyB) => {
-            if (bodyA === this.sensors.bottom || bodyB === this.sensors.bottom)
+        this.scene.matter.world.on('collisionactive', (event) => {
+            for (let i = 0; i < event.pairs.length; i++)            
             {
-                this.numTouching.bottom += 1;
-            }
+                const bodyA = event.pairs[i].bodyA;
+                const bodyB = event.pairs[i].bodyB;
+                if (bodyA === this.enemyBody || bodyB === this.enemyBody)
+                {
+                    continue;
+                }
+                if (bodyA === this.sensors.bottom || bodyB === this.sensors.bottom)
+                {
+                    this.numTouching.bottom += 1;
+                }
+                if ((bodyA === this.sensors.left && bodyB.isStatic) || (bodyB === this.sensors.left && bodyA.isStatic))
+                {
+                    this.numTouching.left += 1;
+                }
+                if ((bodyA === this.sensors.right && bodyB.isStatic) || (bodyB === this.sensors.right && bodyA.isStatic))
+                {
+                    this.numTouching.right += 1;
+                }
+            };
         });
         this.scene.matter.world.on('afterupdate', function (event) {
+            this.blocked.right = this.numTouching.right > 0 ? true : false;
+            this.blocked.left = this.numTouching.left > 0 ? true : false;
             this.blocked.bottom = this.numTouching.bottom > 0 ? true : false;
         },this);
-
-
 
         // Destruir si se sale por la izquierda de la cámara
         if (this.x < camera.scrollX - 15) {

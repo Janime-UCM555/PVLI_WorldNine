@@ -149,7 +149,7 @@ class Nivel_T extends Phaser.Scene
         this.goombas = this.add.group();
         this.koopas = this.add.group();
         for (const enemie of enemies)
-        {
+        {/*
             if (enemie.name === 'Goomba')
             {
                 const goomba = new Goomba(
@@ -163,19 +163,19 @@ class Nivel_T extends Phaser.Scene
                 goomba.direction = 1;
                 this.goombas.add(goomba);
             }
-        //     else if (enemie.name === 'Koopa')
-        //     {
-        //         const koopa = new Koopa(
-        //             this,
-        //             enemie.x,
-        //             enemie.y - 32, 
-        //             'Koopa_walk_R',
-        //             .70,
-        //             true
-        //         );
-        //         koopa.direction = -1;
-        //         this.koopas.add(koopa);
-        //     }
+            else */if (enemie.name === 'Koopa')
+            {
+                const koopa = new Koopa(
+                    this,
+                    enemie.x,
+                    enemie.y - 32, 
+                    'Koopa_walk_R',
+                    1,
+                    true
+                );
+                koopa.direction = -1;
+                // this.koopas.add(koopa);
+            }
         }
 
         // Grupo de Goombas - Añadidos manualmente
@@ -198,13 +198,13 @@ class Nivel_T extends Phaser.Scene
         // }
 
         // // Configurar las propiedades de física para Goombas
-        this.goombas.getChildren().forEach(goomba => {
-            if (goomba.body) {
-                // Detección de colisiones
-                // goomba.setCollideWorldBounds(false); // No permitir colisión con bordes
-                goomba.onWorldBounds = true; // Detección de límites del mundo para destrucción
-            }
-        });
+        // this.goombas.getChildren().forEach(goomba => {
+        //     if (goomba.body) {
+        //         // Detección de colisiones
+        //         // goomba.setCollideWorldBounds(false); // No permitir colisión con bordes
+        //         goomba.onWorldBounds = true; // Detección de límites del mundo para destrucción
+        //     }
+        // });
         // this.koopas.getChildren().forEach(koopa => {
         //     if (koopa.body) {
         //         // Detección de colisiones
@@ -376,12 +376,23 @@ class Nivel_T extends Phaser.Scene
             {
                 bodyB.gameObject.handlePlayerCollision(this.jugador);
             }
-            if(bodyA.gameObject == this.jugador && bodyB.gameObject._props) 
+            if(bodyB.gameObject instanceof Goomba && bodyA.gameObject instanceof Goomba || 
+                bodyB.gameObject instanceof Koopa && bodyA.gameObject instanceof Goomba ||
+                bodyB.gameObject instanceof Koopa && bodyA.gameObject instanceof Koopa
+            )
+            {
+                bodyA.handleEnemyCollision(bodyB.gameObject);
+            }
+            if(bodyB.gameObject instanceof Koopa && bodyA.gameObject == this.jugador)
+            {
+                bodyB.gameObject.handlePlayerCollision(this.jugador);
+            }
+            if(bodyA.gameObject == this.jugador && bodyB.gameObject && bodyB.gameObject._props) 
             {
                 if (!(this.jugador.body.velocity.y < 0 && this.jugador.getCenter().y > bodyB.bounds.max.y)){
                     return; // Solo al golpear desde abajo
                 } 
-                const aim = this.findSpawnBlockAbovePlayer(this.jugador, 16, 10); // (toleranciaX, toleranciaY)
+                const aim = this.findSpawnBlockAbovePlayer(this.jugador, 20, 20); // (toleranciaX, toleranciaY)
                 const target = aim || bodyB.gameObject; // prioriza spawn si hay uno “casi”
                 this.blockHit(this.jugador, target);
             }
@@ -612,6 +623,7 @@ class Nivel_T extends Phaser.Scene
     createText()
     {
 
+ 
 
         // Este gráfico representa la línea dónde se alinea la UI por la derecha
 
@@ -623,6 +635,15 @@ class Nivel_T extends Phaser.Scene
         // graphics.setScrollFactor(0);
 
         const fontSize = 29; // 50 / 1.65 ≈ 29
+
+        this.fpsText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -',{fontFamily: 'aku-kamu'})
+        .setOrigin(-2,5)
+        .setStroke('#000000ff', 6)
+        .setFill('#38b762ff')
+        .setFontSize(fontSize + 'px')
+        // .setText("60")
+        .setScrollFactor(0);
+
 
         this.textTimer = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -',{fontFamily: 'aku-kamu'})
         .setOrigin(0.5,5)
@@ -897,6 +918,8 @@ class Nivel_T extends Phaser.Scene
     }
 
     update(time, delta) {
+        this.fpsText.setText( Math.floor(this.game.loop.actualFps));
+
         if (!this.endTimer)
         {
             // Actualizar jugador

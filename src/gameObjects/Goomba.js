@@ -37,10 +37,9 @@ class Goomba extends Phaser.GameObjects.Sprite
             bottom: M.Bodies.rectangle(sx, h, sx, 5, { isSensor: true }),
             left: M.Bodies.rectangle(sx-w*0.45, sy, 5, h*0.25, { isSensor: true }),
             right: M.Bodies.rectangle(sx+w*0.45, sy, 5, h*0.25, { isSensor: true }),
-            up: M.Bodies.rectangle(sx, -h/sy, sx, 5, { isSensor: true })
         };
         const compoundBody = M.Body.create({
-        parts: [this.enemyBody,this.sensors.bottom, this.sensors.left, this.sensors.right/*, this.sensors.up*/],
+        parts: [this.enemyBody,this.sensors.bottom, this.sensors.left, this.sensors.right],
         friction: 0,
         frictionAir: 0,
         restitution: 0.05 // El jugador no se pega a paredes
@@ -214,8 +213,7 @@ class Goomba extends Phaser.GameObjects.Sprite
 
 
         // Verificar si Mario está cayendo y golpea desde arriba
-        console.log(this.body.bounds.max.y);
-        if (player.body.velocity.y > 0 && player.blocked.bottom && player.getCenter().y > this.sy) {
+        if (player.getBounds().bottom < this.getBounds().bottom) {
             // Hacer a Mario invulnerable temporalmente
             player.isInvulnerable = true;
 
@@ -223,7 +221,7 @@ class Goomba extends Phaser.GameObjects.Sprite
             this.stomp();
         
             // Pequeño rebote para Mario
-            player.setVelocityY(-2.75);
+            player.setVelocityY(-4.5);
 
             // Quitar invulnerabilidad temporal a Mario
             this.scene.time.delayedCall(150, () => {
@@ -273,7 +271,7 @@ class Goomba extends Phaser.GameObjects.Sprite
             this.setTexture('GombRome_Stomp');
         }
 
-        this.scene.increaseScore(100, 'score');
+        this.scene.increaseScore(200, 'score');
 
         // Destruir después de un tiempo
         this.scene.time.delayedCall(2000, () => {
@@ -389,7 +387,6 @@ class Goomba extends Phaser.GameObjects.Sprite
             this.numTouching.left = 0;
             this.numTouching.right = 0;
             this.numTouching.bottom = 0;
-            this.numTouching.up = 0;
         },this);
 
         this.scene.matter.world.on('collisionactive', (event) => {
@@ -413,17 +410,12 @@ class Goomba extends Phaser.GameObjects.Sprite
                 {
                     this.numTouching.right += 1;
                 }
-                if ((bodyA === this.sensors.up && bodyB.isStatic) || (bodyB === this.sensors.up && bodyA.isStatic))
-                {
-                    this.numTouching.right += 1;
-                }
             };
         });
         this.scene.matter.world.on('afterupdate', function (event) {
             this.blocked.right = this.numTouching.right > 0 ? true : false;
             this.blocked.left = this.numTouching.left > 0 ? true : false;
             this.blocked.bottom = this.numTouching.bottom > 0 ? true : false;
-            this.blocked.up = this.numTouching.up > 0 ? true : false;
         },this);
 
         // Destruir si se sale por la izquierda de la cámara

@@ -334,6 +334,7 @@ class Mario extends Phaser.GameObjects.Sprite
     //Daña al jugador
     hurt() {
         this.isHurt = true;
+        this.body.collisionFilter.mask = 1;
 
         // Cambiar a animación idle cuando se detiene
         this.play('mario_hurt', true);
@@ -358,7 +359,7 @@ class Mario extends Phaser.GameObjects.Sprite
         this.isInvulnerable = true;
 
         // Empujar a Mario hacia la izquierda
-        const pushSpeed = Phaser.Math.Clamp(20, -45, 45); // Velocidad alta para el empuje
+        const pushSpeed = Phaser.Math.Clamp(15, -40, 40); // Velocidad alta para el empuje
         this.setVelocityX(pushSpeed * pushDirection);
 
         // Actualizar el cuerpo físico después del cambio de posición
