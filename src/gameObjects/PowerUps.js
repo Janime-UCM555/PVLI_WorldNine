@@ -10,7 +10,7 @@ export const POWERUP_TYPES = {
 const STAR_DURATION = 8000; // ms
 const POWERUP_SPEED = 70;  // Velocidad horizontal básica de los Power-Ups
 
-export class PowerUp extends Phaser.Physics.Matter.Sprite {
+export class PowerUp extends Phaser.GameObjects.Sprite {
   /**
    * @param {Phaser.Scene} scene
    * @param {number} x
@@ -20,7 +20,7 @@ export class PowerUp extends Phaser.Physics.Matter.Sprite {
    * @param {string|number} frame - frame inicial opcional
    */
   constructor(scene, x, y, type, textureKey, frame) {
-    super(scene.matter.world, x, y, textureKey, frame);
+    super(scene, x, y, textureKey, frame);
     
     this.scene = scene;
     this.type = type;
@@ -55,11 +55,11 @@ export class PowerUp extends Phaser.Physics.Matter.Sprite {
     const w = this.width;
     const h = this.height;
     const M = Phaser.Physics.Matter.Matter;
-    this.playerBody = M.Bodies.rectangle(sx,sy, w * 0.75, h, { chamfer: { radius: 10 } });
+    this.playerBody = M.Bodies.rectangle(sx,sy, w, h, { chamfer: { radius: 10 } });
     this.sensors = {
         bottom: M.Bodies.rectangle(sx, h, sx, 5, { isSensor: true }),
-        left: M.Bodies.rectangle(sx-w*0.45, sy, 5, h*0.25, { isSensor: true }),
-        right: M.Bodies.rectangle(sx+w*0.45, sy, 5, h*0.25, { isSensor: true }),
+        left: M.Bodies.rectangle(sx-w, sy, 5, h/2, { isSensor: true }),
+        right: M.Bodies.rectangle(sx+w, sy, 5, h/2, { isSensor: true }),
     };
     const compoundBody = M.Body.create({
     parts: [this.playerBody,this.sensors.bottom, this.sensors.left, this.sensors.right/*, this.sensors.up*/],
@@ -67,15 +67,19 @@ export class PowerUp extends Phaser.Physics.Matter.Sprite {
     frictionAir: 0,
     restitution: 0.05 // El jugador no se pega a paredes
     });
-    M.Body.setPosition(compoundBody, { x, y });
     this.setExistingBody(compoundBody);
+    // El cuerpo a la posición inicial
+    M.Body.setPosition(compoundBody, { x, y });
+
+    // Asociamos el cuerpo al sprite
     this.setPosition(x, y); // sincronizar la posición del sprite
+    this.setFixedRotation();
 
     // Movimiento básico (rebote ligero y desplazamiento)
     this.setBounce(0.1, 0.2);
     this.setVelocityX(POWERUP_SPEED);
-    this.setFixedRotation();
 
+    
     this.scene.matter.world.on('beforeupdate', function (event) {
       this.numTouching.left = 0;
       this.numTouching.right = 0;
@@ -164,7 +168,7 @@ export class PowerUp extends Phaser.Physics.Matter.Sprite {
   /** Update simple para rebotar en paredes y moverse. */
   preUpdate(time, delta) {
     super.preUpdate(time, delta);
-
+    // console.log(this.blocked.left);
     if (this.blocked.left) this.setVelocityX(Math.abs(this.body.velocity.x));
     else if (this.blocked.right) this.setVelocityX(-Math.abs(this.body.velocity.x));
   }

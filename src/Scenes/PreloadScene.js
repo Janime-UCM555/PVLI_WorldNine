@@ -41,10 +41,6 @@ class PreloadScene extends Phaser.Scene {
             frameHeight: 30
         });
         this.load.image('GombRome_Stomp', 'GameSprites/Characters/Enemigos/Goomba/GombRome_Stomp.png');
-        this.load.spritesheet('GombRome_Walk', 'GameSprites/Characters/Enemigos/Goomba/GombRome_Walk.png', {
-            frameWidth: 30,
-            frameHeight: 30
-        });
 
         // Koopa
         this.load.image('Koopa_idle_R', 'GameSprites/Characters/Enemigos/Koopa/Koopa_idle_R.png');

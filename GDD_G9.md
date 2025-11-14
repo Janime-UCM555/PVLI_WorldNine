@@ -6,7 +6,7 @@
 
                         Ninetendo
 
-                         Tag line
+         Viaja a través de las fronteras de la mitología
 
                   Frontiers / Plataformero
 

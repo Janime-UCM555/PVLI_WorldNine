@@ -15,7 +15,7 @@ class Koopa extends Phaser.GameObjects.Sprite
 
         // Configuración de física
         this.blocked= {
-            bottom: false,
+            bottom: true,
         },
         this.numTouching= {
                 bottom: 0,
@@ -25,7 +25,7 @@ class Koopa extends Phaser.GameObjects.Sprite
         const w = this.width;
         const h = this.height/2;
         const M = Phaser.Physics.Matter.Matter;
-        this.enemyBody = M.Bodies.rectangle(sx,sy, w * 0.75, h,1);
+        this.enemyBody = M.Bodies.rectangle(sx,sy*1.5, w * 0.75, h,1);
         this.sensors = {
             bottom: Phaser.Physics.Matter.Matter.Bodies.rectangle(sx, h, sx, 5, { isSensor: true }),
         };
@@ -363,20 +363,11 @@ class Koopa extends Phaser.GameObjects.Sprite
             this.numTouching.bottom = 0;
         },this);
 
-        this.scene.matter.world.on('collisionactive', (event) => {
-            for (let i = 0; i < event.pairs.length; i++)            
+        this.scene.matter.world.on('collisionactive', (event, bodyA, bodyB) => {
+            if (bodyA === this.sensors.bottom || bodyB === this.sensors.bottom)
             {
-                const bodyA = event.pairs[i].bodyA;
-                const bodyB = event.pairs[i].bodyB;
-                if (bodyA === this.enemyBody || bodyB === this.enemyBody)
-                {
-                    continue;
-                }
-                if (bodyA === this.sensors.bottom || bodyB === this.sensors.bottom)
-                {
-                    this.numTouching.bottom += 1;
-                }
-            };
+                this.numTouching.bottom += 1;
+            }
         });
         this.scene.matter.world.on('afterupdate', function (event) {
             this.blocked.bottom = this.numTouching.bottom > 0 ? true : false;

@@ -358,11 +358,11 @@ class Mario extends Phaser.GameObjects.Sprite
         this.isInvulnerable = true;
 
         // Empujar a Mario hacia la izquierda
-        const pushSpeed = Phaser.Math.Clamp(500, -650, 650); // Velocidad alta para el empuje
+        const pushSpeed = Phaser.Math.Clamp(20, -45, 45); // Velocidad alta para el empuje
         this.setVelocityX(pushSpeed * pushDirection);
 
         // Actualizar el cuerpo físico después del cambio de posición
-        this.body.updateFromGameObject();
+        // this.body.updateFromGameObject();
     
         // Restaurar hitbox original si existe
         if (this.baseBody && this.body) {

@@ -14,23 +14,33 @@ class Goomba extends Phaser.GameObjects.Sprite
         this.shouldBeDestroyed = false; // Control de destrucción
 
         // Configuración de física
+        //Sensores
         this.blocked= {
+            left: false,
+            right: false,
             bottom: false,
+            up: false
         },
         this.numTouching= {
+                left: 0,
+                right: 0,
                 bottom: 0,
-        };     
+                up:0
+        }; 
         const sx = this.width/2;
         const sy = this.height/2;
         const w = this.width;
         const h = this.height;
         const M = Phaser.Physics.Matter.Matter;
-        this.enemyBody = M.Bodies.rectangle(sx,sy, w * 0.75, h,1);
+        this.enemyBody = M.Bodies.rectangle(sx,sy, w, h, { chamfer: { radius: 10 } });
         this.sensors = {
-            bottom: Phaser.Physics.Matter.Matter.Bodies.rectangle(sx, h, sx, 5, { isSensor: true }),
+            bottom: M.Bodies.rectangle(sx, h, sx, 5, { isSensor: true }),
+            left: M.Bodies.rectangle(sx-w*0.45, sy, 5, h*0.25, { isSensor: true }),
+            right: M.Bodies.rectangle(sx+w*0.45, sy, 5, h*0.25, { isSensor: true }),
+            up: M.Bodies.rectangle(sx, -h/sy, sx, 5, { isSensor: true })
         };
         const compoundBody = M.Body.create({
-        parts: [this.enemyBody,this.sensors.bottom],
+        parts: [this.enemyBody,this.sensors.bottom, this.sensors.left, this.sensors.right/*, this.sensors.up*/],
         friction: 0,
         frictionAir: 0,
         restitution: 0.05 // El jugador no se pega a paredes
@@ -86,7 +96,6 @@ class Goomba extends Phaser.GameObjects.Sprite
 
         const isVisible = this.checkVisibility();
         this.currentlyVisible = isVisible;
-        
         if (this.isAlive && !this.shouldBeDestroyed) {
             if (isVisible) {
                 // Aplicar movimiento en la dirección actual
@@ -97,10 +106,10 @@ class Goomba extends Phaser.GameObjects.Sprite
                     this.setVelocityX(targetVelocity);
                 }
             
-                if (!this.anims.isPlaying || (this.isRome && this.anims.currentAnim.key !== 'goombarome_walk')) {
-                    this.play('goombarome_walk');
-                } else if (!this.anims.isPlaying || (!this.isRome && this.anims.currentAnim.key !== 'goomba_walk')) {
-                    this.play('goomba_walk');
+                if (!this.anims.isPlaying || (this.isRome && this.anims.currentAnim.key !== 'gombrome_walk')) {
+                    this.play('gombrome_walk');
+                } else if (!this.anims.isPlaying || (!this.isRome && this.anims.currentAnim.key !== 'Gomb_Walk')) {
+                    this.play('Gomb_Walk');
                 }
             } else {
                 // Detenerse completamente si no es visible
@@ -134,11 +143,10 @@ class Goomba extends Phaser.GameObjects.Sprite
 
         // Verificar si es una colisión lateral (no desde arriba/abajo)
         const isLateralCollision = 
-            (this.body.blocked.right && this.direction === 1) ||
-            (this.body.blocked.left && this.direction === -1) ||
-            (this.body.touching.right && this.direction === 1) ||
-            (this.body.touching.left && this.direction === -1);
-
+            (this.blocked.right && this.direction === 1) ||
+            (this.blocked.left && this.direction === -1) ||
+            (this.blocked.right && this.direction === 1) ||
+            (this.blocked.left && this.direction === -1);
         if (isLateralCollision) {
             // Pequeño retroceso para evitar que se peguen
             const pushBack = 5;
@@ -148,7 +156,7 @@ class Goomba extends Phaser.GameObjects.Sprite
                 this.x += pushBack;
             }
     
-            this.body.updateFromGameObject();
+            // this.body.updateFromGameObject();
     
             // Cambiar dirección
             this.changeDirection();
@@ -186,8 +194,8 @@ class Goomba extends Phaser.GameObjects.Sprite
         }
 
         // Actualizar cuerpos físicos
-        this.body.updateFromGameObject();
-        otherEnemy.body.updateFromGameObject();
+        // this.body.updateFromGameObject();
+        // otherEnemy.body.updateFromGameObject();
 
         // Ambos cambian de dirección
         this.changeDirection();
@@ -206,7 +214,8 @@ class Goomba extends Phaser.GameObjects.Sprite
 
 
         // Verificar si Mario está cayendo y golpea desde arriba
-        if (player.body.velocity.y > 0 && player.blocked.bottom < this.body.top + 15) {
+        console.log(this.body.bounds.max.y);
+        if (player.body.velocity.y > 0 && player.blocked.bottom && player.getCenter().y > this.sy) {
             // Hacer a Mario invulnerable temporalmente
             player.isInvulnerable = true;
 
@@ -214,7 +223,7 @@ class Goomba extends Phaser.GameObjects.Sprite
             this.stomp();
         
             // Pequeño rebote para Mario
-            player.body.setVelocityY(-275);
+            player.setVelocityY(-2.75);
 
             // Quitar invulnerabilidad temporal a Mario
             this.scene.time.delayedCall(150, () => {
@@ -252,6 +261,7 @@ class Goomba extends Phaser.GameObjects.Sprite
 
         this.isAlive = false;
         this.setVelocity(0, 0);
+        this.body.collisionFilter.mask = 0;
         // this.body.checkCollision.none = true;
 
         if (this.anims.isPlaying) {
@@ -289,32 +299,57 @@ class Goomba extends Phaser.GameObjects.Sprite
             { x: futureX + (this.direction * 5), y: futureY } // Punto futuro un poco más adelante
         ];
 
+        // const rayHitsLabel = (label)=>
+        // {
+        //     for (const point of checkPoints)
+        //     {
+        //         const collisions = Phaser.Physics.Matter.Matter.Query.ray(
+        //         this.scene.matter.world.localWorld.bodies,
+        //         checkPoints,
+        //         checkPoints
+        //         );
+                
+        //         if (collisions.some(hit => hit.body.label === label)) {
+        //             return true;
+        //         }
+        //     }
+        //     return false;
+        // }
+
         // Verificar en groundLayer
-        if (this.scene.groundLayer) {
-            for (const point of checkPoints) {
-                const tile = this.scene.groundLayer.getTileAtWorldXY(point.x, point.y);
-                if (tile && tile.collides) {
-                    hasGroundAhead = true;
-                    break;
-                }
-            }
-        }
+        // if (this.scene.groundLayer) {
+        //     for (const point of checkPoints) {
+        //         const tile = this.scene.groundLayer.getTileAtWorldXY(point.x, point.y);
+        //         if (tile && tile.collides) {
+        //             hasGroundAhead = true;
+        //             break;
+        //         }
+        //     }
+        // }
     
-        // Si no ha encontrado en groundLayer, verificar en blockLayer
-        if (!hasGroundAhead && this.scene.blockLayer) {
-            for (const point of checkPoints) {
-                const tile = this.scene.blockLayer.getTileAtWorldXY(point.x, point.y);
-                if (tile && tile.collides) {
-                    hasGroundAhead = true;
-                    break;
-                }
-            }
-        }
+        // // Si no ha encontrado en groundLayer, verificar en blockLayer
+        // if (!hasGroundAhead && this.scene.blockLayer) {
+        //     for (const point of checkPoints) {
+        //         const tile = this.scene.blockLayer.getTileAtWorldXY(point.x, point.y);
+        //         if (tile && tile.collides) {
+        //             hasGroundAhead = true;
+        //             break;
+        //         }
+        //     }
+        // }
+        // if(rayHitsLabel('ground'))
+        // {
+        //     hasGroundAhead=true;
+        // }
+        // if(!hasGroundAhead && rayHitsLabel('block'))
+        // {
+        //     hasGroundAhead=true;
+        // }
 
         // Si no hay suelo adelante, cambiar dirección
-        if (!hasGroundAhead) {
-            this.changeDirection();
-        }
+        // if (!hasGroundAhead) {
+        //     this.changeDirection();
+        // }
     }
 
     // Destrucción segura
@@ -351,7 +386,10 @@ class Goomba extends Phaser.GameObjects.Sprite
         const camera = this.scene.cameras.main;
 
         this.scene.matter.world.on('beforeupdate', function (event) {
-                this.numTouching.bottom = 0;
+            this.numTouching.left = 0;
+            this.numTouching.right = 0;
+            this.numTouching.bottom = 0;
+            this.numTouching.up = 0;
         },this);
 
         this.scene.matter.world.on('collisionactive', (event) => {
@@ -359,7 +397,7 @@ class Goomba extends Phaser.GameObjects.Sprite
             {
                 const bodyA = event.pairs[i].bodyA;
                 const bodyB = event.pairs[i].bodyB;
-                if (bodyA === this.playerBody || bodyB === this.playerBody)
+                if (bodyA === this.enemyBody || bodyB === this.enemyBody)
                 {
                     continue;
                 }
@@ -367,10 +405,25 @@ class Goomba extends Phaser.GameObjects.Sprite
                 {
                     this.numTouching.bottom += 1;
                 }
+                if ((bodyA === this.sensors.left && bodyB.isStatic) || (bodyB === this.sensors.left && bodyA.isStatic))
+                {
+                    this.numTouching.left += 1;
+                }
+                if ((bodyA === this.sensors.right && bodyB.isStatic) || (bodyB === this.sensors.right && bodyA.isStatic))
+                {
+                    this.numTouching.right += 1;
+                }
+                if ((bodyA === this.sensors.up && bodyB.isStatic) || (bodyB === this.sensors.up && bodyA.isStatic))
+                {
+                    this.numTouching.right += 1;
+                }
             };
         });
         this.scene.matter.world.on('afterupdate', function (event) {
+            this.blocked.right = this.numTouching.right > 0 ? true : false;
+            this.blocked.left = this.numTouching.left > 0 ? true : false;
             this.blocked.bottom = this.numTouching.bottom > 0 ? true : false;
+            this.blocked.up = this.numTouching.up > 0 ? true : false;
         },this);
 
         // Destruir si se sale por la izquierda de la cámara
