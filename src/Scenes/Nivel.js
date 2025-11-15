@@ -30,6 +30,9 @@ class Nivel_T extends Phaser.Scene
         //         return error;
         //     });
         // }
+
+        // Crear animaciones
+        this.createAnimations();
     }
 
     create(){
@@ -65,8 +68,7 @@ class Nivel_T extends Phaser.Scene
             }
         });
 
-        // Crear animaciones
-        this.createAnimations();
+
 
         this.jugador = new Mario(this, 25, 625, 'mario_run', 3.5, -3.75, true);
 
@@ -163,7 +165,7 @@ class Nivel_T extends Phaser.Scene
                 goomba.direction = 1;
                 this.goombas.add(goomba);
             }
-            /*else if (enemie.name === 'Koopa')
+            else if (enemie.name === 'Koopa')
             {
                 const koopa = new Koopa(
                     this,
@@ -175,7 +177,7 @@ class Nivel_T extends Phaser.Scene
                 );
                 koopa.direction = -1;
                 this.koopas.add(koopa);
-            }*/
+            }
         }
 
         // Grupo de Goombas - Añadidos manualmente
@@ -197,64 +199,11 @@ class Nivel_T extends Phaser.Scene
         //     this.goombas.add(goomba);
         // }
 
-        // // Configurar las propiedades de física para Goombas
-        // this.goombas.getChildren().forEach(goomba => {
-        //     if (goomba.body) {
-        //         // Detección de colisiones
-        //         // goomba.setCollideWorldBounds(false); // No permitir colisión con bordes
-        //         goomba.onWorldBounds = true; // Detección de límites del mundo para destrucción
-        //     }
-        // });
-        // this.koopas.getChildren().forEach(koopa => {
-        //     if (koopa.body) {
-        //         // Detección de colisiones
-        //         // koopa.setCollideWorldBounds(false); // No permitir colisión con bordes
-        //         koopa.onWorldBounds = true; // Detección de límites del mundo para destrucción
-        //     }
-        // });
-
-
         this.powerups = this.add.group();
 
         // // this.spawnPowerUp(200, 600, POWERUP_TYPES.MUSHROOM, 'mushroom');
 
         this.setupCollisions();
-
-        // // // Configurar colisiones
-        if (this.groundLayer) {
-            // Establecer las colisiones
-            // this.groundLayer.setCollisionByExclusion([-1]);
-        
-            // Colisión jugador con suelo
-            // this.matter.world.on('collisionstart',()=>{this.jugador, this.groundLayer});
-            
-            // Colisión Goombas con suelo con callback para cambiar dirección
-            // this.matter.world.on('collisionstart',(bodyA, bodyB)=>{
-            //     if(bodyA.gameObject instanceof Goomba && bodyB.gameObject == this.groundLayer)
-            //     {
-            //         // bodyA.gameObject.handleWallCollision(bodyB.gameObject);
-            //     }
-            //     // this.goombas, this.groundLayer, (goomba, wall) => goomba.handleWallCollision(wall), null, this
-            // });
-
-            // Colisión Koopas con suelo con callback para cambiar dirección
-            // this.matter.world.on('collisionstart',()=>{this.koopas, this.groundLayer, (koopa, wall) => koopa.handleWallCollision(wall), null, this});
-        }
-        if (this.blocks) {
-            // Colisión jugador con bloques
-            // this.matter.world.on('collisionstart',()=>{this.jugador, this.blocks});
-            
-            // // Colisión Goombas con bloques con callback para cambiar dirección
-            // this.matter.world.on('collisionstart',()=>{this.goombas, this.blocks, (goomba, wall) => goomba.handleWallCollision(wall), null, this});
-
-            // // Colisión Koopas con bloques con callback para cambiar dirección
-            // this.matter.world.on('collisionstart',()=>{this.koopas, this.blocks, (koopa, wall) => koopa.handleWallCollision(wall), null, this});
-        }
-        if (this.powerups)
-        {
-            // Colisión jugador con powerUps
-            // this.matter.world.on('collisionstart',()=>{this.jugador, this.powerups});
-        }
 
         // Configurar mejor los límites del mundo
         this.matter.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
@@ -378,8 +327,7 @@ class Nivel_T extends Phaser.Scene
             }
             if(bodyB.gameObject instanceof Goomba && bodyA.gameObject instanceof Goomba || 
                 bodyB.gameObject instanceof Koopa && bodyA.gameObject instanceof Goomba ||
-                bodyB.gameObject instanceof Koopa && bodyA.gameObject instanceof Koopa
-            )
+                bodyB.gameObject instanceof Koopa && bodyA.gameObject instanceof Koopa)
             {
                 bodyA.gameObject.handleEnemyCollision(bodyB.gameObject);
             }
@@ -387,6 +335,10 @@ class Nivel_T extends Phaser.Scene
             {
                 bodyB.gameObject.handlePlayerCollision(this.jugador);
             }
+            // if(bodyA.gameObject instanceof Goomba && bodyB.gameObject == this.groundLayer)
+            // {
+            //     bodyA.gameObject.handleWallCollision(bodyB.gameObject);
+            // }
             if(bodyA.gameObject == this.jugador && bodyB.gameObject && bodyB.gameObject._props) 
             {
                 if (!(this.jugador.body.velocity.y < 0 && this.jugador.getCenter().y > bodyB.bounds.max.y)){
@@ -396,98 +348,7 @@ class Nivel_T extends Phaser.Scene
                 const target = aim || bodyB.gameObject; // prioriza spawn si hay uno “casi”
                 this.blockHit(this.jugador, target);
             }
-        //     this.jugador,
-        //     this.barraFin,
-        //     this.ganasPartida,
-        //     null,
-        // this
         })
-
-        // Colisión con Goombas
-        // this.matter.world.on('collisionstart', (event) => {
-        //     // for (let i = 0; i < event.pairs.length; i++)            
-        //     // {
-        //     //     const bodyA = event.pairs[i].bodyA;
-        //     //     const bodyB = event.pairs[i].bodyB;
-        //     //     if (bodyA === this.jugador || bodyB === this.goombas)
-        //     //     {
-        //     //         (player, goomba) => goomba.handlePlayerCollision(player);
-        //     //     }
-        //     // }
-        //     this.jugador,
-        //     this.goombas,
-        //     (player, goomba) => goomba.handlePlayerCollision(player),
-        //     null,
-        //     this
-        // })
-
-        // Colisión con Koopas
-        // this.matter.world.on('collisionstart', (event) => {
-        //     // for (let i = 0; i < event.pairs.length; i++)            
-        //     // {
-        //     //     const bodyA = event.pairs[i].bodyA;
-        //     //     const bodyB = event.pairs[i].bodyB;
-        //     //     if (bodyA === this.jugador || bodyB === this.koopas)
-        //     //     {
-        //     //         (player, koopa) => koopa.handlePlayerCollision(player);
-        //     //     }
-        //     // }
-        //     this.jugador,
-        //     this.koopas,
-        //     (player, koopa) => koopa.handlePlayerCollision(player),
-        //     null,
-        //     this
-        // })
-
-
-        // Colisión entre Goombas
-        // this.matter.world.on('collisionstart',(event)=>{
-        //     this.goombas,
-        //     this.goombas,
-        //     (goomba1, goomba2) => goomba1.handleEnemyCollision(goomba2),
-        //     null,
-        //     this
-        // });
-
-        // Colisión entre Koopas
-        // this.matter.world.on('collisionstart',(event)=>{
-        //     this.koopas,
-        //     this.koopas,
-        //     (koopa1, koopa2) => koopa1.handleEnemyCollision(koopa2),
-        //     null,
-        //     this
-        // });
-
-        // Colisión entre Goombas y Koopas
-        // this.matter.world.on('collisionstart',(event)=>
-        // {
-        //     this.goombas,
-        //     this.koopas,
-        //     (goomba, koopa) => goomba.handleEnemyCollision(koopa),
-        //     null,
-        //     this
-        // });
-
-        // Colisiones powerups con suelo y bloques       
-        //Colisión con powerups
-        // this.matter.world.on('collisionstart',(event)=>
-        // {
-        //     this.powerups, this.groundLayer
-        // });
-
-        // this.matter.world.on('collisionstart',(event)=>
-        // {
-        //     this.powerups, this.blocks
-        // });
-
-        // this.matter.world.on('collisionstart',(event)=>
-        // {  
-        //     this.jugador,
-        //     this.powerups,
-        //     (player, pu) => pu.collect(player),
-        //     null,
-        //     this
-        // });
     }
 
     findSpawnBlockAbovePlayer(player, toleranciaX = 16, toleranciaY = 10) {
@@ -1009,7 +870,7 @@ class Nivel_T extends Phaser.Scene
         if (this.jugador.x < cameraViewWidth / 4) {
             targetX = -200;
         } else {
-            targetX = this.jugador.x - cameraViewWidth / 1.5;
+            targetX = this.jugador.x - cameraViewWidth / 5;
         }
 
         // Seguimiento vertical

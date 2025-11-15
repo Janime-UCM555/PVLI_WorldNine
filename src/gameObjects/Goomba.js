@@ -20,7 +20,7 @@ class Goomba extends Phaser.GameObjects.Sprite
             right: false,
             bottom: false,
             up: false
-        },
+        };
         this.numTouching= {
                 left: 0,
                 right: 0,
@@ -45,7 +45,6 @@ class Goomba extends Phaser.GameObjects.Sprite
         restitution: 0.05 // El jugador no se pega a paredes
         });
         this.setExistingBody(compoundBody);
-        this.setFixedRotation();
         if (this.body) {
             // this.body.setCollideWorldBounds(false); // Desactivar colisión con bordes del mundo
 
@@ -70,7 +69,6 @@ class Goomba extends Phaser.GameObjects.Sprite
             this.setFixedRotation();
             
             this.stompSound = scene.sound.add('aplastar');
-
         }
     }
 
@@ -91,10 +89,11 @@ class Goomba extends Phaser.GameObjects.Sprite
     // Actualizar movimiento basado en visibilidad y dirección
     updateMovement() {
         // Si está marcado para destrucción, no actualizar movimiento
-        if (this.shouldBeDestroyed) return;
+        if (this.shouldBeDestroyed || !this.isAlive) return;
 
         const isVisible = this.checkVisibility();
         this.currentlyVisible = isVisible;
+        
         if (this.isAlive && !this.shouldBeDestroyed) {
             if (isVisible) {
                 // Aplicar movimiento en la dirección actual
@@ -212,7 +211,8 @@ class Goomba extends Phaser.GameObjects.Sprite
         }
 
         // Verificar si Mario está cayendo y golpea desde arriba
-        if (player.body.velocity.y>1) {
+        console.log(player.body.velocity.y);
+        if (player.body.velocity.y>0.7) {
             // Hacer a Mario invulnerable temporalmente
             player.isInvulnerable = true;
 
@@ -283,12 +283,11 @@ class Goomba extends Phaser.GameObjects.Sprite
     // Detectar bordes de plataformas
     checkForLedges() {
         if (!this.body || !this.blocked.bottom) return;
-    
-        // Raycast para detectar si hay suelo adelante
+
         const checkDistance = 5;
         const yOffset = 5; // Pequeño margen debajo de los pies
         const futureX = this.x + (this.direction * (this.width / 2 + checkDistance)); // Calcular posición X considerando la dirección y el ancho del sprite
-        const futureY = this.body.bottom + yOffset; // Calcular posición Y (justo debajo de los pies del Goomba)
+        const futureY = this.body.bottom + yOffset;  // Calcular posición Y (justo debajo de los pies del Goomba)
 
         let hasGroundAhead = false;
 
@@ -298,59 +297,52 @@ class Goomba extends Phaser.GameObjects.Sprite
             { x: futureX + (this.direction * 5), y: futureY } // Punto futuro un poco más adelante
         ];
 
-        // const rayHitsLabel = (label)=>
-        // {
-        //     for (const point of checkPoints)
-        //     {
-        //         const collisions = Phaser.Physics.Matter.Matter.Query.ray(
-        //         this.scene.matter.world.localWorld.bodies,
-        //         checkPoints,
-        //         checkPoints
-        //         );
-                
-        //         if (collisions.some(hit => hit.body.label === label)) {
-        //             return true;
-        //         }
-        //     }
-        //     return false;
-        // }
+        const rayHitsLabel = (label) => {
+            for (const point of checkPoints) {
+                const collisions = Phaser.Physics.Matter.Matter.Query.ray(
+                    this.scene.matter.world.localWorld.bodies,
+                    { x: point.x, y: point.y },
+                    { x: point.x + this.direction * 10, y: point.y }
+                );
+
+                if (collisions.some(hit => hit.body.label === label)) {
+                    return true;
+                }
+            }
+            return false;
+        };
 
         // Verificar en groundLayer
-        // if (this.scene.groundLayer) {
-        //     for (const point of checkPoints) {
-        //         const tile = this.scene.groundLayer.getTileAtWorldXY(point.x, point.y);
-        //         if (tile && tile.collides) {
-        //             hasGroundAhead = true;
-        //             break;
-        //         }
-        //     }
-        // }
-    
-        // // Si no ha encontrado en groundLayer, verificar en blockLayer
-        // if (!hasGroundAhead && this.scene.blockLayer) {
-        //     for (const point of checkPoints) {
-        //         const tile = this.scene.blockLayer.getTileAtWorldXY(point.x, point.y);
-        //         if (tile && tile.collides) {
-        //             hasGroundAhead = true;
-        //             break;
-        //         }
-        //     }
-        // }
-        // if(rayHitsLabel('ground'))
-        // {
-        //     hasGroundAhead=true;
-        // }
-        // if(!hasGroundAhead && rayHitsLabel('block'))
-        // {
-        //     hasGroundAhead=true;
-        // }
+        if (this.scene.groundLayer) {
+            for (const point of checkPoints) {
+                const tile = this.scene.groundLayer.getTileAtWorldXY(point.x, point.y);
+                if (tile && tile.collides) {
+                    hasGroundAhead = true;
+                    break;
+                }
+            }
+        }
+
+        // Si no ha encontrado en groundLayer, verificar en blockLayer
+        if (!hasGroundAhead && this.scene.blockLayer) {
+            for (const point of checkPoints) {
+                const tile = this.scene.blockLayer.getTileAtWorldXY(point.x, point.y);
+                if (tile && tile.collides) {
+                    hasGroundAhead = true;
+                    break;
+                }
+            }
+        }
+
+        if (rayHitsLabel('ground') || rayHitsLabel('block')) {
+            hasGroundAhead = true;
+        }
 
         // Si no hay suelo adelante, cambiar dirección
-        // if (!hasGroundAhead) {
-        //     this.changeDirection();
-        // }
+        if (!hasGroundAhead) {
+            this.changeDirection();
+        }
     }
-
     // Destrucción segura
     safeDestroy() {
         // Si ya está marcado para destrucción, no hacer nada
@@ -377,47 +369,38 @@ class Goomba extends Phaser.GameObjects.Sprite
         // Destruir el objeto
         this.destroy();
     }
+    
+    resetTouching() {
+        this.numTouching.left = 0;
+        this.numTouching.right = 0;
+        this.numTouching.bottom = 0;
+    }
+
+    handleCollisions(bodyA, bodyB) 
+    {
+        if (bodyA === this.sensors.bottom || bodyB === this.sensors.bottom) {
+            this.numTouching.bottom += 1;
+        }
+        if ((bodyA === this.sensors.left && bodyB.isStatic) || (bodyB === this.sensors.left && bodyA.isStatic)) {
+            this.numTouching.left += 1;
+        }
+        if ((bodyA === this.sensors.right && bodyB.isStatic) || (bodyB === this.sensors.right && bodyA.isStatic)) {
+            this.numTouching.right += 1;
+        }
+    }
+    
+    updateBlocked() 
+    {
+        this.blocked.right = this.numTouching.right > 0;
+        this.blocked.left = this.numTouching.left > 0;
+        this.blocked.bottom = this.numTouching.bottom > 0;
+    }
 
     update(time, delta) {
         // Salir inmediatamente si ya está marcado para destrucción
-        if (this.shouldBeDestroyed) return;
+        if (!this.isAlive || this.shouldBeDestroyed) return;
 
         const camera = this.scene.cameras.main;
-
-        this.scene.matter.world.on('beforeupdate', function (event) {
-            this.numTouching.left = 0;
-            this.numTouching.right = 0;
-            this.numTouching.bottom = 0;
-        },this);
-
-        this.scene.matter.world.on('collisionactive', (event) => {
-            for (let i = 0; i < event.pairs.length; i++)            
-            {
-                const bodyA = event.pairs[i].bodyA;
-                const bodyB = event.pairs[i].bodyB;
-                if (bodyA === this.enemyBody || bodyB === this.enemyBody)
-                {
-                    continue;
-                }
-                if (bodyA === this.sensors.bottom || bodyB === this.sensors.bottom)
-                {
-                    this.numTouching.bottom += 1;
-                }
-                if ((bodyA === this.sensors.left && bodyB.isStatic) || (bodyB === this.sensors.left && bodyA.isStatic))
-                {
-                    this.numTouching.left += 1;
-                }
-                if ((bodyA === this.sensors.right && bodyB.isStatic) || (bodyB === this.sensors.right && bodyA.isStatic))
-                {
-                    this.numTouching.right += 1;
-                }
-            };
-        });
-        this.scene.matter.world.on('afterupdate', function (event) {
-            this.blocked.right = this.numTouching.right > 0 ? true : false;
-            this.blocked.left = this.numTouching.left > 0 ? true : false;
-            this.blocked.bottom = this.numTouching.bottom > 0 ? true : false;
-        },this);
 
         // Destruir si se sale por la izquierda de la cámara
         if (this.x < camera.scrollX - 15) {
@@ -431,8 +414,15 @@ class Goomba extends Phaser.GameObjects.Sprite
             return; // Salir inmediatamente después de marcar para destrucción
         }
 
+        if (!this.listenersAdded) {
+            this.scene.matter.world.on('beforeupdate', this.resetTouching, this);
+            this.scene.matter.world.on('collisionactive', this.handleCollisions, this);
+            this.scene.matter.world.on('afterupdate', this.updateBlocked, this);
+            this.listenersAdded = true;
+        }
+
         // Verificar bordes
-        if (this.isAlive && !this.shouldBeDestroyed && this.blocked.bottom) {
+        if (this.isAlive && !this.shouldBeDestroyed && !this.blocked.bottom) {
             this.checkForLedges();
         }
 
