@@ -513,7 +513,6 @@ class Nivel_T extends Phaser.Scene
         // .setText("60")
         .setFontSize(fontSize + 'px')
         .setScrollFactor(0)
-        .setShadow(5, 5, 'rgba(0,0,0,0.5)', 5);
 
 
 
@@ -869,8 +868,13 @@ class Nivel_T extends Phaser.Scene
     
         if (this.jugador.x < cameraViewWidth / 4) {
             targetX = -200;
-        } else {
-            targetX = this.jugador.x - cameraViewWidth / 5;
+        } else if(this.jugador.body.velocity.x < 1)
+        {
+            targetX = this.jugador.x - cameraViewWidth / 1.5;
+        }
+        else
+        {
+            targetX = this.jugador.x - cameraViewWidth / 4;
         }
 
         // Seguimiento vertical

@@ -222,7 +222,8 @@ class Koopa extends Phaser.GameObjects.Sprite
         }
 
         // Verificar si Mario está cayendo y golpea desde arriba
-        if (player.body.velocity.y>1) {
+        console.log(player.body.velocity.y);
+        if (player.body.velocity.y>0.7) {
             // Hacer a Mario invulnerable temporalmente
             player.isInvulnerable = true;
 
