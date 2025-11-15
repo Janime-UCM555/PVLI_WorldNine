@@ -149,7 +149,7 @@ class Nivel_T extends Phaser.Scene
         this.goombas = this.add.group();
         this.koopas = this.add.group();
         for (const enemie of enemies)
-        {/*
+        {
             if (enemie.name === 'Goomba')
             {
                 const goomba = new Goomba(
@@ -163,7 +163,7 @@ class Nivel_T extends Phaser.Scene
                 goomba.direction = 1;
                 this.goombas.add(goomba);
             }
-            else */if (enemie.name === 'Koopa')
+            /*else if (enemie.name === 'Koopa')
             {
                 const koopa = new Koopa(
                     this,
@@ -174,8 +174,8 @@ class Nivel_T extends Phaser.Scene
                     true
                 );
                 koopa.direction = -1;
-                // this.koopas.add(koopa);
-            }
+                this.koopas.add(koopa);
+            }*/
         }
 
         // Grupo de Goombas - Añadidos manualmente
@@ -381,7 +381,7 @@ class Nivel_T extends Phaser.Scene
                 bodyB.gameObject instanceof Koopa && bodyA.gameObject instanceof Koopa
             )
             {
-                bodyA.handleEnemyCollision(bodyB.gameObject);
+                bodyA.gameObject.handleEnemyCollision(bodyB.gameObject);
             }
             if(bodyB.gameObject instanceof Koopa && bodyA.gameObject == this.jugador)
             {

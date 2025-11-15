@@ -222,9 +222,11 @@ class Koopa extends Phaser.GameObjects.Sprite
         }
 
         // Verificar si Mario está cayendo y golpea desde arriba
-        if (player.body.velocity.y > 0 && /*player.blocked.bottom &&*/ player.y > this.y/1.35) {
+        if (player.body.velocity.y>1) {
             // Hacer a Mario invulnerable temporalmente
             player.isInvulnerable = true;
+
+            player.isGrounded = true;
 
             // Mario aplasta al Goomba
             this.stomp();

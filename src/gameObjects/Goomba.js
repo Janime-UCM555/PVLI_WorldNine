@@ -211,13 +211,13 @@ class Goomba extends Phaser.GameObjects.Sprite
             return;
         }
 
-
         // Verificar si Mario está cayendo y golpea desde arriba
-        if (player.getBounds().bottom < this.getBounds().bottom) {
+        if (player.body.velocity.y>1) {
             // Hacer a Mario invulnerable temporalmente
             player.isInvulnerable = true;
 
             // Mario aplasta al Goomba
+            player.isGrounded = true;
             this.stomp();
         
             // Pequeño rebote para Mario
@@ -256,6 +256,7 @@ class Goomba extends Phaser.GameObjects.Sprite
         if (!this.isAlive || this.shouldBeDestroyed) return;
         
         this.stompSound.play();
+
 
         this.isAlive = false;
         this.setVelocity(0, 0);
