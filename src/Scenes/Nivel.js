@@ -3,6 +3,7 @@ import Mario from '../gameObjects/Mario.js';
 import Fin from '../gameObjects/BarraFin.js';
 import Goomba from '../gameObjects/Goomba.js';
 import Koopa from '../gameObjects/Koopa.js';
+import PiranhaPlant from '../gameObjects/PiranhaPlant.js';
 import { PowerUp, POWERUP_TYPES } from '../gameObjects/PowerUps.js';
 class Nivel_T extends Phaser.Scene
 {
@@ -15,6 +16,7 @@ class Nivel_T extends Phaser.Scene
     }
 
     preload(){
+                        console.log('=== INICIO ===');
         this.load.tilemapTiledJSON('map', 'MapaDeTiled/ElMapa.json');
         this.score=0;
         this.coinScore = 0;
@@ -46,10 +48,11 @@ class Nivel_T extends Phaser.Scene
         // Capa de suelo
         const bgLayer = this.map.createLayer('CapaFondo', tilesetBG, 0, 0);
         const decorationsLayer = this.map.createLayer('CapaDecoraciones', tileset, 0, 0);
-        this.groundLayer = this.map.createLayer('CapaSuelo', tileset, 0, 0);
         const blocks = this.map.getObjectLayer('Bloques').objects;
         const coins = this.map.getObjectLayer('Monedas').objects;
         const enemies = this.map.getObjectLayer('Enemigos').objects;
+        this.groundLayer = this.map.createLayer('CapaSuelo', tileset, 0, 0);
+        this.groundLayer.setDepth(5);
         const barraFinLayer = this.map.getObjectLayer('BarraFin').objects;
 
             
@@ -150,6 +153,7 @@ class Nivel_T extends Phaser.Scene
         }
         this.goombas = this.add.group();
         this.koopas = this.add.group();
+        this.piranhas = this.add.group();
         for (const enemie of enemies)
         {
             if (enemie.name === 'Goomba')
@@ -177,6 +181,19 @@ class Nivel_T extends Phaser.Scene
                 );
                 koopa.direction = -1;
                 this.koopas.add(koopa);
+            }
+            else if (enemie.name === 'Piranha')
+            {
+                console.log('PIRANYA');
+                const piranha = new PiranhaPlant(
+                    this,
+                    enemie.x + 33,
+                    enemie.y - 35, 
+                    'Piranha_plant',
+                    2000,
+                    2000
+                );
+                this.piranhas.add(piranha);
             }
         }
 
@@ -335,6 +352,10 @@ class Nivel_T extends Phaser.Scene
             {
                 bodyB.gameObject.handlePlayerCollision(this.jugador);
             }
+            if(bodyB.gameObject instanceof PiranhaPlant && bodyA.gameObject == this.jugador)
+            {
+                bodyB.gameObject.handlePlayerCollision(this.jugador);
+            }
             // if(bodyA.gameObject instanceof Goomba && bodyB.gameObject == this.groundLayer)
             // {
             //     bodyA.gameObject.handleWallCollision(bodyB.gameObject);
@@ -434,6 +455,13 @@ class Nivel_T extends Phaser.Scene
         this.koopas.getChildren().forEach(koopa => {
             if (koopa.safeDestroy && !koopa.shouldBeDestroyed) {
                 koopa.safeDestroy();
+            }
+        });
+
+        // Destruir todas las plantas piraña
+        this.piranhas.getChildren().forEach(piranha => {
+            if (piranha.safeDestroy && !piranha.shouldBeDestroyed) {
+                piranha.safeDestroy();
             }
         });
 
@@ -801,6 +829,12 @@ class Nivel_T extends Phaser.Scene
             if (this.koopas) {
                 this.koopas.getChildren().forEach(koopa => {
                     koopa.update(time, delta);
+                });
+            }
+            // Actualizar plantas piraña
+            if (this.piranhas) {
+                this.piranhas.getChildren().forEach(piranha => {
+                    piranha.update(time, delta);
                 });
             }
 

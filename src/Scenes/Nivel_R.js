@@ -3,6 +3,7 @@ import Mario from '../gameObjects/Mario.js';
 import Fin from '../gameObjects/BarraFin.js';
 import Goomba from '../gameObjects/Goomba.js';
 import Koopa from '../gameObjects/Koopa.js';
+import PiranhaPlant from '../gameObjects/PiranhaPlant.js';
 import { PowerUp, POWERUP_TYPES } from '../gameObjects/PowerUps.js';
 class Nivel_R extends Phaser.Scene
 {
@@ -129,6 +130,7 @@ class Nivel_R extends Phaser.Scene
         }
         this.goombas = this.physics.add.group();
         this.koopas = this.physics.add.group();
+        this.piranhas = this.add.group();
         for (const enemie of enemies)
         {
             if (enemie.name === 'Goomba')
@@ -146,6 +148,7 @@ class Nivel_R extends Phaser.Scene
             }
             else if (enemie.name === 'Koopa')
             {
+                console.log('KOOPA');
                 const koopa = new Koopa(
                     this,
                     enemie.x,
@@ -156,6 +159,19 @@ class Nivel_R extends Phaser.Scene
                 );
                 koopa.direction = -1;
                 this.koopas.add(koopa);
+            }//
+            else if (enemie.name === 'Piranha')
+            {
+                console.log('PIRANYA');
+                const piranha = new PiranhaPlant(
+                    this,
+                    enemie.x,
+                    enemie.y - 50, 
+                    'Piranha_plant',
+                    2000,
+                    2000
+                );
+                this.piranhas.add(piranha);
             }
         }
 
@@ -325,6 +341,18 @@ class Nivel_R extends Phaser.Scene
             frameRate: 8,
             repeat: -1
         });
+        this.anims.create({
+            key: 'Piranha_plant',
+            frames: this.anims.generateFrameNumbers('Piranha_plant', { start: 0, end: 0 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        // this.anims.create({
+        //     key: 'piranha_bite',
+        //     frames: this.anims.generateFrameNumbers('piranha_plant', { start: 0, end: 1 }),
+        //     frameRate: 4,
+        //     repeat: -1
+        // });
     }
     
     setupCollisions() {
@@ -363,6 +391,18 @@ class Nivel_R extends Phaser.Scene
             null,
             this
         );
+        // Colisión con plantas piraña
+        this.matter.world.on('collisionstart', (event) => {
+            event.pairs.forEach(pair => {
+                const { bodyA, bodyB } = pair;
+        
+                if (bodyB.gameObject instanceof PiranhaPlant && bodyA.gameObject === this.jugador) {
+                    bodyB.gameObject.handlePlayerCollision(this.jugador);
+                } else if (bodyA.gameObject instanceof PiranhaPlant && bodyB.gameObject === this.jugador) {
+                    bodyA.gameObject.handlePlayerCollision(this.jugador);
+                }
+            });
+        });
 
         // Colisión entre Goombas
         this.physics.add.collider(
@@ -494,6 +534,13 @@ class Nivel_R extends Phaser.Scene
         this.koopas.getChildren().forEach(koopa => {
             if (koopa.safeDestroy && !koopa.shouldBeDestroyed) {
                 koopa.safeDestroy();
+            }
+        });
+
+        // Destruir todas las plantas piraña
+        this.piranhas.getChildren().forEach(piranha => {
+            if (piranha.safeDestroy && !piranha.shouldBeDestroyed) {
+                piranha.safeDestroy();
             }
         });
 
@@ -850,6 +897,13 @@ class Nivel_R extends Phaser.Scene
             if (this.koopas) {
                 this.koopas.getChildren().forEach(koopa => {
                     koopa.update(time, delta);
+                });
+            }
+
+            // Actualizar plantas piraña
+            if (this.piranhas) {
+                this.piranhas.getChildren().forEach(piranha => {
+                    piranha.update(time, delta);
                 });
             }
 

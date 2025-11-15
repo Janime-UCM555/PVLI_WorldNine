@@ -55,6 +55,8 @@ class PreloadScene extends Phaser.Scene {
             frameHeight: 50
         });
 
+        this.load.image('Piranha_plant', 'GameSprites/Characters/Enemigos/PiranhaPlant/PiranhaPlant_Idle.png');
+
         // Mario
         this.load.spritesheet('mario_run', 'GameSprites/Characters/Mario/Mario_run.png', {
             frameWidth: 32,
