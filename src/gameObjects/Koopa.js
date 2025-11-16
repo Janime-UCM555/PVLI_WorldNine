@@ -228,6 +228,7 @@ class Koopa extends Phaser.GameObjects.Sprite
             player.isInvulnerable = true;
 
             // Mario aplasta al Koopa
+            player.canJump = true; 
             this.stomp();
         
             // Pequeño rebote para Mario
@@ -236,6 +237,7 @@ class Koopa extends Phaser.GameObjects.Sprite
             // Quitar invulnerabilidad temporal a Mario
             this.scene.time.delayedCall(150, () => {
                 player.isInvulnerable = false;
+                player.canJump=false;
             });
         } else if (this.isAlive && !player.isBeingPushed && !player.isInvulnerable) {
             // Colisión lateral

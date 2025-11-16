@@ -228,7 +228,7 @@ class Nivel_T extends Phaser.Scene
         //     this.transition('MainMenu'); // Llamar a la transición cuando se acaba el tiempo
         // });
 
-        this.ui = this.add.container(this.cameras.main.width/2, this.cameras.main.height/2);
+        this.ui = this.add.container(this.cameras.main.width/2, this.cameras.main.height/2).setDepth(10);
         // this.ui.add([this.buttonPrueba]);
         
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
@@ -251,8 +251,8 @@ class Nivel_T extends Phaser.Scene
 
         // Quitamos la colisión con los bordes del mapa
         this.matter.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels, 0, false, false, false, false);
-
         this.createText();  
+
     }
 
     createAnimations() {
@@ -330,17 +330,32 @@ class Nivel_T extends Phaser.Scene
     setupCollisions() {
         // Colisión con barra final
         this.matter.world.on('collisionstart', (event, bodyA, bodyB) => {
-            if (bodyA.gameObject == this.jugador && bodyB.gameObject == this.barraFin)
+            if (bodyA.gameObject == this.jugador && bodyB.gameObject == this.barraFin
+                || bodyB.gameObject == this.jugador && bodyA.gameObject == this.barraFin)
             {
                 this.ganasPartida(this.jugador, this.barraFin);
             }
-            if (bodyB.gameObject instanceof PowerUp && bodyA.gameObject == this.jugador)// && bodyA.gameObject == this.jugador)
+            if (bodyB.gameObject instanceof PowerUp && bodyA.gameObject == this.jugador ||
+                bodyA.gameObject instanceof PowerUp && bodyB.gameObject == this.jugador)// && bodyA.gameObject == this.jugador)
             {
-                bodyB.gameObject.collect(this.jugador);
+                if (bodyA.gameObject instanceof PowerUp)
+                {
+                    bodyA.gameObject.collect(this.jugador);
+                }
+                else{
+                    bodyB.gameObject.collect(this.jugador);
+                }
             }
-            if(bodyB.gameObject instanceof Goomba && bodyA.gameObject == this.jugador)
+            if(bodyB.gameObject instanceof Goomba && bodyA.gameObject == this.jugador ||
+                bodyA.gameObject instanceof Goomba && bodyB.gameObject == this.jugador )
             {
-                bodyB.gameObject.handlePlayerCollision(this.jugador);
+                if (bodyA.gameObject instanceof Goomba)
+                {
+                    bodyA.gameObject.handlePlayerCollision(this.jugador);
+                }
+                else{
+                    bodyB.gameObject.handlePlayerCollision(this.jugador);
+                }
             }
             if(bodyB.gameObject instanceof Goomba && bodyA.gameObject instanceof Goomba || 
                 bodyB.gameObject instanceof Koopa && bodyA.gameObject instanceof Goomba ||
@@ -348,13 +363,27 @@ class Nivel_T extends Phaser.Scene
             {
                 bodyA.gameObject.handleEnemyCollision(bodyB.gameObject);
             }
-            if(bodyB.gameObject instanceof Koopa && bodyA.gameObject == this.jugador)
+            if(bodyB.gameObject instanceof Koopa && bodyA.gameObject == this.jugador ||
+                bodyA.gameObject instanceof Koopa && bodyB.gameObject == this.jugador)
             {
-                bodyB.gameObject.handlePlayerCollision(this.jugador);
+                if (bodyA.gameObject instanceof Koopa)
+                {
+                    bodyA.gameObject.handlePlayerCollision(this.jugador);
+                }
+                else{
+                    bodyB.gameObject.handlePlayerCollision(this.jugador);
+                }
             }
-            if(bodyB.gameObject instanceof PiranhaPlant && bodyA.gameObject == this.jugador)
+            if(bodyB.gameObject instanceof PiranhaPlant && bodyA.gameObject == this.jugador ||
+               bodyA.gameObject instanceof PiranhaPlant && bodyB.gameObject == this.jugador)
             {
-                bodyB.gameObject.handlePlayerCollision(this.jugador);
+                if (bodyA.gameObject instanceof PiranhaPlant)
+                {
+                    bodyA.gameObject.handlePlayerCollision(this.jugador);
+                }
+                else{
+                    bodyB.gameObject.handlePlayerCollision(this.jugador);
+                }
             }
             // if(bodyA.gameObject instanceof Goomba && bodyB.gameObject == this.groundLayer)
             // {
@@ -511,9 +540,6 @@ class Nivel_T extends Phaser.Scene
 
     createText()
     {
-
- 
-
         // Este gráfico representa la línea dónde se alinea la UI por la derecha
 
         // var graphics = this.add.graphics();
@@ -530,6 +556,7 @@ class Nivel_T extends Phaser.Scene
         .setStroke('#000000ff', 6)
         .setFill('#38b762ff')
         .setFontSize(fontSize + 'px')
+        .setDepth(10)
         // .setText("60")
         .setScrollFactor(0);
 
@@ -539,6 +566,7 @@ class Nivel_T extends Phaser.Scene
         .setStroke('#000000ff', 6)
         .setFill('#ffffffff')
         // .setText("60")
+        .setDepth(10)
         .setFontSize(fontSize + 'px')
         .setScrollFactor(0)
 
@@ -548,6 +576,7 @@ class Nivel_T extends Phaser.Scene
         .setOrigin(1,5)
         .setStroke('#000000ff', 6)
         .setFill('#ffffffff')
+        .setDepth(10)
         .setFontSize(fontSize + 'px')
         .setScrollFactor(0);
         // textScore.setShadow(10, 10, 'rgba(0,0,0,0.5)', 10); 
@@ -558,6 +587,7 @@ class Nivel_T extends Phaser.Scene
         .setStroke('#000000ff', 6)
         .setFill('#DBC716')
         // .setText("".padStart(2,"0"))
+        .setDepth(10)
         .setFontSize(fontSize + 'px')
         .setScrollFactor(0);
         // this.textCoins.setText("".padStart(2,"0"));
@@ -568,11 +598,13 @@ class Nivel_T extends Phaser.Scene
         .setAlign('center')
         .setStroke('#000000ff', 6)
         .setFill('#621C87')
+        .setDepth(10)
         .setScrollFactor(0);
 
         // this.textPurpleCoins.setText("".padStart(1,"0"));
 
         this.timerMethod();
+        // this.ui.add([this.fpsText,this.textPurpleCoins,this.textCoins,this.textScore,this.textTimer]);
     }
     
     transition(sceneName)
@@ -630,6 +662,12 @@ class Nivel_T extends Phaser.Scene
                     duration: 1500,
                     ease: 'Cubic.easeInOut',
                     onUpdate: (tween, target) => {
+                        // if(this.endTimer && playerWorld.x-(this.cameras.main.width / this.cameras.main.zoom/2)>10)
+                        // {
+                        //     this.cameras.main.setPosition(
+                        //         playerWorld.x-(this.cameras.main.width / this.cameras.main.zoom/2), 
+                        //         this.cameras.main.y);
+                        // }
                         this.circleMask.clear();
                         this.circleMask.fillStyle(0xffffff);
                         this.circleMask.fillCircle(playerWorld.x, target.py, target.r);
@@ -894,48 +932,56 @@ class Nivel_T extends Phaser.Scene
 
     centerCameraOnPlayer() {
         // Obtener las dimensiones reales de la vista de la cámara considerando el zoom
-        const cameraViewWidth = this.cameras.main.width / this.cameras.main.zoom;
-        const cameraViewHeight = this.cameras.main.height / this.cameras.main.zoom;
+        const cam = this.cameras.main;
+        const cameraViewWidth = cam.width / cam.zoom;
+        const cameraViewHeight = cam.height / cam.zoom;
 
         // Seguimiento horizontal
         let targetX;
-    
-        if (this.jugador.x < cameraViewWidth / 4) {
-            targetX = -200;
-        } else if(this.jugador.body.velocity.x < 1)
-        {
-            targetX = this.jugador.x - cameraViewWidth / 1.5;
+        
+        // Establecer el objetivo de la cámara horizontalmente
+        if (this.jugador.x < cameraViewWidth *0.25) {
+            targetX = 0;  // Prevent camera from going too far left
         }
-        else
-        {
-            targetX = this.jugador.x - cameraViewWidth / 4;
+        else if(Math.abs(this.jugador.body.velocity.x) < 1) {
+            targetX = this.jugador.x - cameraViewWidth *0.66;
+        }
+        else {
+            targetX = this.jugador.x - cameraViewWidth * 0.5;
         }
 
         // Seguimiento vertical
         let targetY;
-    
+        
         // Calcular la posición vertical ideal
         const baseTargetY = this.jugador.y - cameraViewHeight * 0.65;
-    
-        if (!(this.jugador.isGrounded)) {
+        
+        if (!this.jugador.isGrounded) {
             // Cuando salta, mantener la cámara un poco más alta
             targetY = this.jugador.y - cameraViewHeight * 0.7;
         } else {
             // Cuando está en el suelo, mantenerlo en la posición vertical ideal
-            targetY = baseTargetY
+            targetY = baseTargetY;
         }
 
-        // Suavizado tipo "spring"
-        const springFactorX = 0.05;
-        const springFactorY = 0.015;
-        const dx = targetX - this.cameras.main.scrollX;
-        const dy = targetY - this.cameras.main.scrollY;
+        // Limitar la cámara dentro del mapa para evitar que se mueva fuera de los bordes
+        targetX = Phaser.Math.Clamp(targetX, 0, this.map.widthInPixels - cameraViewWidth);
+        targetY = Phaser.Math.Clamp(targetY, 0, this.map.heightInPixels - cameraViewHeight);
 
-        const maxSpeedY = 15;
-        const moveY = Phaser.Math.Clamp(dy * springFactorY, -maxSpeedY, maxSpeedY);
+        // Suavizado tipo "spring" con LERP para el movimiento suave
+        const smoothFactorX = 0.1;  // Ajustar la suavidad horizontal
+        const smoothFactorY = 0.05; // Ajustar la suavidad vertical
 
-        this.cameras.main.scrollX += dx * springFactorX;
-        this.cameras.main.scrollY += moveY;
+        // // Movimiento de la cámara suavizado
+        // const dx = targetX - cam.scrollX;
+        // const dy = targetY - cam.scrollY;
+
+        // // Aplicar el suavizado con un Lerp (Interpolación lineal)
+        // const moveX = cam.scrollX + dx * smoothFactorX;
+        // const moveY = cam.scrollY + dy * smoothFactorY;
+
+        cam.scrollX += (targetX-cam.scrollX)*smoothFactorX;
+        cam.scrollY += (targetY-cam.scrollY)*smoothFactorY;
     }
 }
 

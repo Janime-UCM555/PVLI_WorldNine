@@ -34,6 +34,7 @@ class Mario extends Phaser.GameObjects.Sprite
         // Coyote time
         this.coyoteTime = 50; // Tiempo en ms para permitir salto después de dejar el suelo (50 ms)
         this.coyoteTimeCounter = 0; // Contador para el coyote time
+        this.enemyCoyoteTime = 1; // Tiempo en ms para permitir salto después de saltar encima de un enemigo (20 ms)
 
         // Control de entrada
         this.jumpRequested = false;
@@ -217,13 +218,13 @@ class Mario extends Phaser.GameObjects.Sprite
 
     handleJump(time, delta) {
         // Manejar inicio del salto desde buffer si está disponible solo si todavía se está manteniendo el botón
-        if (this.hasBufferedJump && this.isGrounded && this.wasHoldingJumpWhenBuffered) {
+        if (this.hasBufferedJump && (this.isGrounded || this.canJump) && this.wasHoldingJumpWhenBuffered) {
             this.startJump(time);
             this.hasBufferedJump = false;
             this.wasHoldingJumpWhenBuffered = false;
         }
         // Manejar inicio del salto normal
-        if (this.jumpRequested && (this.isGrounded || this.coyoteTimeCounter > 0)) {
+        if (this.jumpRequested && (this.isGrounded || (this.canJump)|| this.coyoteTimeCounter > 0)) {
             this.startJump(time);
             this.hasBufferedJump = false; // Limpiar el buffer también en salto normal
             this.wasHoldingJumpWhenBuffered = false;
@@ -244,6 +245,7 @@ class Mario extends Phaser.GameObjects.Sprite
         this.setVelocityY(this.jumpVelocity);
         
         this.isGrounded = false; // Ya no está en el suelo
+        this.canJump=false;
         this.isJumping = true;
         this.isHoldingJump = true;
         this.jumpStartTime = time;

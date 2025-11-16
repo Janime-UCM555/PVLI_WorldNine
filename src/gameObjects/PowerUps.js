@@ -96,15 +96,15 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
         }
         if (bodyA === this.sensors.left || bodyB === this.sensors.left)
         {
-          this.numTouching.left += 1;
+          this.numTouching.left++;
         }
         if (bodyA === this.sensors.right || bodyB === this.sensors.right)
         {
-          this.numTouching.right += 1;
+          this.numTouching.right++;
         }
         if (bodyA === this.sensors.bottom || bodyB === this.sensors.bottom)
         {
-          this.numTouching.bottom += 1;
+          this.numTouching.bottom++;
         }
       }
     });

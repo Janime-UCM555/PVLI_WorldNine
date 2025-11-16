@@ -11,7 +11,9 @@ import Nivel_R from './Scenes/Nivel_R.js';
 let config = {
 	type: Phaser.AUTO,
 	pixelArt: true,
+	snapToPixels: false,
 	parent: 'game',
+	fps:300,
 	scale: {
 		autoCenter: Phaser.Scale.CENTER_BOTH,
 		mode: Phaser.Scale.FIT,

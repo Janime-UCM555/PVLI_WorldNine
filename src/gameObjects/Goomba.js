@@ -136,7 +136,7 @@ class Goomba extends Phaser.GameObjects.Sprite
     }
 
     // Manejar colisiones con paredes
-    handleWallCollision(wall) {
+    handleWallCollision() {
         if (!this.isAlive) return;
 
         // Verificar si es una colisión lateral (no desde arriba/abajo)
@@ -217,15 +217,16 @@ class Goomba extends Phaser.GameObjects.Sprite
             player.isInvulnerable = true;
 
             // Mario aplasta al Goomba
-            player.isGrounded = true;
-            this.stomp();
-        
+            // player.isGrounded = true;
+            player.canJump = true; 
+            this.stomp()
             // Pequeño rebote para Mario
             player.setVelocityY(-4.5);
 
             // Quitar invulnerabilidad temporal a Mario
             this.scene.time.delayedCall(150, () => {
                 player.isInvulnerable = false;
+                player.canJump=false;
             });
         } else if (this.isAlive && !player.isBeingPushed && !player.isInvulnerable) {
             // Colisión lateral
@@ -419,6 +420,11 @@ class Goomba extends Phaser.GameObjects.Sprite
             this.scene.matter.world.on('collisionactive', this.handleCollisions, this);
             this.scene.matter.world.on('afterupdate', this.updateBlocked, this);
             this.listenersAdded = true;
+        }
+
+        if(this.blocked.right || this.blocked.left)
+        {
+            this.handleWallCollision();
         }
 
         // Verificar bordes
