@@ -314,6 +314,13 @@ class Nivel_T extends Phaser.Scene
         });
 
         this.anims.create({
+            key: 'mario_bubble',
+            frames: this.anims.generateFrameNumbers('mario_bubble', {start: 0, end: 0}),
+            frameReate: 8,
+            repeat: -1
+        })
+
+        this.anims.create({
             key: 'gombrome_walk',
             frames: this.anims.generateFrameNumbers('gombrome_walk', { start: 0, end: 3 }),
             frameRate: 8,
@@ -769,14 +776,15 @@ class Nivel_T extends Phaser.Scene
             if (!this.endTimer)
             {
                 this.textTimer.setText(timer.toString().padStart(2, '0'));
-                if (timer == 0)
-                {
+                if (timer == 0) {
                     this.endTimer=true;
                     this.sound.play('muerte');
                     this.jugador.hurt();
                     this.transition('MainMenu'); // Llamar a la transición cuando se acaba el tiempo
-                }   
-                timer = (timer - 1 + 60) % 60; // reinicia a 60
+                }
+                if (!this.jugador.isInBubble) {
+                    timer = (timer - 1 + 60) % 60; // reinicia a 60
+                }
             }
             else{
                 timer = 0;
@@ -820,10 +828,6 @@ class Nivel_T extends Phaser.Scene
         }
     }
 
-    playerFell() {
-        this.restartLevel();
-    }
-
 
     restartLevel() {
         // Reiniciar la escena o reposicionar el jugador
@@ -841,6 +845,9 @@ class Nivel_T extends Phaser.Scene
         // Resetear invulnerabilidad
         this.jugador.isInvulnerable = false;
         this.jugador.setVisible(true);
+        this.jugador.bubblePhase = 0;
+        this.jugador.isInBubble = false;
+        this.jugador.canDrop = false;
     }
 
     update(time, delta) {
@@ -851,47 +858,63 @@ class Nivel_T extends Phaser.Scene
             // Actualizar jugador
             this.jugador.update(time,delta);
 
-            // Actualizar barra final
-            if (this.barraFin)
-            {
-                this.barraFin.update(time,delta);
-            }
-
-            // Actualizar Goombas
-            if (this.goombas) {
-                this.goombas.getChildren().forEach(goomba => {
-                    goomba.update(time, delta);
-                });
-            }
-            // Actualizar Koopas
-            if (this.koopas) {
-                this.koopas.getChildren().forEach(koopa => {
-                    koopa.update(time, delta);
-                });
-            }
-            // Actualizar plantas piraña
-            if (this.piranhas) {
-                this.piranhas.getChildren().forEach(piranha => {
-                    piranha.update(time, delta);
-                });
-            }
+            // Actualizar objetos
+            this.updateObjects(time, delta);
 
             // Posicionar bien la cámara respecto al jugador
-            this.centerCameraOnPlayer();
+            this.jugador.centerCameraOnPlayer();
 
             // Detección manual de monedas
             this.checkCoinCollection();
 
             // Comprobar si el jugador se ha caído
-            if (this.jugador.y > this.map.heightInPixels + 100) {
-                this.sound.play('muerte');
-                this.playerFell();
-            }
+            this.checkPlayerFell();
+        }
+    }
+
+    // Actualizar objetos
+    updateObjects(time, delta) {
+        // Actualizar barra final
+        if (this.barraFin) {
+            this.barraFin.update(time, delta);
+        }
+
+        // Actualizar Goombas
+        if (this.goombas) {
+            this.goombas.getChildren().forEach(goomba => {
+                goomba.update(time, delta);
+            });
+        }
+    
+        // Actualizar Koopas
+        if (this.koopas) {
+            this.koopas.getChildren().forEach(koopa => {
+                koopa.update(time, delta);
+            });
+        }
+    
+        // Actualizar plantas piraña
+        if (this.piranhas) {
+            this.piranhas.getChildren().forEach(piranha => {
+                piranha.update(time, delta);
+            });
+        }
+    }
+
+    // Verificar si el jugador se ha caído
+    checkPlayerFell() {
+        if (this.jugador.y > this.map.heightInPixels + 50 && !this.jugador.isInBubble && !this.jugador.canDrop && this.jugador.bubblesLeft > 0) {
+            this.sound.play('muerte');
+            this.jugador.playerFell();
+        } else if (this.jugador.y > this.map.heightInPixels + 50 && this.jugador.bubblesLeft <= 0 && !this.jugador.isInBubble) {
+            this.sound.play('muerte');
+            this.jugador.y = this.map.heightInPixels + 45;
+            this.jugador.hurt();
+            this.transition('MainMenu');
         }
     }
 
     // Detección manual de recolección de monedas
-
     checkCoinCollection() {
         const playerBounds = this.jugador.getBounds();
     
@@ -900,7 +923,7 @@ class Nivel_T extends Phaser.Scene
                 const coinBounds = coin.getBounds();
             
                 // Verificar superposición
-                if (Phaser.Geom.Rectangle.Overlaps(playerBounds, coinBounds)) {
+                if (!this.jugador.isInBubble && Phaser.Geom.Rectangle.Overlaps(playerBounds, coinBounds)) {
                     this.collectCoin(this.jugador, coin);
                     coin.collected = true;
                 }
@@ -908,7 +931,7 @@ class Nivel_T extends Phaser.Scene
         });
     }
 
-     // Spawner simple (tu PowerUp ya añade físicas y movimiento)
+    // Spawner simple (tu PowerUp ya añade físicas y movimiento)
     spawnPowerUp(x, y, type, textureKey) {
         let power = new PowerUp(this, x, y, type, textureKey,0)
         power.setVelocityX(power.body.velocity.x * 0.09315); // Salir del bloque hacia arriba
@@ -927,61 +950,6 @@ class Nivel_T extends Phaser.Scene
             }
         }
         return false;  // Si no se encuentra, devuelve false
-    }
-
-
-    centerCameraOnPlayer() {
-        // Obtener las dimensiones reales de la vista de la cámara considerando el zoom
-        const cam = this.cameras.main;
-        const cameraViewWidth = cam.width / cam.zoom;
-        const cameraViewHeight = cam.height / cam.zoom;
-
-        // Seguimiento horizontal
-        let targetX;
-        
-        // Establecer el objetivo de la cámara horizontalmente
-        if (this.jugador.x < cameraViewWidth *0.25) {
-            targetX = 0;  // Prevent camera from going too far left
-        }
-        else if(Math.abs(this.jugador.body.velocity.x) < 1) {
-            targetX = this.jugador.x - cameraViewWidth *0.66;
-        }
-        else {
-            targetX = this.jugador.x - cameraViewWidth * 0.5;
-        }
-
-        // Seguimiento vertical
-        let targetY;
-        
-        // Calcular la posición vertical ideal
-        const baseTargetY = this.jugador.y - cameraViewHeight * 0.65;
-        
-        if (!this.jugador.isGrounded) {
-            // Cuando salta, mantener la cámara un poco más alta
-            targetY = this.jugador.y - cameraViewHeight * 0.7;
-        } else {
-            // Cuando está en el suelo, mantenerlo en la posición vertical ideal
-            targetY = baseTargetY;
-        }
-
-        // Limitar la cámara dentro del mapa para evitar que se mueva fuera de los bordes
-        targetX = Phaser.Math.Clamp(targetX, 0, this.map.widthInPixels - cameraViewWidth);
-        targetY = Phaser.Math.Clamp(targetY, 0, this.map.heightInPixels - cameraViewHeight);
-
-        // Suavizado tipo "spring" con LERP para el movimiento suave
-        const smoothFactorX = 0.1;  // Ajustar la suavidad horizontal
-        const smoothFactorY = 0.05; // Ajustar la suavidad vertical
-
-        // // Movimiento de la cámara suavizado
-        // const dx = targetX - cam.scrollX;
-        // const dy = targetY - cam.scrollY;
-
-        // // Aplicar el suavizado con un Lerp (Interpolación lineal)
-        // const moveX = cam.scrollX + dx * smoothFactorX;
-        // const moveY = cam.scrollY + dy * smoothFactorY;
-
-        cam.scrollX += (targetX-cam.scrollX)*smoothFactorX;
-        cam.scrollY += (targetY-cam.scrollY)*smoothFactorY;
     }
 }
 

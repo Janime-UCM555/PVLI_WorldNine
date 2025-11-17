@@ -17,7 +17,11 @@ class Mario extends Phaser.GameObjects.Sprite
         this.isStopped = false; // Controlar si está detenido
         this.canJump = true; // Controlar si puede saltar
         this.isBeingPushed = false; // Indica si está siendo empujado
-        this.isInvulnerable = false; // Para controlar la invulnerabilidad temporal
+        this.isInvulnerable = false; // Controlar la invulnerabilidad temporal
+        this.bubblePhase = 0; // 0: no burbuja, 1: espera, 2: movimiento fase1, 3: fase2
+        this.isInBubble = false; // Controlar si está en la burbuja
+        this.canDrop = false; // Indica si puede salir de la burbuja
+        this.bubblesLeft = 2; // Número de burbujas restantes
 
         // Sistema de salto
         this.isJumping = false; // Indica si está en proceso de salto
@@ -183,6 +187,9 @@ class Mario extends Phaser.GameObjects.Sprite
         this.isSuperSize = false;
         this.scaleMultiplier = 1.35;
 
+        // Configurar colisión con los bordes del mundo
+        this.setUpWorldBoundsCollision();
+
         // Configurar entrada del ratón para saltar
         this.setupMouseInput();
     }
@@ -195,19 +202,28 @@ class Mario extends Phaser.GameObjects.Sprite
         // Al presionar el ratón
         this.scene.input.on('pointerdown', (pointer) => {
             if (pointer.leftButtonDown() && this.scene.scene.isActive()) {
-                this.jumpRequested = true;
-                this.jumpHeld = true;
-                // Activar el buffer de salto cuando se presiona el botón en el aire
-                if (!this.isGrounded) {
-                    this.hasBufferedJump = true;
-                    this.wasHoldingJumpWhenBuffered = true; // Recordar que se estaba manteniendo el botón
+                // Si está en burbuja y puede salir, manejar la salida
+                if (this.isInBubble && this.canDrop) {
+                    this.exitBubbleState();
+                    return;
+                }
+
+                // Comportamiento normal de salto
+                if (!this.isInBubble) {
+                    this.jumpRequested = true;
+                    this.jumpHeld = true;
+                    // Activar el buffer de salto cuando se presiona el botón en el aire
+                    if (!this.isGrounded) {
+                        this.hasBufferedJump = true;
+                        this.wasHoldingJumpWhenBuffered = true; // Recordar que se estaba manteniendo el botón
+                }
                 }
             }
         });
 
         // Al soltar el ratón
         this.scene.input.on('pointerup', (pointer) => {
-            if (this.scene.scene.isActive()) {
+            if (this.scene.scene.isActive() && !this.isInBubble) {
                 this.jumpHeld = false;
                 this.isHoldingJump = false;
                 // Si se suelta el botón, marcar que ya no se está manteniendo para el buffer
@@ -404,13 +420,238 @@ class Mario extends Phaser.GameObjects.Sprite
         });
     }
 
+    playerFell() {
+        if (this.isInBubble) {
+            return;
+        }
+
+        this.bubblesLeft -= 1;
+
+        this.isInBubble = true;
+
+        // Detener cualquier movimiento previo inmediatamente
+        this.setVelocity(0, 0);
+        this.body.ignoreGravity = true;
+
+        this.enterBubbleState();
+    }
+
+    enterBubbleState() {
+        const camera = this.scene.cameras.main;
+
+        // 1. Marcar el estado inmediatamente
+        this.isInBubble = true;
+        this.canDrop = false;
+        this.bubblePhase = 1;
+
+        // 2. Detener inmediatamente todas las físicas
+        this.setVelocity(0, 0);
+        if (this.body) {
+            this.body.ignoreGravity = true;
+            this.setSensor(true);
+            this.body.collisionFilter.mask = 0; // Desactivar completamente las colisiones
+        }
+
+        // 3. Cambiar a textura de burbuja
+        this.play('mario_bubble', true);
+
+        // 4. Posicionar a Mario cerca del punto de caída
+        const cameraViewHeight = camera.height / camera.zoom;
+        let initialX = this.x - 15;
+        let initialY = camera.scrollY + cameraViewHeight + 200;
+
+        initialX = Phaser.Math.Clamp(initialX, 100, this.scene.map.widthInPixels - 100);
+        initialY = Phaser.Math.Clamp(initialY, 100, this.scene.map.heightInPixels + 100);
+
+        this.x = initialX;
+        this.y = initialY;
+
+        // 5. Esperar 2500ms sin moverse (Fase 1 - Espera)
+        this.scene.time.delayedCall(2500, () => {
+            if (!this.isInBubble) return;
+        
+            this.bubblePhase = 2; // Fase 1 - Movimiento
+        
+            // 6. Movimiento diagonal (arriba e izquierda)
+            this.setVelocityX(-9); // Velocidad hacia izquierda
+            this.setVelocityY(-11.45); // Velocidad hacia arriba
+
+            // 7. Permitir salir después de 400ms de empezar el movimiento
+            this.scene.time.delayedCall(400, () => {
+                if (this.isInBubble) {
+                    this.canDrop = true;
+                }
+            });
+
+            // 8. Desacelerar después de 1000ms de movimiento
+            this.scene.time.delayedCall(1000, () => {
+                if (!this.isInBubble) return;
+            
+                // Desaceleración suave
+                this.scene.tweens.add({
+                    targets: this.body.velocity,
+                    x: -2.45,
+                    y: -0.4,
+                    duration: 250, // 250ms para desacelerar
+                    ease: 'Cubic.Out',
+                    onComplete: () => {
+                        if (this.isInBubble) {
+                            this.startBubblePhase2();
+                        }
+                    }
+                });
+            });
+        });
+    }
+
+    startBubblePhase2() {
+        if (!this.isInBubble) return;
+
+        this.bubblePhase = 3; // Fase 2
+    
+        // 1. Detener movimiento vertical inicial
+        this.setVelocityY(0);
+    
+        // 2. Configurar velocidad horizontal inicial
+        this.setVelocityX(-2.45);
+    
+        // 3. Configurar movimiento oscilatorio vertical
+        this.bubbleOscillation = {
+            amplitude: 40, // Amplitud de la oscilación
+            frequency: 0.002, // Frecuencia de la oscilación
+            baseY: this.y, // Posición base para la oscilación
+            startTime: this.scene.time.now,
+            originalX: this.x // Guardar posición X original para límites
+        };
+
+        // 4. Acelerar gradualmente después de 1500ms
+        this.scene.time.delayedCall(1500, () => {
+            if (this.isInBubble && this.bubblePhase === 3) {
+                // Solo acelerar si no ha llegado al borde izquierdo
+                if (this.x > 50) {
+                    // Transición suave a mayor velocidad
+                    this.scene.tweens.add({
+                        targets: this.body.velocity,
+                        x: -5.75,
+                        duration: 1000, // Duración de la transición en ms
+                        ease: 'Cubic.InOut',
+                        onComplete: () => {
+                            if (this.isInBubble && this.bubblePhase === 3) {
+                                // Establecer velocidad constante después de la transición
+                                this.setVelocityX(-5.75);
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    exitBubbleState() {
+        if (!this.isInBubble) {
+            return;
+        }
+    
+        // 1. Limpiar propiedades de la burbuja
+        this.isInBubble = false;
+        this.canDrop = false;
+        this.bubblePhase = 0;
+        this.bubbleOscillation = null;
+
+        // 2. Reactivar el cuerpo físico
+        if (this.body) {
+            this.body.ignoreGravity = false; // Reactivar gravedad
+            this.setSensor(false); // Restaurar colisiones normales
+            this.body.collisionFilter.mask = 0xFFFFFFFF; // Máscara para colisionar con todo
+        }
+    
+        // 3. Cambiar a animación de caída
+        this.play('mario_fall', true);
+    
+        // 4. Asegurarse de que no sea superSize
+        if (this.isSuperSize) {
+            this.isSuperSize = false;
+            this.setScale(this.base.scaleX, this.base.scaleY);
+        }
+
+        // 5. Resetear velocidades para caída
+        this.setVelocityX(this.speed);
+        this.setVelocityY(0);
+
+        // 6. Posicionar a Mario en una posición segura
+        this.x = Math.max(this.x, 50);
+        this.y = Math.max(this.y, 100);
+
+        // 7. Resetear estados de salto
+        this.isJumping = false;
+        this.isHoldingJump = false;
+    }
+
     update(time, delta) {
+        // Verificación de seguridad
+        if (!this.body || !this.scene) {
+            return;
+        }
+        
         // Si está herido, no procesar otras lógicas
         if (this.isHurt) {
             // Solo mantener la animación de hurt y salir
             this.handleAnimations();
             return;
         }
+
+        // Si está en burbuja, no ejecutar la lógica normal
+        if (this.isInBubble) {
+            // Forzar gravedad cero durante todo el estado de burbuja
+            if (this.body) {
+                this.body.ignoreGravity = true;
+
+                // En fase 2 y 3, mantener la velocidad X constante si no hay tweens activos
+                if (this.bubblePhase === 2 || this.bubblePhase === 3) {
+                    // Solo aplicar si no está cerca del borde izquierdo
+                    if (this.x > 50) {
+                        // Mantener velocidad X mínima en fase 3
+                        if (this.bubblePhase === 3 && this.body.velocity.x > -2.45) {
+                            this.setVelocityX(-2.45);
+                        }
+                    } else {
+                        // Detener al llegar al borde izquierdo
+                        this.setVelocityX(0);
+                    }
+                
+                    // Mantener velocidad Y en 0 para fase 3
+                    if (this.bubblePhase === 3) {
+                        // Mantener velocidad X constante si no está cerca del borde
+                        if (this.x > 50) {
+                            // Si ya ha completado la aceleración, mantener velocidad constante
+                            const currentTime = this.scene.time.now;
+                            if (currentTime - this.bubbleOscillation.startTime > 2500) { // 1500 + 1000 = 2500ms
+                                this.setVelocityX(-5.75);
+                            }
+                        } else {
+                            // Detener al llegar al borde izquierdo
+                            this.setVelocityX(0);
+                        }
+
+                        this.setVelocityY(0);
+                    }
+                }
+            }
+
+            // Actualizar movimiento oscilatorio de la fase 2 de la burbuja
+            if (this.bubblePhase === 3 && this.bubbleOscillation) {
+                const elapsed = time - this.bubbleOscillation.startTime;
+                
+                // Aplicar oscilación vertical
+                const oscillationY = Math.sin(elapsed * this.bubbleOscillation.frequency) * this.bubbleOscillation.amplitude;
+                this.y = this.bubbleOscillation.baseY + oscillationY;
+            }
+
+            // Manejar animaciones
+            this.handleAnimations();
+            return; // Salir inmediatamente - no ejecutar física normal
+        }
+
         if (this.footstepCooldown > 0) {
             this.footstepCooldown -= delta;
         }
@@ -431,60 +672,13 @@ class Mario extends Phaser.GameObjects.Sprite
 
 
         if (this.body && !this.isHurt && !this.hasWon) {
-            // Solo aplicar velocidad hacia la derecha si no está siendo empujado
-            if (!this.isBeingPushed) {
+            // Solo aplicar velocidad hacia la derecha si no está siendo empujado y no está en la burbuja
+            if (!this.isBeingPushed && !this.isInBubble) {
                 this.setVelocityX(this.speed);
             }
 
             // Guardar el estado anterior antes de actualizar
             const previousGrounded = this.isGrounded; // Variable local para este frame
-            
-            // Verificar si está en el suelo
-            this.scene.matter.world.on('beforeupdate', function (event) {
-                this.numTouching.left = 0;
-                this.numTouching.right = 0;
-                this.numTouching.bottom = 0;
-                this.numTouching.up = 0;
-            }, this);
-                    
-            this.scene.matter.world.on('collisionactive', (event) => {
-                for (let i = 0; i < event.pairs.length; i++)            
-                {
-                    const bodyA = event.pairs[i].bodyA;
-                    const bodyB = event.pairs[i].bodyB;
-                    if (bodyA === this.playerBody || bodyB === this.playerBody)
-                    {
-                        continue;
-                    }
-                    if (bodyA === this.sensors.bottom || bodyB === this.sensors.bottom)
-                    {
-                        // Standing on any surface counts (e.g. jumping off of a non-static crate).
-                        this.numTouching.bottom += 1;
-                    }
-                    if ((bodyA === this.sensors.left && bodyB.isStatic) || (bodyB === this.sensors.left && bodyA.isStatic))
-                    {
-                        // Only static objects count since we don't want to be blocked by an object that we
-                        // can push around.
-                        this.numTouching.left += 1;
-                    }
-                    if ((bodyA === this.sensors.right && bodyB.isStatic) || (bodyB === this.sensors.right && bodyA.isStatic))
-                    {
-                        this.numTouching.right += 1;
-                    }
-                    if ((bodyA === this.sensors.up && bodyB.isStatic) || (bodyB === this.sensors.up && bodyA.isStatic))
-                    {
-                        this.numTouching.right += 1;
-                    }
-                };  
-            });
-
-            this.scene.matter.world.on('afterupdate', function (event) {
-                this.blocked.right = this.numTouching.right > 0 ? true : false;
-                this.blocked.left = this.numTouching.left > 0 ? true : false;
-                this.blocked.bottom = this.numTouching.bottom > 0 ? true : false;
-                this.blocked.up = this.numTouching.up > 0 ? true : false;
-                this.isGrounded = this.blocked.bottom;
-            }, this);
 
             // Si choca por arriba, cancelar el salto progresivo
             if (this.blocked.up) {
@@ -525,7 +719,7 @@ class Mario extends Phaser.GameObjects.Sprite
         }
 
         // Limitar velocidades después de todas las actualizaciones
-        if (this.body && !this.isHurt) {
+        if (this.body && !this.isHurt && !this.isInBubble) {
             // Asegurar que las velocidades sean números válidos
             if (typeof this.body.velocity.x !== 'number' || isNaN(this.body.velocity.x)) {
                 this.body.velocity.x = this.isBeingPushed ? 0 : this.speed;
@@ -544,6 +738,15 @@ class Mario extends Phaser.GameObjects.Sprite
 
     handleAnimations() {
         if (!this.body) return;
+
+        // Mostrar siempre animación de burbuja si está en la burbuja
+        if (this.isInBubble) {
+            this.setScale(this.base.scaleX, this.base.scaleY);
+            if (this.anims.currentAnim?.key !== 'mario_bubble') {
+                this.play('mario_bubble', true);
+            }
+            return; // Salir inmediatamente - no permitir otras animaciones
+        }
 
         // Mostrar siempre animación de hurt si está herido
         if (this.isHurt) {
@@ -597,6 +800,182 @@ class Mario extends Phaser.GameObjects.Sprite
         }
     }
 
+    setUpWorldBoundsCollision() {
+        const world = this.scene.matter.world;
+
+        // Por si acaso se vuelve a crear el jugador, limpiamos listeners antiguos
+        world.off('beforeupdate', this.handleBeforeUpdate, this);
+        world.off('collisionactive', this.handleCollisionActive, this);
+        world.off('afterupdate', this.handleAfterUpdate, this);
+
+        world.on('beforeupdate', this.handleBeforeUpdate, this);
+        world.on('collisionactive', this.handleCollisionActive, this);
+        world.on('afterupdate', this.handleAfterUpdate, this);
+    }
+
+    handleBeforeUpdate(event) {
+        // Resetear contadores de sensores antes de la actualización
+        this.numTouching.left = 0;
+        this.numTouching.right = 0;
+        this.numTouching.bottom = 0;
+        this.numTouching.up = 0;
+    }
+
+    handleCollisionActive(event) {
+        for (let i = 0; i < event.pairs.length; i++)
+        {
+            const bodyA = event.pairs[i].bodyA;
+            const bodyB = event.pairs[i].bodyB;
+
+            // Saltar si uno de los cuerpos es el jugador
+            if (bodyA === this.playerBody || bodyB === this.playerBody)
+            {
+                continue;
+            }
+
+            // verificamos si esta tocando suelo
+            if (bodyA === this.sensors.bottom || bodyB === this.sensors.bottom)
+            {
+                // Contar cualquier superficie como suelo (por ejemplo, saltar sobre una caja no estática).
+                this.numTouching.bottom += 1;
+            }
+
+            // verificamos si esta tocando pared izquierda
+            if ((bodyA === this.sensors.left && bodyB.isStatic) || (bodyB === this.sensors.left && bodyA.isStatic))
+            {
+                // Solo los objetos estáticos cuentan ya que no queremos ser bloqueados por un objeto que
+                // podemos empujar.
+                this.numTouching.left += 1;
+            }
+
+            // verificamos si esta tocando pared derecha
+            if ((bodyA === this.sensors.right && bodyB.isStatic) || (bodyB === this.sensors.right && bodyA.isStatic))
+            {
+                this.numTouching.right += 1;
+            }
+
+            // verificamos si esta tocando techo
+            if ((bodyA === this.sensors.up && bodyB.isStatic) || (bodyB === this.sensors.up && bodyA.isStatic))
+            {
+                this.numTouching.up += 1;
+            }
+        };
+    }
+
+    handleAfterUpdate(event) {
+        // Actualizar estados de bloqueo basados en sensores
+        this.blocked.right = this.numTouching.right > 0;
+        this.blocked.left = this.numTouching.left > 0;
+        this.blocked.bottom = this.numTouching.bottom > 0;
+        this.blocked.up = this.numTouching.up > 0;
+
+        // Actualizar si está en el suelo
+        this.isGrounded = this.blocked.bottom;
+    }
+
+    centerCameraOnPlayer() {
+        // Obtener las dimensiones reales de la vista de la cámara considerando el zoom
+        const camera = this.scene.cameras.main;
+        const cameraViewWidth = camera.width / camera.zoom;
+        const cameraViewHeight = camera.height / camera.zoom;
+
+        // Seguimiento horizontal
+        let targetX;
+
+        // Establecer el objetivo de la cámara horizontalmente
+        if (this.x < cameraViewWidth *0.25) {
+            targetX = -200;
+        }
+        else if(Math.abs(this.body.velocity.x) < 1) {
+            targetX = this.x - cameraViewWidth *0.66;
+        }
+        else {
+            targetX = this.x - cameraViewWidth * 0.5;
+        }
+
+        // Seguimiento vertical
+        let targetY;
+    
+        if (this.isInBubble) {
+            // Cuando está en la burbuja, posicionar más alto en la pantalla
+            targetY = this.y - cameraViewHeight * 0.4;
+        } else {
+            // Calcular la posición vertical ideal
+            const baseTargetY = this.y - cameraViewHeight * 0.65;
+
+            if (!this.isGrounded) {
+                // Cuando salta, mantener la cámara un poco más alta
+                targetY = this.y - cameraViewHeight * 0.7;
+            } else {
+                // Cuando está en el suelo, mantenerlo en la posición vertical ideal
+                targetY = baseTargetY
+            }
+        }
+
+        // Suavizado tipo "spring" con LERP para el movimiento suave
+        const smoothFactorX = 0.1;  // Ajustar la suavidad horizontal
+        const smoothFactorY = 0.05; // Ajustar la suavidad vertical
+
+        // // Movimiento de la cámara suavizado
+        // const dx = targetX - cam.scrollX;
+        // const dy = targetY - cam.scrollY;
+
+        // // Aplicar el suavizado con un Lerp (Interpolación lineal)
+        // const moveX = cam.scrollX + dx * smoothFactorX;
+        // const moveY = cam.scrollY + dy * smoothFactorY;
+
+        camera.scrollX += (targetX-camera.scrollX)*smoothFactorX;
+        camera.scrollY += (targetY-camera.scrollY)*smoothFactorY;
+    }
+
+    /*
+    updateBlocked() {
+        this.blocked.right = this.numTouching.right > 0;
+        this.blocked.left = this.numTouching.left > 0;
+        this.blocked.bottom = this.numTouching.bottom > 0;
+        this.blocked.up = this.numTouching.up > 0;
+        this.isGrounded = this.blocked.bottom;
+    }
+
+    resetTouching() {
+        this.numTouching.left = 0;
+        this.numTouching.right = 0;
+        this.numTouching.bottom = 0;
+        this.numTouching.up = 0;
+    }
+
+    handleCollisions(event) {
+        for (let i = 0; i < event.pairs.length; i++) {
+            const bodyA = event.pairs[i].bodyA;
+            const bodyB = event.pairs[i].bodyB;
+
+            // Detectar contacto con el suelo
+            if (bodyA === this.sensors.bottom || bodyB === this.sensors.bottom) {
+                const otherBody = bodyA === this.sensors.bottom ? bodyB : bodyA;
+            
+                // Solo contar como suelo si es estático o es un enemigo (para stomp)
+                if (otherBody.isStatic || 
+                    (otherBody.gameObject && 
+                    (otherBody.gameObject instanceof Goomba || otherBody.gameObject instanceof Koopa))) {
+                    this.numTouching.bottom += 1;
+                }
+            }
+
+            // Detectar contacto con pared izquierda
+            if ((bodyA === this.sensors.left && bodyB.isStatic) || 
+                (bodyB === this.sensors.left && bodyA.isStatic)) {
+                this.numTouching.left += 1;
+            }
+
+            // Detectar contacto con pared derecha  
+            if ((bodyA === this.sensors.right && bodyB.isStatic) || 
+                (bodyB === this.sensors.right && bodyA.isStatic)) {
+                this.numTouching.right += 1;
+            }
+        }
+    }
+    */
+
     // Resetear estados
     resetStates() {
         this.isJumping = false;
@@ -609,6 +988,10 @@ class Mario extends Phaser.GameObjects.Sprite
         this.wasHoldingJumpWhenBuffered = false;
         this.isHurt = false;
         this.hasWon = false;
+        this.bubblePhase = 0;
+        this.isInBubble = false;
+        this.canDrop = false;
+        this.bubblesLeft = 2;
         this.setScale(this.base.scaleX, this.base.scaleY);
         this.isSuperSize = false;
         this.deactivatePowerUp();

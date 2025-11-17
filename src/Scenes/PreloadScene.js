@@ -86,10 +86,13 @@ class PreloadScene extends Phaser.Scene {
             frameWidth: 32,
             frameHeight: 56
         });
-
-          this.load.spritesheet('mario_throw', 'GameSprites/Characters/Mario/Mario_hammer_throw.png', {
+        this.load.spritesheet('mario_throw', 'GameSprites/Characters/Mario/Mario_hammer_throw.png', {
             frameWidth: 48,
             frameHeight: 55,
+        });
+        this.load.spritesheet('mario_bubble', 'GameSprites/Characters/Mario/Mario_bubble.png', {
+            frameWidth: 72,
+            frameHeight: 72,
         });
 
         //PowerUps

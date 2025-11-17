@@ -330,6 +330,13 @@ class Nivel_R extends Phaser.Scene
         });
 
         this.anims.create({
+            key: 'mario_bubble',
+            frames: this.anims.generateFrameNumbers('mario_bubble', {start: 0, end: 0}),
+            frameReate: 8,
+            repeat: -1
+        })
+
+        this.anims.create({
             key: 'goombarome_walk',
             frames: this.anims.generateFrameNumbers('gombrome_walk', { start: 0, end: 3 }),
             frameRate: 8,
@@ -801,14 +808,15 @@ class Nivel_R extends Phaser.Scene
             if (!this.endTimer)
             {
                 this.textTimer.setText(timer.toString().padStart(2, '0'));
-                if (timer == 0)
-                {
+                if (timer == 0) {
                     this.endTimer=true;
                     this.sound.play('muerte');
                     this.jugador.hurt();
                     this.transition('MainMenu'); // Llamar a la transición cuando se acaba el tiempo
-                }   
-                timer = (timer - 1 + 60) % 60; // reinicia a 60
+                }
+                if (!this.jugador.isInBubble) {
+                    timer = (timer - 1 + 60) % 60; // reinicia a 60
+                }
             }
             else{
                 timer = 0;
@@ -852,11 +860,6 @@ class Nivel_R extends Phaser.Scene
         }
     }
 
-    playerFell() {
-        this.restartLevel();
-    }
-
-
     restartLevel() {
         // Reiniciar la escena o reposicionar el jugador
         this.jugador.x = 25;
@@ -873,6 +876,9 @@ class Nivel_R extends Phaser.Scene
         // Resetear invulnerabilidad
         this.jugador.isInvulnerable = false;
         this.jugador.setVisible(true);
+        this.jugador.bubblePhase = 0;
+        this.jugador.isInBubble = false;
+        this.jugador.canDrop = false;
     }
 
     update(time, delta) {
@@ -881,43 +887,59 @@ class Nivel_R extends Phaser.Scene
             // Actualizar jugador
             this.jugador.update(time,delta);
 
-            // Actualizar barra final
-            if (this.barraFin)
-            {
-                this.barraFin.update(time,delta);
-            }
-
-            // Actualizar Goombas
-            if (this.goombas) {
-                this.goombas.getChildren().forEach(goomba => {
-                    goomba.update(time, delta);
-                });
-            }
-            // Actualizar Koopas
-            if (this.koopas) {
-                this.koopas.getChildren().forEach(koopa => {
-                    koopa.update(time, delta);
-                });
-            }
-
-            // Actualizar plantas piraña
-            if (this.piranhas) {
-                this.piranhas.getChildren().forEach(piranha => {
-                    piranha.update(time, delta);
-                });
-            }
+            // Actualizar objetos
+            this.updateObjects(time, delta);
 
             // Posicionar bien la cámara respecto al jugador
-            this.centerCameraOnPlayer();
+            this.jugador.centerCameraOnPlayer();
 
             // Detección manual de monedas
             this.checkCoinCollection();
 
             // Comprobar si el jugador se ha caído
-            if (this.jugador.y > this.map.heightInPixels + 100) {
-                this.sound.play('muerte');
-                this.playerFell();
-            }
+            this.checkPlayerFell();
+        }
+    }
+
+    // Actualizar objetos
+    updateObjects(time, delta) {
+        // Actualizar barra final
+        if (this.barraFin) {
+            this.barraFin.update(time, delta);
+        }
+
+        // Actualizar Goombas
+        if (this.goombas) {
+            this.goombas.getChildren().forEach(goomba => {
+                goomba.update(time, delta);
+            });
+        }
+    
+        // Actualizar Koopas
+        if (this.koopas) {
+            this.koopas.getChildren().forEach(koopa => {
+                koopa.update(time, delta);
+            });
+        }
+    
+        // Actualizar plantas piraña
+        if (this.piranhas) {
+            this.piranhas.getChildren().forEach(piranha => {
+                piranha.update(time, delta);
+            });
+        }
+    }
+
+    // Verificar si el jugador se ha caído
+    checkPlayerFell() {
+        if (this.jugador.y > this.map.heightInPixels + 50 && !this.jugador.isInBubble && !this.jugador.canDrop && this.jugador.bubblesLeft > 0) {
+            this.sound.play('muerte');
+            this.jugador.playerFell();
+        } else if (this.jugador.y > this.map.heightInPixels + 50 && this.jugador.bubblesLeft <= 0 && !this.jugador.isInBubble) {
+            this.sound.play('muerte');
+            this.jugador.y = this.map.heightInPixels + 45;
+            this.jugador.hurt();
+            this.transition('MainMenu');
         }
     }
 
@@ -930,7 +952,7 @@ class Nivel_R extends Phaser.Scene
                 const coinBounds = coin.getBounds();
             
                 // Verificar superposición
-                if (Phaser.Geom.Rectangle.Overlaps(playerBounds, coinBounds)) {
+                if (!this.jugador.isInBubble && Phaser.Geom.Rectangle.Overlaps(playerBounds, coinBounds)) {
                     this.collectCoin(this.jugador, coin);
                     coin.collected = true;
                 }
@@ -938,54 +960,12 @@ class Nivel_R extends Phaser.Scene
         });
     }
 
-     // Spawner simple (tu PowerUp ya añade físicas y movimiento)
+    // Spawner simple (tu PowerUp ya añade físicas y movimiento)
     spawnPowerUp(x, y, type, textureKey) {
         let power = new PowerUp(this, x, y, type, textureKey)
         power.body.setVelocity(power.body.velocity.x * 3,-150); // Salir del bloque hacia arriba
         this.powerups.add(power);
         return this.powerups;
-    }
-
-
-    centerCameraOnPlayer() {
-        // Obtener las dimensiones reales de la vista de la cámara considerando el zoom
-        const cameraViewWidth = this.cameras.main.width / this.cameras.main.zoom;
-        const cameraViewHeight = this.cameras.main.height / this.cameras.main.zoom;
-
-        // Seguimiento horizontal
-        let targetX;
-    
-        if (this.jugador.x < cameraViewWidth / 4) {
-            targetX = -200;
-        } else {
-            targetX = this.jugador.x - cameraViewWidth / 1.5;
-        }
-
-        // Seguimiento vertical
-        let targetY;
-    
-        // Calcular la posición vertical ideal
-        const baseTargetY = this.jugador.y - cameraViewHeight * 0.65;
-    
-        if (!(this.jugador.isGrounded || this.jugador.body.blocked.down)) {
-            // Cuando salta, mantener la cámara un poco más alta
-            targetY = this.jugador.y - cameraViewHeight * 0.7;
-        } else {
-            // Cuando está en el suelo, mantenerlo en la posición vertical ideal
-            targetY = baseTargetY
-        }
-
-        // Suavizado tipo "spring"
-        const springFactorX = 0.05;
-        const springFactorY = 0.015;
-        const dx = targetX - this.cameras.main.scrollX;
-        const dy = targetY - this.cameras.main.scrollY;
-
-        const maxSpeedY = 15;
-        const moveY = Phaser.Math.Clamp(dy * springFactorY, -maxSpeedY, maxSpeedY);
-
-        this.cameras.main.scrollX += dx * springFactorX;
-        this.cameras.main.scrollY += moveY;
     }
 }
 
