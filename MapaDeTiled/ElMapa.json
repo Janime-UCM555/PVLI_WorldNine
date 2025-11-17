@@ -2339,6 +2339,24 @@
                  "width":44,
                  "x":672,
                  "y":672
+                }, 
+                {
+                 "gid":1435,
+                 "height":30,
+                 "id":290,
+                 "name":"Pokey",
+                 "properties":[
+                        {
+                         "name":"segments",
+                         "type":"int",
+                         "value":4
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":30,
+                 "x":544,
+                 "y":672
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -2421,7 +2439,7 @@
          "y":0
         }],
  "nextlayerid":14,
- "nextobjectid":290,
+ "nextobjectid":292,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.2",
@@ -13677,6 +13695,10 @@
          "tilecount":1,
          "tileheight":56,
          "tilewidth":44
+        }, 
+        {
+         "firstgid":1434,
+         "source":"Pokey.tsx"
         }],
  "tilewidth":32,
  "type":"map",

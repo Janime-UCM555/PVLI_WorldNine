@@ -4,6 +4,7 @@ import Fin from '../gameObjects/BarraFin.js';
 import Goomba from '../gameObjects/Goomba.js';
 import Koopa from '../gameObjects/Koopa.js';
 import PiranhaPlant from '../gameObjects/PiranhaPlant.js';
+import Pokey from '../gameObjects/Pokey.js';
 import { PowerUp, POWERUP_TYPES } from '../gameObjects/PowerUps.js';
 class Nivel_T extends Phaser.Scene
 {
@@ -154,6 +155,7 @@ class Nivel_T extends Phaser.Scene
         this.goombas = this.add.group();
         this.koopas = this.add.group();
         this.piranhas = this.add.group();
+        this.pokeys = this.add.group();
         for (const enemie of enemies)
         {
             if (enemie.name === 'Goomba')
@@ -194,6 +196,12 @@ class Nivel_T extends Phaser.Scene
                     2000
                 );
                 this.piranhas.add(piranha);
+            }
+            else if (enemie.name === 'Pokey')
+            {
+                const segments = enemie.properties?.find(p => p.name === 'segments')?.value || 5;
+                const pokey = new Pokey(this, enemie.x, enemie.y, segments);
+                this.pokeys.add(pokey);
             }
         }
 
@@ -392,6 +400,18 @@ class Nivel_T extends Phaser.Scene
                     bodyB.gameObject.handlePlayerCollision(this.jugador);
                 }
             }
+            if(bodyB.gameObject instanceof Pokey && bodyA.gameObject == this.jugador ||
+               bodyA.gameObject instanceof Pokey && bodyB.gameObject == this.jugador)
+            {
+                console.log('🌵 COLISIÓN CON POKEY DETECTADA');
+                if (bodyA.gameObject instanceof Pokey)
+                {
+                    bodyA.gameObject.handlePlayerCollision(this.jugador);
+                }
+                else{
+                    bodyB.gameObject.handlePlayerCollision(this.jugador);
+                }
+            }
             // if(bodyA.gameObject instanceof Goomba && bodyB.gameObject == this.groundLayer)
             // {
             //     bodyA.gameObject.handleWallCollision(bodyB.gameObject);
@@ -498,6 +518,12 @@ class Nivel_T extends Phaser.Scene
         this.piranhas.getChildren().forEach(piranha => {
             if (piranha.safeDestroy && !piranha.shouldBeDestroyed) {
                 piranha.safeDestroy();
+            }
+        });
+
+        this.pokeys.getChildren().forEach(pokey => {
+            if (pokey.safeDestroy && !pokey.shouldBeDestroyed) {
+                pokey.safeDestroy();
             }
         });
 
@@ -860,6 +886,12 @@ class Nivel_T extends Phaser.Scene
 
             // Actualizar objetos
             this.updateObjects(time, delta);
+
+            if (this.pokeys) {
+                this.pokeys.getChildren().forEach(pokey => {
+                    pokey.update(time, delta);
+                });
+            }
 
             // Posicionar bien la cámara respecto al jugador
             this.jugador.centerCameraOnPlayer();
