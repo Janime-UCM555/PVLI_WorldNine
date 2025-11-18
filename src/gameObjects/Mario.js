@@ -53,18 +53,20 @@ class Mario extends Phaser.GameObjects.Sprite
         }
 
         //Sensores
-        this.blocked= {
+        this.blocked = {
             left: false,
             right: false,
             bottom: false,
             up: false
         },
-        this.numTouching= {
+
+        this.numTouching = {
                 left: 0,
                 right: 0,
                 bottom: 0,
                 up:0
-        };     
+        };
+
         // MatterBody
         // this.setBody({
         //     type:'rectangle',
@@ -84,12 +86,14 @@ class Mario extends Phaser.GameObjects.Sprite
             right: M.Bodies.rectangle(sx+w*0.45, sy, 5, h*0.25, { isSensor: true }),
             up: M.Bodies.rectangle(sx, -h/sy, sx, 5, { isSensor: true })
         };
+
         const compoundBody = M.Body.create({
         parts: [this.playerBody,this.sensors.bottom, this.sensors.left, this.sensors.right/*, this.sensors.up*/],
         friction: 0,
         frictionAir: 0,
         restitution: 0.05 // El jugador no se pega a paredes
         });
+
         this.setExistingBody(compoundBody);
         // Configuración de física
         if (this.body) {
@@ -159,6 +163,10 @@ class Mario extends Phaser.GameObjects.Sprite
         //     this.baseBody.h * this.base.scaleY
         // );
 
+        // Daño
+        this.warningTimer = null;
+        this.blinkEvent = null;
+
         this.activePowerUp = null;
 
         //Parametros Estrella
@@ -192,8 +200,84 @@ class Mario extends Phaser.GameObjects.Sprite
 
         // Configurar entrada del ratón para saltar
         this.setupMouseInput();
+
+        // Configurar colisión con los bordes del mundo
+        this.setUpWorldBoundsCollision();
     }
 
+    setUpWorldBoundsCollision() {
+        const world = this.scene.matter.world;
+
+        // Por si acaso se vuelve a crear el jugador, limpiamos listeners antiguos
+        world.off('beforeupdate', this.handleBeforeUpdate, this);
+        world.off('collisionactive', this.handleCollisionActive, this);
+        world.off('afterupdate', this.handleAfterUpdate, this);
+
+        world.on('beforeupdate', this.handleBeforeUpdate, this);
+        world.on('collisionactive', this.handleCollisionActive, this);
+        world.on('afterupdate', this.handleAfterUpdate, this);
+    }
+
+    handleBeforeUpdate(event) {
+        // Resetear contadores de sensores antes de la actualización
+        this.numTouching.left = 0;
+        this.numTouching.right = 0;
+        this.numTouching.bottom = 0;
+        this.numTouching.up = 0;
+    }
+
+    handleCollisionActive(event) {
+        for (let i = 0; i < event.pairs.length; i++)
+        {
+            const bodyA = event.pairs[i].bodyA;
+            const bodyB = event.pairs[i].bodyB;
+
+            // Saltar si uno de los cuerpos es el jugador
+            if (bodyA === this.playerBody || bodyB === this.playerBody)
+            {
+                continue;
+            }
+
+            // verificamos si esta tocando suelo
+            if (bodyA === this.sensors.bottom || bodyB === this.sensors.bottom)
+            {
+                // Contar cualquier superficie como suelo (por ejemplo, saltar sobre una caja no estática).
+                this.numTouching.bottom += 1;
+            }
+
+            // verificamos si esta tocando pared izquierda
+            if ((bodyA === this.sensors.left && bodyB.isStatic) || (bodyB === this.sensors.left && bodyA.isStatic))
+            {
+                // Solo los objetos estáticos cuentan ya que no queremos ser bloqueados por un objeto que
+                // podemos empujar.
+                this.numTouching.left += 1;
+            }
+
+            // verificamos si esta tocando pared derecha
+            if ((bodyA === this.sensors.right && bodyB.isStatic) || (bodyB === this.sensors.right && bodyA.isStatic))
+            {
+                this.numTouching.right += 1;
+            }
+
+            // verificamos si esta tocando techo
+            if ((bodyA === this.sensors.up && bodyB.isStatic) || (bodyB === this.sensors.up && bodyA.isStatic))
+            {
+                this.numTouching.up += 1;
+            }
+        };
+    }
+
+    handleAfterUpdate(event) {
+        // Actualizar estados de bloqueo basados en sensores
+        this.blocked.right = this.numTouching.right > 0;
+        this.blocked.left = this.numTouching.left > 0;
+        this.blocked.bottom = this.numTouching.bottom > 0;
+        this.blocked.up = this.numTouching.up > 0;
+
+        // Actualizar si está en el suelo
+        this.isGrounded = this.blocked.bottom;
+    }
+    
     setupMouseInput() {
         // Limpiar eventos previos
         this.scene.input.off('pointerdown');
@@ -708,6 +792,8 @@ class Mario extends Phaser.GameObjects.Sprite
             this.footstepCooldown -= delta;
         }
 
+        const previousGrounded = this.isGrounded;
+
         // Manejar el salto
         this.handleJump(time, delta);
         
@@ -728,9 +814,6 @@ class Mario extends Phaser.GameObjects.Sprite
             if (!this.isBeingPushed && !this.isInBubble) {
                 this.setVelocityX(this.speed);
             }
-
-            // Guardar el estado anterior antes de actualizar
-            const previousGrounded = this.isGrounded; // Variable local para este frame
 
             // Si choca por arriba, cancelar el salto progresivo
             if (this.blocked.up) {
@@ -1049,27 +1132,40 @@ class Mario extends Phaser.GameObjects.Sprite
         this.deactivatePowerUp();
     }
     
+    // --------------------------
+    //  POWER-UP: ESTRELLA
+    // --------------------------
     setInvincible(durationMs) {
-
-        if (this.isInvincible) {
-            this.invTimer.remove(false);
-        }
+        // Evitar reaplicar si ya está la estrella activa
+        if (this.isInvincible) return;
 
         this.isInvincible = true;
         this.activePowerUp = POWERUP_TYPES.STAR;
-        this.scene.levelMusic.pause();
-        this.starman.play();
-        const rainbowColors = [
-            0xFF0000, // Rojo
-            0xFF7F00, // Naranja
-            0xFFFF00, // Amarillo
-            0x00FF00, // Verde
-            0x0000FF, // Azul
-            0x4B0082, // Índigo
-            0x8B00FF // Violeta
-        ];
 
+        // Música
+        if (!this.starman) {
+            this.starman = this.scene.sound.add('starman', { loop: true, volume: 0.5 });
+        }
+        if (this.scene.levelMusic && this.scene.levelMusic.isPlaying) {
+            this.scene.levelMusic.pause();
+        }
+        this.starman.play();
+
+        // Efecto arcoíris
+        const rainbowColors = [
+            0xff0000, // rojo
+            0xff7f00, // naranja
+            0xffff00, // amarillo
+            0x00ff00, // verde
+            0x0000ff, // azul
+            0x4b0082, // índigo
+            0x8b00ff  // violeta
+        ];
         let colorIndex = 0;
+
+        if (this.invEvent?.remove) {
+            this.invEvent.remove(false);
+        }
 
         this.invEvent = this.scene.time.addEvent({
             delay: 100,
@@ -1080,55 +1176,95 @@ class Mario extends Phaser.GameObjects.Sprite
             }
         });
 
-    const warningTime = 1000; // 3 segundos antes del final
-    const timeUntilWarning = durationMs - warningTime;
-    
-    this.warningTimer = this.scene.time.delayedCall(timeUntilWarning, () => {
-        // Crear y reproducir el sonido de advertencia si no existe
-        if (!this.starEndingSound) {
-            this.starEndingSound = this.scene.sound.add('starEnding');
+        // Aviso de que se acaba la estrella
+        const warningTime = 1000;
+        const timeUntilWarning = durationMs - warningTime;
+
+        if (this.warningTimer?.remove) {
+            this.warningTimer.remove(false);
         }
-        this.starEndingSound.play();
-    });
+
+        this.warningTimer = this.scene.time.delayedCall(timeUntilWarning, () => {
+            if (!this.starEndingSound) {
+                this.starEndingSound = this.scene.sound.add('starEnding');
+            }
+            this.starEndingSound.play();
+        });
+
+        // Cuando se acabe la estrella, desactivar power-up
+        if (this.invTimer?.remove) {
+            this.invTimer.remove(false);
+        }
 
         this.invTimer = this.scene.time.delayedCall(durationMs, () => {
-           this.deactivatePowerUp();
+            this.deactivatePowerUp();
         });
     }
 
+    // --------------------------
+    //  POWER-UP: MARTILLO
+    // --------------------------
     enableHammer() {
-
+        // Aquí solo marcamos que puede lanzar martillo.
+        // El click derecho lo gestionas en la escena usando this.canThrowHammer.
+        this.canThrowHammer = true;
+        // Por si quieres un sonido genérico de coger power-up
+        this.powerUpSound?.play();
     }
 
+    // --------------------------
+    //  POWER-UP: DOBLE SALTO
+    // --------------------------
     enableDoubleJump() {
-    
+        this.canDoubleJump = true;
+        this.hasDoubleJumped = false; // se reseteará al tocar suelo
+        this.powerUpSound?.play();
     }
 
-    enableDash(){
-
+    // --------------------------
+    //  POWER-UP: DASH
+    // --------------------------
+    enableDash() {
+        // Habilitamos la posibilidad de hacer dash, la lógica del dash
+        // la disparas con el click derecho usando this.canDash / this.isDashing
+        this.canDash = true;
+        this.isDashing = false;
+        // Por si quieres usar una velocidad especial al hacer dash:
+        this.dashSpeed = this.base.speed * 2;
+        this.powerUpSound?.play();
     }
 
-    enableHighJump(){
-
+    // --------------------------
+    //  POWER-UP: BOTAS DE SALTO
+    // --------------------------
+    enableHighJump() {
+        this.canHighJump = true;
+        // Aumentamos la altura de salto usando el multiplicador
+        this.maxJumpVelocity = this.base.maxJumpVelocity * this.highJumpMultiplier;
+        this.powerUpSound?.play();
     }
 
-    deactivatePowerUp(){
-       // 1. Cancelar eventos de la estrella (arcoíris)
-        if (this.invEvent?.remove){
+    // --------------------------
+    //  LIMPIAR POWER-UP ACTIVO
+    // --------------------------
+    deactivatePowerUp() {
+        // 1. Cancelar eventos de la estrella
+        if (this.invEvent?.remove) {
             this.invEvent.remove(false);
             this.invEvent = null;
-        } 
+        }
 
-        if (this._invTimer?.remove){
-            this._invTimer.remove(false);
-            this._invTimer = null;
-        } 
+        if (this.invTimer?.remove) {
+            this.invTimer.remove(false);
+            this.invTimer = null;
+        }
 
-        if (this.warningTimer?.remove){
+        if (this.warningTimer?.remove) {
             this.warningTimer.remove(false);
             this.warningTimer = null;
         }
 
+        // 2. Parar músicas de estrella y reanudar música de nivel
         if (this.starman && this.starman.isPlaying) {
             this.starman.stop();
         }
@@ -1139,50 +1275,53 @@ class Mario extends Phaser.GameObjects.Sprite
             this.scene.levelMusic.resume();
         }
 
-
-        // 2. Restaurar apariencia
+        // 3. Restaurar apariencia
         this.clearTint();
         this.alpha = 1;
 
-        // 3. Restaurar tamaño si había super size
-        if (this.activePowerUp === 'mushroom' && this._baseBody) {
+        // 4. Restaurar tamaño si estábamos en modo champiñón
+        if (this.isSuperSize) {
             this.setScale(this.base.scaleX, this.base.scaleY);
-            this.setRectangle(w, h);
-            // this.body.setSize(this._baseBody.w, this._baseBody.h, true);
-            // this.body.setOffset(this._baseBody.ox, this._baseBody.oy);
             this.isSuperSize = false;
         }
 
-        // 4. Resetear flags y multiplicadores
+        // 5. Resetear flags de power-ups
         this.isInvincible = false;
-        this.hammerEnabled = false;
-        this.doubleJumpEnabled = false;
-        this.doubleJumpAvailable = false;
-        this.dashMultiplier = 1;
-        this.highJumpMultiplier = 1;
 
-        // 5. Restaurar velocidad y salto base
+        this.canThrowHammer = false;
+
+        this.canDoubleJump = false;
+        this.hasDoubleJumped = false;
+
+        this.canDash = false;
+        this.isDashing = false;
+
+        this.canHighJump = false;
+
+        // 6. Restaurar velocidad y salto base
         this.speed = this.base.speed;
-        this.minJumpVelocity = this.base.minJumpVelocity ?? this.base.jumpForce ?? this.minJumpVelocity;
+        this.minJumpVelocity = this.base.minJumpVelocity ?? this.minJumpVelocity;
         this.maxJumpVelocity = this.base.maxJumpVelocity ?? this.maxJumpVelocity;
 
-        // 6. Limpieza final
+        // 7. Limpiar referencia
         this.activePowerUp = null;
     }
 
-    enableSuperSize(){
-        // evita duplicar power-ups
-        if (this.isSuperSize) {
-            // aquí podrías sumar puntos, etc.
-            return;
-        }
-        this.powerUpSound.play();
+    // --------------------------
+    //  POWER-UP: CHAMPIÑÓN
+    // --------------------------
+    enableSuperSize() {
+        // Evita duplicar
+        if (this.isSuperSize) return;
+
+        this.powerUpSound?.play();
+
         const k = this.scaleMultiplier;
-        this.activePowerUp = POWERUP_TYPES.MUSHROOM;
         this.isSuperSize = true;
 
-        // Escala visual
+        // Escala visual (Super Mario / Powered-Up)
         this.setScale(this.base.scaleX * k, this.base.scaleY * k);
     }
+
 }
 export default Mario;

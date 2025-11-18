@@ -173,16 +173,3 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
     else if (this.blocked.right) this.setVelocityX(-Math.abs(this.body.velocity.x));
   }
 }
-
-// ------------------------------------------------------------
-// NOTAS DE INTEGRACIÓN:
-// ------------------------------------------------------------
-// Tu clase Player debería implementar los métodos:
-//   - setInvincible(durationMs) → para la Estrella (duración limitada)
-//   - enableHammer() → activa lanzamiento de martillos
-//   - enableDoubleJump() → habilita doble salto
-//   - enableDash() → añade dash o aumenta velocidad base
-//   - enableHighJump() → aumenta altura de salto
-//   - deactivatePowerUp() → limpia cualquier efecto activo
-//  - enableSuperSize() → aumenta tamaño del jugador
-// Solo la estrella tiene duración temporal automática.
