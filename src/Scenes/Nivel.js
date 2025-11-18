@@ -937,7 +937,7 @@ class Nivel_T extends Phaser.Scene
     checkPlayerFell() {
         if (this.jugador.y > this.map.heightInPixels + 50 && !this.jugador.isInBubble && !this.jugador.canDrop && this.jugador.bubblesLeft > 0) {
             this.sound.play('muerte');
-            this.jugador.playerFell();
+            this.jugador.Bubble();
         } else if (this.jugador.y > this.map.heightInPixels + 50 && this.jugador.bubblesLeft <= 0 && !this.jugador.isInBubble) {
             this.sound.play('muerte');
             this.jugador.y = this.map.heightInPixels + 45;

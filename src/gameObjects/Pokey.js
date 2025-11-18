@@ -153,11 +153,24 @@ class Pokey extends Phaser.GameObjects.Container
             }
 
             const playerWasSuperSize = player.isSuperSize;
-            player.takeDamage(pushDirection);
-            
-            if (!playerWasSuperSize && !this.scene.endTimer) {
+            if (playerWasSuperSize) {
+                player.takeDamage(pushDirection);
+            } else if (!playerWasSuperSize && !this.scene.endTimer) {
                 this.scene.sound.play('muerte');
-                this.scene.restartLevel();
+                
+                // Detener cualquier movimiento de Mario antes de la burbuja
+                player.setVelocity(0, 0);
+                if (player.body) {
+                    player.body.velocity.x = 0;
+                    player.body.velocity.y = 0;
+                }
+
+                if (player.bubblesLeft > 0) {
+                    player.Bubble(); // Entra en burbuja sin empuje
+                } else {
+                    player.hurt();
+                    this.scene.transition('MainMenu'); // Volver al menú si no le quedan burbujas al jugador
+                }
             }
 
             this.hitSound.play();

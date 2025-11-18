@@ -420,7 +420,7 @@ class Mario extends Phaser.GameObjects.Sprite
         });
     }
 
-    playerFell() {
+    Bubble() {
         if (this.isInBubble) {
             return;
         }
@@ -431,7 +431,13 @@ class Mario extends Phaser.GameObjects.Sprite
 
         // Detener cualquier movimiento previo inmediatamente
         this.setVelocity(0, 0);
-        this.body.ignoreGravity = true;
+        // Detener el movimiento automático
+        this.isStopped = true;
+        if (this.body) {
+            this.body.velocity.x = 0;
+            this.body.velocity.y = 0;
+            this.body.ignoreGravity = true;
+        }
 
         this.enterBubbleState();
     }
@@ -450,6 +456,9 @@ class Mario extends Phaser.GameObjects.Sprite
             this.body.ignoreGravity = true;
             this.setSensor(true);
             this.body.collisionFilter.mask = 0; // Desactivar completamente las colisiones
+            // Forzar velocidad cero
+            this.body.velocity.x = 0;
+            this.body.velocity.y = 0;
         }
 
         // 3. Cambiar a textura de burbuja
@@ -457,8 +466,8 @@ class Mario extends Phaser.GameObjects.Sprite
 
         // 4. Posicionar a Mario cerca del punto de caída
         const cameraViewHeight = camera.height / camera.zoom;
-        let initialX = this.x - 15;
-        let initialY = camera.scrollY + cameraViewHeight + 200;
+        let initialX = this.x;
+        let initialY = this.y;
 
         initialX = Phaser.Math.Clamp(initialX, 100, this.scene.map.widthInPixels - 100);
         initialY = Phaser.Math.Clamp(initialY, 100, this.scene.map.heightInPixels + 100);
@@ -472,34 +481,78 @@ class Mario extends Phaser.GameObjects.Sprite
         
             this.bubblePhase = 2; // Fase 1 - Movimiento
         
-            // 6. Movimiento diagonal (arriba e izquierda)
+            // 6. Movimiento diagonal
             this.setVelocityX(-9); // Velocidad hacia izquierda
-            this.setVelocityY(-11.45); // Velocidad hacia arriba
+            
+            // Calcular velocidad Y para llegar a la posición Y objetivo (290)
+            const targetY = 290; // Posición Y objetivo
+            const currentY = this.y;
+
+            // Calcular posición intermedia (90% del camino) para el movimiento constante
+            const intermediateY = currentY + ((targetY - currentY) * 0.9);
+
+            // Primer tween: movimiento constante (1000ms)
+            this.scene.tweens.add({
+                targets: this,
+                y: intermediateY,
+                duration: 1000,
+                ease: 'Linear', // Movimiento completamente lineal/constante
+                onUpdate: () => {
+                    // Mantener velocidad X constante
+                    if (this.x > 50) {
+                        this.setVelocityX(-9);
+                    } else {
+                        this.setVelocityX(0);
+                    }
+                },
+                onComplete: () => {
+                    // Guardar velocidades iniciales
+                    const startVelX = -9;
+                    const endVelX = -2.45;
+
+                    // Segundo tween: desaceleración (250ms)
+                    this.scene.tweens.add({
+                        targets: this,
+                        y: targetY,
+                        duration: 250,
+                        ease: 'Cubic.Out',
+                        onUpdate: (tween) => {
+                            // Calcular progreso manualmente (0 a 1)
+                            const progress = tween.progress;
+            
+                            // Interpolar velocidad X basada en el progreso
+                            const currentVelX = startVelX + ((endVelX - startVelX) * progress);
+            
+                            // Aplicar velocidad
+                            if (this.x > 50) {
+                                this.setVelocityX(currentVelX);
+                            } else {
+                                this.setVelocityX(0);
+                            }
+
+                            // Actualizar cuerpo de Matter
+                            if (this.body) {
+                                const M = Phaser.Physics.Matter.Matter;
+                                M.Body.setPosition(this.body, { 
+                                    x: this.x, 
+                                    y: this.y 
+                                });
+                            }
+                        },
+                        onComplete: () => {
+                            if (this.isInBubble) {
+                                this.startBubblePhase2();
+                            }
+                        }
+                    });
+                }
+            });
 
             // 7. Permitir salir después de 400ms de empezar el movimiento
             this.scene.time.delayedCall(400, () => {
                 if (this.isInBubble) {
                     this.canDrop = true;
                 }
-            });
-
-            // 8. Desacelerar después de 1000ms de movimiento
-            this.scene.time.delayedCall(1000, () => {
-                if (!this.isInBubble) return;
-            
-                // Desaceleración suave
-                this.scene.tweens.add({
-                    targets: this.body.velocity,
-                    x: -2.45,
-                    y: -0.4,
-                    duration: 250, // 250ms para desacelerar
-                    ease: 'Cubic.Out',
-                    onComplete: () => {
-                        if (this.isInBubble) {
-                            this.startBubblePhase2();
-                        }
-                    }
-                });
             });
         });
     }
@@ -520,8 +573,7 @@ class Mario extends Phaser.GameObjects.Sprite
             amplitude: 40, // Amplitud de la oscilación
             frequency: 0.002, // Frecuencia de la oscilación
             baseY: this.y, // Posición base para la oscilación
-            startTime: this.scene.time.now,
-            originalX: this.x // Guardar posición X original para límites
+            startTime: this.scene.time.now
         };
 
         // 4. Acelerar gradualmente después de 1500ms
@@ -533,7 +585,7 @@ class Mario extends Phaser.GameObjects.Sprite
                     this.scene.tweens.add({
                         targets: this.body.velocity,
                         x: -5.75,
-                        duration: 1000, // Duración de la transición en ms
+                        duration: 1250, // Duración de la transición en ms
                         ease: 'Cubic.InOut',
                         onComplete: () => {
                             if (this.isInBubble && this.bubblePhase === 3) {

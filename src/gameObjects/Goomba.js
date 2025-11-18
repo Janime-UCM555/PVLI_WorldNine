@@ -230,23 +230,37 @@ class Goomba extends Phaser.GameObjects.Sprite
             });
         } else if (this.isAlive && !player.isBeingPushed && !player.isInvulnerable) {
             // Colisión lateral
-            let pushDirection = 0; // Determinar dirección del empuje
-
-            // Calcular la dirección de la colisión
-            if (player.x < this.x) {
-                // Goomba está a la derecha de Mario -> empujar a Mario hacia la izquierda
-                pushDirection = -1;
-            } else {
-                // Goomba está a la izquierda de Mario -> empujar a Mario hacia la derecha
-                pushDirection = 1;
-            }
-
-            const playerWasSuperSize = player.isSuperSize;
-            player.takeDamage(pushDirection);
-            if (!playerWasSuperSize && !this.scene.endTimer) {
-                // Si Mario ha colisionado lateralmente con un Goomba siendo pequeño se reinicia el nivel
+            // Si Mario ha colisionado lateralmente con un Goomba siendo pequeño, Mario pasa a estado de burbuja si le quedan burbujas, si no se vuelve al menú
+            if (!player.isSuperSize && !this.scene.endTimer) {
                 this.scene.sound.play('muerte');
-                this.scene.restartLevel();
+
+                // Detener cualquier movimiento de Mario antes de la burbuja
+                player.setVelocity(0, 0);
+                if (player.body) {
+                    player.body.velocity.x = 0;
+                    player.body.velocity.y = 0;
+                }
+
+                if (player.bubblesLeft > 0) {
+                    player.Bubble(); // Entra en burbuja
+                } else {
+                    player.hurt();
+                    this.scene.transition('MainMenu'); // Volver al menú si no le quedan burbujas al jugador
+                }
+            } else {
+                // Colisión lateral
+                let pushDirection = 0; // Determinar dirección del empuje
+
+                // Calcular la dirección de la colisión
+                if (player.x < this.x) {
+                    // Goomba está a la derecha de Mario -> empujar a Mario hacia la izquierda
+                    pushDirection = -1;
+                } else {
+                    // Goomba está a la izquierda de Mario -> empujar a Mario hacia la derecha
+                    pushDirection = 1;
+                }
+
+                player.takeDamage(pushDirection);
             }
         }
     }
