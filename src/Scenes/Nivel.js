@@ -230,7 +230,7 @@ class Nivel_T extends Phaser.Scene
         this.powerups = this.add.group();
 
         // this.spawnPowerUp(200, 600, POWERUP_TYPES.STAR);
-        this.spawnPowerUp(200, 600, POWERUP_TYPES.HAMMER);
+        // this.spawnPowerUp(200, 600, POWERUP_TYPES.HAMMER);
 
         this.setupCollisions();
 
