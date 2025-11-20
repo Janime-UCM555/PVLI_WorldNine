@@ -1006,14 +1006,14 @@ class Nivel_T extends Phaser.Scene
     hammer.setAngularVelocity(0);
     hammer.setDepth(6);
 
-    // // Por si quieres que desaparezca solo tras un rato
-    // this.time.delayedCall(1500, () => {
-    //     if (!hammer.active) return; // ya ha sido reciclado
-    //     hammer.setActive(false);
-    //     hammer.setVisible(false);
-    //     hammer.setVelocity(0, 0);
-    //     hammer.setPosition(-1000, -1000);
-    // });
+    // Desaparezcen tras un rato
+    this.time.delayedCall(1500, () => {
+        if (!hammer.active) return; // ya ha sido reciclado
+        hammer.setActive(false);
+        hammer.setVisible(false);
+        hammer.setVelocity(0, 0);
+        hammer.setPosition(-1000, -1000);
+    });
 
     return hammer;
 }
