@@ -1,3 +1,5 @@
+import { DIE_TYPES } from "./Goomba.js";
+
 class Pokey extends Phaser.GameObjects.Container
 {
     constructor(scene, x, y, segments = 5, speed = 0.5) {
@@ -15,6 +17,7 @@ class Pokey extends Phaser.GameObjects.Container
         this.isAlive = true;
         this.shouldBeDestroyed = false;
         this.currentlyVisible = false;
+        this.isEnemy = true; // Marca como enemigo
 
         // Sensores para detección de colisiones
         this.blocked = {
@@ -39,6 +42,10 @@ class Pokey extends Phaser.GameObjects.Container
         this.setupPhysics();
 
         this.hitSound = scene.sound.add('aplastar');
+    }
+
+    die(killType = DIE_TYPES.STOMP) {
+        this.safeDestroy();
     }
 
     createSegments() {

@@ -1,3 +1,5 @@
+import { DIE_TYPES } from "./Goomba.js";
+
 class PiranhaPlant extends Phaser.GameObjects.Sprite
 {
     constructor(scene, x, y, texture, hideTime = 2000, showTime = 2000) {
@@ -13,6 +15,7 @@ class PiranhaPlant extends Phaser.GameObjects.Sprite
         this.isMoving = false; // Está en transición
         this.isAlive = true;
         this.shouldBeDestroyed = false;
+        this.isEnemy = true; // Marca como enemigo
 
         // Posiciones
         this.hiddenY = y; // Posición cuando está oculta (dentro de la tubería)
@@ -51,6 +54,10 @@ class PiranhaPlant extends Phaser.GameObjects.Sprite
         this.startCycle();
 
         this.biteSound = scene.sound.add('aplastar');
+    }
+
+    die(killType = DIE_TYPES.STOMP) {
+        this.safeDestroy();
     }
 
     startCycle() {

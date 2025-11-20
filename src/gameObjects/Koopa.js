@@ -1,3 +1,5 @@
+import { DIE_TYPES } from "./Goomba.js";
+
 class Koopa extends Phaser.GameObjects.Sprite
 {
     constructor(scene, x, y, texture, speed = 50, isRome) {
@@ -12,6 +14,7 @@ class Koopa extends Phaser.GameObjects.Sprite
         this.isAlive = true; // Estado de vivo o muerto
         this.currentlyVisible = false; // Estado actual de visibilidad
         this.shouldBeDestroyed = false; // Control de destrucción
+        this.isEnemy = true; // Marca como enemigo
 
         // Configuración de física
         //Sensores
@@ -81,6 +84,15 @@ class Koopa extends Phaser.GameObjects.Sprite
 
         }
     }
+
+    die(killType = DIE_TYPES.STOMP) {
+    if (killType === DIE_TYPES.STOMP) {
+        this.stomp();       // se hace caparazón
+    } 
+    else {
+        this.safeDestroy(); // martillo / estrella lo matan directo
+    }
+}
 
     // Verificar visibilidad
     checkVisibility() {

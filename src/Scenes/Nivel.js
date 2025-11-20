@@ -6,6 +6,7 @@ import Koopa from '../gameObjects/Koopa.js';
 import PiranhaPlant from '../gameObjects/PiranhaPlant.js';
 import Pokey from '../gameObjects/Pokey.js';
 import { PowerUp, POWERUP_TYPES } from '../gameObjects/PowerUps.js';
+import { DIE_TYPES } from "../gameObjects/Goomba.js";
 class Nivel_T extends Phaser.Scene
 {
     constructor(){
@@ -228,7 +229,7 @@ class Nivel_T extends Phaser.Scene
 
         this.powerups = this.add.group();
 
-        this.spawnPowerUp(200, 600, POWERUP_TYPES.STAR);
+        // this.spawnPowerUp(200, 600, POWERUP_TYPES.STAR);
         this.spawnPowerUp(200, 600, POWERUP_TYPES.HAMMER);
 
         this.setupCollisions();
@@ -982,41 +983,83 @@ class Nivel_T extends Phaser.Scene
         return this.powerups;
     }
 
-    requestHammer(player) {
-    // Buscar un martillo inactivo en el grupo
+requestHammer(player) {
     let hammer = this.hammers.getChildren().find(h => !h.active);
 
-    // Si no hay ninguno libre, creamos uno nuevo
     if (!hammer) {
-        hammer = this.matter.add.sprite(player.x, player.y, POWERUP_TYPES.HAMMER, 0);
-
-        // Pequeña configuración física (puedes tunear)
-        hammer.setCircle(8);           // hitbox redondito
+        hammer = this.matter.add.sprite(player.x, player.y, 'hammer');
+        hammer.setCircle(8);
+        hammer.setBounce(0.8);
         hammer.setIgnoreGravity(false);
-        hammer.isHammer = true;        // flag para las colisiones
+        hammer.setFixedRotation();
+        hammer.isHammer = true;
+        hammer.used = false;
+        hammer.setDepth(6);
+
+        // Config rebotes por primera vez
+        hammer._bounces = 0;
+        hammer._maxBounces = 3;
+
+        // Manejar colisiones
+       hammer.setOnCollide((collision) => {
+            if (hammer.used) return; // si ya no hace daño, ignorar
+
+            const bodyA = collision.bodyA;
+            const bodyB = collision.bodyB;
+            const other = (bodyA === hammer.body) ? bodyB : bodyA;
+
+            const otherGO = other?.gameObject;
+
+            // 🔹 Interface común de enemigos
+            if (otherGO && otherGO.isEnemy && typeof otherGO.die === 'function') {
+                otherGO.die(DIE_TYPES.HAMMER);
+            }
+
+            // Rebote solo contra bloques u objetos estáticos
+            if (other && other.isStatic) {
+                hammer._bounces++;
+
+                if (hammer._bounces >= hammer._maxBounces) {
+                    hammer.used = true;        // ya no hace daño
+                    hammer.setBounce(0);       // sin rebote
+
+                    // Desaparecer después de 0.3s
+                    this.time.delayedCall(300, () => {
+                        this.recycleHammer(hammer);
+                    });
+                }
+            }
+        });
 
         this.hammers.add(hammer);
     }
 
-    // Activar / mostrar el martillo y limpiar su estado
+    hammer.used = false;
+    hammer._bounces = 0;
+    hammer.setBounce(0.4);
+    hammer.setIgnoreGravity(false);
     hammer.setActive(true);
     hammer.setVisible(true);
-    hammer.setIgnoreGravity(false);
     hammer.setVelocity(0, 0);
     hammer.setAngularVelocity(0);
     hammer.setDepth(6);
 
-    // Desaparezcen tras un rato
-    this.time.delayedCall(1500, () => {
-        if (!hammer.active) return; // ya ha sido reciclado
-        hammer.setActive(false);
-        hammer.setVisible(false);
-        hammer.setVelocity(0, 0);
-        hammer.setPosition(-1000, -1000);
-    });
-
     return hammer;
 }
+
+
+recycleHammer(hammer) {
+    if (!hammer) return;
+
+    hammer.used = false;
+    hammer._bounces = 0;
+    hammer.setActive(false);
+    hammer.setVisible(false);
+    hammer.setVelocity(0, 0);
+    hammer.setAngularVelocity(0);
+    hammer.setPosition(-1000, -1000);
+}
+
 
     // Comprueba si un objeto se encuentra en un grupo concreto
     isBodyInGroup = (body, group) => {

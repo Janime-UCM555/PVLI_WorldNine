@@ -1,3 +1,12 @@
+
+export const DIE_TYPES = {
+    STOMP:   'STOMP',    // Aplastado por Mario
+    HAMMER:  'HAMMER',   // Golpeado por martillo
+    STAR:    'STAR',     // Golpeado mientras Mario es invencible
+    FALL:    'FALL',     // Caída al vacío
+};
+
+
 class Goomba extends Phaser.GameObjects.Sprite
 {
     constructor(scene, x, y, texture, speed = 50, isRome) {
@@ -12,6 +21,7 @@ class Goomba extends Phaser.GameObjects.Sprite
         this.isAlive = true; // Estado de vivo o muerto
         this.currentlyVisible = false; // Estado actual de visibilidad
         this.shouldBeDestroyed = false; // Control de destrucción
+        this.isEnemy = true; // Marca como enemigo
 
         // Configuración de física
         //Sensores
@@ -70,6 +80,10 @@ class Goomba extends Phaser.GameObjects.Sprite
             
             this.stompSound = scene.sound.add('aplastar');
         }
+    }
+
+    die(killType = DIE_TYPES.STOMP) {
+        this.stomp();
     }
 
     // Verificar visibilidad
