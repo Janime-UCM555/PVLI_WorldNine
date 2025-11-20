@@ -228,7 +228,7 @@ class Nivel_T extends Phaser.Scene
 
         this.powerups = this.add.group();
 
-        // // this.spawnPowerUp(200, 600, POWERUP_TYPES.MUSHROOM, 'mushroom');
+        this.spawnPowerUp(200, 600, POWERUP_TYPES.STAR);
         this.spawnPowerUp(200, 600, POWERUP_TYPES.HAMMER);
 
         this.setupCollisions();
@@ -329,6 +329,13 @@ class Nivel_T extends Phaser.Scene
             frames: this.anims.generateFrameNumbers('mario_bubble', {start: 0, end: 0}),
             frameReate: 8,
             repeat: -1
+        })
+
+        this.anims.create({
+            key: 'mario_throw',
+            frames: this.anims.generateFrameNumbers('mario_throw', {start: 0, end: 3}),
+            frameReate: 8,
+            repeat: 0
         })
 
         this.anims.create({
@@ -985,8 +992,6 @@ class Nivel_T extends Phaser.Scene
 
         // Pequeña configuración física (puedes tunear)
         hammer.setCircle(8);           // hitbox redondito
-        hammer.setBounce(0.2);
-        hammer.setFrictionAir(0.02);
         hammer.setIgnoreGravity(false);
         hammer.isHammer = true;        // flag para las colisiones
 
@@ -999,15 +1004,16 @@ class Nivel_T extends Phaser.Scene
     hammer.setIgnoreGravity(false);
     hammer.setVelocity(0, 0);
     hammer.setAngularVelocity(0);
+    hammer.setDepth(6);
 
-    // Por si quieres que desaparezca solo tras un rato
-    this.time.delayedCall(1500, () => {
-        if (!hammer.active) return; // ya ha sido reciclado
-        hammer.setActive(false);
-        hammer.setVisible(false);
-        hammer.setVelocity(0, 0);
-        hammer.setPosition(-1000, -1000);
-    });
+    // // Por si quieres que desaparezca solo tras un rato
+    // this.time.delayedCall(1500, () => {
+    //     if (!hammer.active) return; // ya ha sido reciclado
+    //     hammer.setActive(false);
+    //     hammer.setVisible(false);
+    //     hammer.setVelocity(0, 0);
+    //     hammer.setPosition(-1000, -1000);
+    // });
 
     return hammer;
 }

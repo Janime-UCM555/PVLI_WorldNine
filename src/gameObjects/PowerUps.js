@@ -119,11 +119,6 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
   collect(player) {
     if (!this.active) return;
 
-    // Desactiva cualquier power-up activo anterior (solo uno a la vez)
-    if (player.activePowerUp && player.deactivatePowerUp) {
-      player.deactivatePowerUp();
-    }
-
     player.activePowerUp = this.type;
 
     switch (this.type) {

@@ -325,7 +325,7 @@ class Mario extends Phaser.GameObjects.Sprite
                 }
             }
             if (pointer.rightButtonDown()) {
-                if (this.activePowerUp === POWERUP_TYPES.HAMMER && this.canThrowHammer) {
+                if (this.canThrowHammer) {
                     this.tryThrowHammer();
                 }
             }
@@ -1144,8 +1144,6 @@ class Mario extends Phaser.GameObjects.Sprite
 
         this.speed = this.base.speed * 1.75;
 
-
-
         // Música
         if (this.scene.levelMusic && this.scene.levelMusic.isPlaying) {
             this.scene.levelMusic.pause();
@@ -1244,45 +1242,49 @@ class Mario extends Phaser.GameObjects.Sprite
     }
 
     tryThrowHammer() {
-        
-        if (!this.canThrowHammer) return;
+    if (!this.canThrowHammer) return;
 
-        const currentTime = this.scene.time.now;
+    const currentTime = this.scene.time.now || 0;
+    if (currentTime < this.hammerCooldown) return;
+    this.hammerCooldown = currentTime + 1000; // 1 segundo de cooldown
 
-        if(currentTime < this.hammerCooldown) return;
-        this.hammerCooldown = currentTime + 1000;
-
-        if(!this.scene.hammers){
-            console.warn("No hay grupo de martillos en la escena.");
-            return;
-        }
-
-        if(!this.scene.requestHammer){
-            console.warn("La escena no tiene el método requestHammer.");
-            return;
-        }
-
-        const hammer = this.scene.requestHammer(this);
-        if (!hammer) return;
-
-        const dir = 1;
-        const offsetX = this.body.width * 0.6 * dir;
-        const offsetY = this.body.height * 0.2;
-
-        hammer.setPosition(this.x + offsetX, this.y - offsetY);
-
-        const hammerSpeedX = 400 * dir;
-        const hammerSpeedY = -300; // Ligeramente hacia arriba
-        if (hammer.setVelocity) {
-            hammer.setVelocity(hammerSpeedX, hammerSpeedY);
-        } 
-        else if (hammer.body && hammer.body.setVelocity) {
-            hammer.body.setVelocity(hammerSpeedX, hammerSpeedY);
-        }
-        if (this.scene.anims.exists('mario_Throw')) {
-            this.play('mario_Throw');
-        }
+    if (!this.scene.hammers) {
+        console.warn("No hay grupo de martillos en la escena.");
+        return;
     }
+
+    if (!this.scene.requestHammer) {
+        console.warn("La escena no tiene el método requestHammer.");
+        return;
+    }
+
+    const hammer = this.scene.requestHammer(this);
+    if (!hammer) return;
+
+    // Dirección según hacia dónde mira Mario
+    const dir = 1;
+
+    // Offset respecto al sprite (no usamos body.width porque es Matter)
+    const offsetX = this.width * this.scaleX * 0.6 * dir;
+    const offsetY = this.height * this.scaleY * 0.2;
+
+    hammer.setPosition(this.x + offsetX, this.y - offsetY);
+
+    // 💡 Velocidad en la misma escala que Mario (speed ≈ 3.5)
+    const hammerSpeedX = this.speed * 2.5 * dir; // algo tipo 8–9
+    const hammerSpeedY = -6;                      // pequeño salto en arco
+
+    if (hammer.setVelocity) {
+        hammer.setVelocity(hammerSpeedX, hammerSpeedY);
+    } else if (hammer.body && hammer.body.setVelocity) {
+        hammer.body.setVelocity(hammerSpeedX, hammerSpeedY);
+    }
+
+    if (this.scene.anims.exists('mario_throw')) {
+        this.play('mario_throw', true);
+    }
+}
+
 
     enableDoubleJump() {
         this.deactivatePowerUp({ keepSize: this.isSuperSize });
