@@ -203,6 +203,8 @@ class Nivel_T extends Phaser.Scene
                 const pokey = new Pokey(this, enemie.x, enemie.y, segments);
                 this.pokeys.add(pokey);
             }
+
+            this.hammers = this.add.group();
         }
 
         // Grupo de Goombas - Añadidos manualmente
@@ -227,7 +229,7 @@ class Nivel_T extends Phaser.Scene
         this.powerups = this.add.group();
 
         // // this.spawnPowerUp(200, 600, POWERUP_TYPES.MUSHROOM, 'mushroom');
-            this.spawnPowerUp(200, 600, POWERUP_TYPES.HAMMER);
+        this.spawnPowerUp(200, 600, POWERUP_TYPES.HAMMER);
 
         this.setupCollisions();
 
@@ -965,13 +967,50 @@ class Nivel_T extends Phaser.Scene
     }
 
     // Spawner simple (tu PowerUp ya añade físicas y movimiento)
-    spawnPowerUp(x, y, type, textureKey) {
-        let power = new PowerUp(this, x, y, type, textureKey,0)
+    spawnPowerUp(x, y, type) {
+        let power = new PowerUp(this, x, y, type, type, 0)
         power.setVelocityX(power.body.velocity.x * 0.09315); // Salir del bloque hacia arriba
         power.setVelocityY(-power.body.velocity.x/2);
         this.powerups.add(power);
         return this.powerups;
     }
+
+    requestHammer(player) {
+    // Buscar un martillo inactivo en el grupo
+    let hammer = this.hammers.getChildren().find(h => !h.active);
+
+    // Si no hay ninguno libre, creamos uno nuevo
+    if (!hammer) {
+        hammer = this.matter.add.sprite(player.x, player.y, POWERUP_TYPES.HAMMER, 0);
+
+        // Pequeña configuración física (puedes tunear)
+        hammer.setCircle(8);           // hitbox redondito
+        hammer.setBounce(0.2);
+        hammer.setFrictionAir(0.02);
+        hammer.setIgnoreGravity(false);
+        hammer.isHammer = true;        // flag para las colisiones
+
+        this.hammers.add(hammer);
+    }
+
+    // Activar / mostrar el martillo y limpiar su estado
+    hammer.setActive(true);
+    hammer.setVisible(true);
+    hammer.setIgnoreGravity(false);
+    hammer.setVelocity(0, 0);
+    hammer.setAngularVelocity(0);
+
+    // Por si quieres que desaparezca solo tras un rato
+    this.time.delayedCall(1500, () => {
+        if (!hammer.active) return; // ya ha sido reciclado
+        hammer.setActive(false);
+        hammer.setVisible(false);
+        hammer.setVelocity(0, 0);
+        hammer.setPosition(-1000, -1000);
+    });
+
+    return hammer;
+}
 
     // Comprueba si un objeto se encuentra en un grupo concreto
     isBodyInGroup = (body, group) => {
