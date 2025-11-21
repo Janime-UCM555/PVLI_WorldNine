@@ -87,10 +87,14 @@ class Pokey extends Phaser.GameObjects.Container
     }
 
     setupPhysics() {
+        
         const M = Phaser.Physics.Matter.Matter;
 
         const totalWidth = 24;
-
+        const CATEGORY_PLAYER  = 0x0001;
+        const CATEGORY_ENEMY   = 0x0002;
+        const CATEGORY_TERRAIN = 0x0004;
+        const mask = CATEGORY_PLAYER | CATEGORY_TERRAIN | CATEGORY_ENEMY;
         // El Container está en la base (y), así que el centro del cuerpo está en y - (altura/2)
         const bodyCenterY = this.y - (this.totalHeight / 2);
 
@@ -102,15 +106,29 @@ class Pokey extends Phaser.GameObjects.Container
             this.totalHeight,
             { 
                 chamfer: { radius: 5 },
-                density: 0.001 // Darle peso
+                density: 0.001, // Darle peso
+                category: CATEGORY_ENEMY,
+                mask: mask
             }
         );
 
         // Sensores para detectar paredes y suelo (sin colisión física)
         this.sensors = {
-            bottom: M.Bodies.rectangle(this.x, this.y + 5, totalWidth * 1.5, 5, { isSensor: true }), // Más largo para detectar bordes
-            left: M.Bodies.rectangle(this.x - totalWidth * 0.45, bodyCenterY, 5, this.totalHeight * 0.5, { isSensor: true }),
-            right: M.Bodies.rectangle(this.x + totalWidth * 0.45, bodyCenterY, 5, this.totalHeight * 0.5, { isSensor: true })
+            bottom: M.Bodies.rectangle(this.x, this.y + 5, totalWidth * 1.5, 5, { isSensor: true ,
+            collisionFilter: {
+                category: CATEGORY_ENEMY,
+                mask: mask
+            }}), // Más largo para detectar bordes
+            left: M.Bodies.rectangle(this.x - totalWidth * 0.45, bodyCenterY, 5, this.totalHeight * 0.5, { isSensor: true,
+            collisionFilter: {
+                category: CATEGORY_ENEMY,
+                mask: mask
+            }}),
+            right: M.Bodies.rectangle(this.x + totalWidth * 0.45, bodyCenterY, 5, this.totalHeight * 0.5, { isSensor: true,
+            collisionFilter: {
+                category: CATEGORY_ENEMY,
+                mask: mask
+            }})
         };
 
         // Crear un cuerpo compuesto con el cuerpo principal y los sensores
@@ -118,8 +136,32 @@ class Pokey extends Phaser.GameObjects.Container
             parts: [this.enemyBody, this.sensors.bottom, this.sensors.left, this.sensors.right],
             friction: 0,
             frictionAir: 0.01,
+            collisionFilter: {
+            category: CATEGORY_ENEMY,
+            mask: mask
+            },
             restitution: 0.05
         });
+        // Mask categories
+
+
+
+        // Apply to all parts
+        // this.enemyBody.collisionFilter.category = CATEGORY_ENEMY;
+        // this.enemyBody.collisionFilter.mask = mask;
+
+        // this.sensors.bottom.collisionFilter.category = CATEGORY_ENEMY;
+        // this.sensors.bottom.collisionFilter.mask = mask;
+
+        // this.sensors.left.collisionFilter.category = CATEGORY_ENEMY;
+        // this.sensors.left.collisionFilter.mask = mask;
+
+        // this.sensors.right.collisionFilter.category = CATEGORY_ENEMY;
+        // this.sensors.right.collisionFilter.mask = mask;
+
+        // this.compoundBody.collisionFilter.category = CATEGORY_ENEMY;
+        // this.compoundBody.collisionFilter.mask = mask;
+
 
         // Hacer el cuerpo dinámico (no estático) para que pueda moverse
         M.Body.setStatic(this.compoundBody, false);
@@ -176,6 +218,8 @@ class Pokey extends Phaser.GameObjects.Container
                     player.Bubble(); // Entra en burbuja sin empuje
                 } else {
                     player.hurt();
+                    this.body.collisionFilter.mask = 0; // Desactivar completamente las colisiones
+                    this.setStatic(true);
                     this.scene.transition('MainMenu'); // Volver al menú si no le quedan burbujas al jugador
                 }
             }
@@ -261,8 +305,9 @@ class Pokey extends Phaser.GameObjects.Container
         if (this.scene.groundLayer) {
             for (const point of checkPoints) {
                 const tile = this.scene.groundLayer.getTileAtWorldXY(point.x, point.y);
-                if (tile && tile.collides) {
-                    hasGroundAhead = true;
+                if (tile && tile.collides)
+                {
+                        hasGroundAhead = true;
                     break;
                 }
             }

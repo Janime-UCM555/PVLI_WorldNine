@@ -37,6 +37,10 @@ class Goomba extends Phaser.GameObjects.Sprite
                 bottom: 0,
                 up:0
         }; 
+        const CATEGORY_PLAYER  = 0x0001;
+        const CATEGORY_TERRAIN = 0x0004;
+        this.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN]);
+
         const sx = this.width/2;
         const sy = this.height/2;
         const w = this.width;
@@ -225,22 +229,25 @@ class Goomba extends Phaser.GameObjects.Sprite
         }
 
         // Verificar si Mario está cayendo y golpea desde arriba
-        console.log(player.body.velocity.y);
+        // console.log(player.body.velocity.y);
         if (player.body.velocity.y>0.7) {
             // Hacer a Mario invulnerable temporalmente
             player.isInvulnerable = true;
 
             // Mario aplasta al Goomba
             // player.isGrounded = true;
-            player.canJump = true; 
+            player.canEnemyJump = true; 
             this.stomp()
             // Pequeño rebote para Mario
             player.setVelocityY(-4.5);
 
             // Quitar invulnerabilidad temporal a Mario
+            this.scene.time.delayedCall(250, () => {
+                player.canEnemyJump=false;
+            });
             this.scene.time.delayedCall(150, () => {
                 player.isInvulnerable = false;
-                player.canJump=false;
+                // player.canEnemyJump=false;
             });
         } else if (this.isAlive && !player.isBeingPushed && !player.isInvulnerable) {
             // Colisión lateral
@@ -259,6 +266,8 @@ class Goomba extends Phaser.GameObjects.Sprite
                     player.Bubble(); // Entra en burbuja
                 } else {
                     player.hurt();
+                    this.body.collisionFilter.mask = 0; // Desactivar completamente las colisiones
+                    this.setStatic(true);
                     this.scene.transition('MainMenu'); // Volver al menú si no le quedan burbujas al jugador
                 }
             } else {

@@ -41,11 +41,14 @@ class PiranhaPlant extends Phaser.GameObjects.Sprite
             frictionAir: 0,
             restitution: 0
         });
+        const CATEGORY_PLAYER  = 0x0001;
+        const CATEGORY_TERRAIN = 0x0004;
+        this.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN]);
 
         this.setExistingBody(compoundBody);
         this.setStatic(true); // La planta no se mueve por física
         this.setFixedRotation();
-
+ 
         // Posicionar el cuerpo
         M.Body.setPosition(compoundBody, { x, y: this.hiddenY });
         this.setPosition(x, this.hiddenY);
@@ -183,6 +186,8 @@ class PiranhaPlant extends Phaser.GameObjects.Sprite
                     player.Bubble(); // Entra en burbuja sin empuje
                 } else {
                     player.hurt();
+                    this.body.collisionFilter.mask = 0; // Desactivar completamente las colisiones
+                    this.setStatic(true);
                     this.scene.transition('MainMenu'); // Volver al menú si no le quedan burbujas al jugador
                 }
             }

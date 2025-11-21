@@ -18,7 +18,7 @@ class Nivel_T extends Phaser.Scene
     }
 
     preload(){
-                        console.log('=== INICIO ===');
+        console.log('=== INICIO ===');
         this.load.tilemapTiledJSON('map', 'MapaDeTiled/ElMapa.json');
         this.score=0;
         this.coinScore = 0;
@@ -46,6 +46,12 @@ class Nivel_T extends Phaser.Scene
         const tileset = this.map.addTilesetImage('MapaTiles', 'mi_tileset');
         const tilesetBG = this.map.addTilesetImage('bg', 'bg_tileset');
 
+        //Máscaras de colisión
+        const CATEGORY_PLAYER  = 0x0001;
+        const CATEGORY_ENEMY   = 0x0002;
+        const CATEGORY_POWERUP = 0x0003;
+        const CATEGORY_TERRAIN = 0x0004;
+
         
         // Capa de suelo
         const bgLayer = this.map.createLayer('CapaFondo', tilesetBG, 0, 0);
@@ -54,7 +60,8 @@ class Nivel_T extends Phaser.Scene
         const coins = this.map.getObjectLayer('Monedas').objects;
         const enemies = this.map.getObjectLayer('Enemigos').objects;
         this.groundLayer = this.map.createLayer('CapaSuelo', tileset, 0, 0);
-        this.groundLayer.setDepth(5);
+        this.groundLayer.setDepth(1);
+        // this.groundLayer.setCollisionMask(0x0001);
         const barraFinLayer = this.map.getObjectLayer('BarraFin').objects;
 
             
@@ -70,6 +77,8 @@ class Nivel_T extends Phaser.Scene
                 body.frictionAir = 0;
                 body.restitution = 0;
                 
+                body.collisionFilter.category = CATEGORY_TERRAIN;
+                body.collisionFilter.mask     = CATEGORY_PLAYER | CATEGORY_ENEMY;
             }
         });
 
@@ -119,6 +128,8 @@ class Nivel_T extends Phaser.Scene
             //Guardar sus props para blockHit()
             block._props = props;
 
+            block.setCollisionCategory(CATEGORY_TERRAIN);
+            block.setCollidesWith([CATEGORY_ENEMY, CATEGORY_PLAYER]);
             this.blocks.add(block);
         });
 
@@ -152,6 +163,8 @@ class Nivel_T extends Phaser.Scene
             600,
             80
             );
+            this.barraFin.setCollisionCategory(CATEGORY_TERRAIN);
+            this.barraFin.setCollidesWith([CATEGORY_PLAYER]);
         }
         this.goombas = this.add.group();
         this.koopas = this.add.group();
@@ -171,6 +184,9 @@ class Nivel_T extends Phaser.Scene
                 );
                 goomba.direction = 1;
                 this.goombas.add(goomba);
+                goomba.setDepth(2);
+                goomba.setCollisionCategory(CATEGORY_ENEMY);
+                goomba.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN, CATEGORY_ENEMY]);
             }
             else if (enemie.name === 'Koopa')
             {
@@ -184,10 +200,13 @@ class Nivel_T extends Phaser.Scene
                 );
                 koopa.direction = -1;
                 this.koopas.add(koopa);
+                koopa.setDepth(2);
+                koopa.setCollisionCategory(CATEGORY_ENEMY);
+                koopa.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN, CATEGORY_ENEMY]);
             }
             else if (enemie.name === 'Piranha')
             {
-                console.log('PIRANYA');
+                // console.log('PIRANYA');
                 const piranha = new PiranhaPlant(
                     this,
                     enemie.x + 33,
@@ -197,12 +216,16 @@ class Nivel_T extends Phaser.Scene
                     2000
                 );
                 this.piranhas.add(piranha);
+                piranha.setCollisionCategory(CATEGORY_ENEMY);
+                piranha.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN, CATEGORY_ENEMY]);
             }
             else if (enemie.name === 'Pokey')
             {
                 const segments = enemie.properties?.find(p => p.name === 'segments')?.value || 5;
                 const pokey = new Pokey(this, enemie.x, enemie.y, segments);
                 this.pokeys.add(pokey);
+                // pokey.setDepth(2);
+                
             }
 
             this.hammers = this.add.group();
@@ -226,13 +249,11 @@ class Nivel_T extends Phaser.Scene
         //     goomba.direction = 1;
         //     this.goombas.add(goomba);
         // }
+        this.setupCollisions();
 
         this.powerups = this.add.group();
 
-        // this.spawnPowerUp(200, 600, POWERUP_TYPES.STAR);
-        this.spawnPowerUp(200, 600, POWERUP_TYPES.HAMMER);
 
-        this.setupCollisions();
 
         // Configurar mejor los límites del mundo
         this.matter.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
@@ -264,6 +285,7 @@ class Nivel_T extends Phaser.Scene
         // Quitamos la colisión con los bordes del mapa
         this.matter.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels, 0, false, false, false, false);
         this.createText();  
+        this.spawnPowerUp(200, 600, POWERUP_TYPES.MUSHROOM);
 
     }
 
@@ -364,6 +386,7 @@ class Nivel_T extends Phaser.Scene
             if (bodyB.gameObject instanceof PowerUp && bodyA.gameObject == this.jugador ||
                 bodyA.gameObject instanceof PowerUp && bodyB.gameObject == this.jugador)// && bodyA.gameObject == this.jugador)
             {
+                // console.log('🌵 COLISIÓN CON POWERUPPPPPP DETECTADA');
                 if (bodyA.gameObject instanceof PowerUp)
                 {
                     bodyA.gameObject.collect(this.jugador);
@@ -414,7 +437,7 @@ class Nivel_T extends Phaser.Scene
             if(bodyB.gameObject instanceof Pokey && bodyA.gameObject == this.jugador ||
                bodyA.gameObject instanceof Pokey && bodyB.gameObject == this.jugador)
             {
-                console.log('🌵 COLISIÓN CON POKEY DETECTADA');
+                // console.log('🌵 COLISIÓN CON POKEY DETECTADA');
                 if (bodyA.gameObject instanceof Pokey)
                 {
                     bodyA.gameObject.handlePlayerCollision(this.jugador);

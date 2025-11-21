@@ -15,7 +15,7 @@ class Mario extends Phaser.GameObjects.Sprite
         this.isGrounded = false; // Controlar si está en el suelo
         this.wasGrounded = false; // Para rastrear el estado anterior
         this.isStopped = false; // Controlar si está detenido
-        this.canJump = true; // Controlar si puede saltar
+        this.canEnemyJump = false; // Controlar si puede saltar encima de enemigos
         this.isBeingPushed = false; // Indica si está siendo empujado
         this.isInvulnerable = false; // Controlar la invulnerabilidad temporal
         this.bubblePhase = 0; // 0: no burbuja, 1: espera, 2: movimiento fase1, 3: fase2
@@ -81,7 +81,7 @@ class Mario extends Phaser.GameObjects.Sprite
         const M = Phaser.Physics.Matter.Matter;
         this.playerBody = M.Bodies.rectangle(sx,sy, w * 0.75, h, { chamfer: { radius: 10 } });
         this.sensors = {
-            bottom: M.Bodies.rectangle(sx, h, sx, 5, { isSensor: true }),
+            bottom: M.Bodies.rectangle(sx, h, sx/2, 2, { isSensor: true }),
             left: M.Bodies.rectangle(sx-w*0.45, sy, 5, h*0.25, { isSensor: true }),
             right: M.Bodies.rectangle(sx+w*0.45, sy, 5, h*0.25, { isSensor: true }),
             up: M.Bodies.rectangle(sx, -h/sy, sx, 5, { isSensor: true })
@@ -93,6 +93,14 @@ class Mario extends Phaser.GameObjects.Sprite
         frictionAir: 0,
         restitution: 0.05 // El jugador no se pega a paredes
         });
+
+        
+        const CATEGORY_PLAYER  = 0x0001;
+        const CATEGORY_ENEMY   = 0x0002;
+        const CATEGORY_TERRAIN = 0x0004;
+        const CATEGORY_POWERUP = 0x0003;
+        this.setCollisionCategory(CATEGORY_PLAYER);
+        this.setCollidesWith([CATEGORY_TERRAIN, CATEGORY_ENEMY, CATEGORY_POWERUP]);
 
         this.setExistingBody(compoundBody);
         // Configuración de física
@@ -280,8 +288,8 @@ class Mario extends Phaser.GameObjects.Sprite
         // Actualizar si está en el suelo
         this.isGrounded = this.blocked.bottom;
 
-        if (this.isGrounded ) {
-            this.canJump = true;
+        if (this.isGrounded) {
+            this.canEnemyJump = false;
             this.hasDoubleJumped = false; // Resetear doble salto al tocar suelo
         }
     }
@@ -344,7 +352,7 @@ class Mario extends Phaser.GameObjects.Sprite
 
     handleJump(time, delta) {
 
-        const canGroundJump = this.isGrounded || this.canJump || this.coyoteTimeCounter > 0;
+        const canGroundJump = this.isGrounded || this.canEnemyJump || this.coyoteTimeCounter > 0;
 
         const canDoubleJump = this.canDoubleJump && !this.isGrounded && !this.hasDoubleJumped && !this.isInBubble;
 
@@ -360,7 +368,9 @@ class Mario extends Phaser.GameObjects.Sprite
         }
         // Manejar inicio del salto normal
         if (this.jumpRequested) {
+            console.log(this.canEnemyJump);
             if (canGroundJump) {
+                console.log("Puedo");
                 this.startJump(time);
                 this.hasDoubleJumped = false; // Resetear doble salto al saltar desde suelo
                 this.hasBufferedJump = false; // Limpiar el buffer también en salto normal
@@ -387,7 +397,7 @@ class Mario extends Phaser.GameObjects.Sprite
         this.setVelocityY(this.jumpVelocity);
         
         this.isGrounded = false; // Ya no está en el suelo
-        this.canJump = false;
+        // this.canEnemyJump = false;
         this.isJumping = true;
         this.isHoldingJump = true;
         this.jumpStartTime = time;
@@ -478,7 +488,6 @@ class Mario extends Phaser.GameObjects.Sprite
     //Daña al jugador
     hurt() {
         this.isHurt = true;
-        this.body.collisionFilter.mask = 1;
 
         // Cambiar a animación idle cuando se detiene
         this.play('mario_hurt', true);
@@ -512,23 +521,30 @@ class Mario extends Phaser.GameObjects.Sprite
                 this.isSuperSize = true;
                 this.activePowerUp = POWERUP_TYPES.MUSHROOM;
             }
+        }
+        
+        // Desactivar el estado de super tamaño si estaba activo
+        if (!this.isSuperSize) {
             this.hurtSound.play();
-
         } else {
             // Solo champiñón → lo pierdes y te quedas pequeño
             this.deactivatePowerUp({ keepSize: false });
             this.hurtSound.play();
-
         } 
 
         // ---- Empuje y ventana de invulnerabilidad ----
         this.hurt();
+        const CATEGORY_ENEMY   = 0x0002;
+        const CATEGORY_TERRAIN = 0x0004;
+        const CATEGORY_POWERUP = 0x0003;
+
         this.startPush();
         this.isInvulnerable = true;
 
         // Empujar a Mario hacia la izquierda
         const pushSpeed = Phaser.Math.Clamp(15, -40, 40); // Velocidad alta para el empuje
-        this.setVelocityX(pushSpeed * pushDirection);
+        this.setVelocityX(0);
+        this.setCollidesWith([CATEGORY_TERRAIN, CATEGORY_POWERUP]);
 
 
         // Parpadeo visual
@@ -548,7 +564,7 @@ class Mario extends Phaser.GameObjects.Sprite
             this.isHurt = false;
             this.endPush(); // Esto quita isBeingPushed y reanuda movimiento
         });
-
+        
         // Quitar la inmunidad después del tiempo total
         this.scene.time.delayedCall(TOTAL_INVULNERABILITY, () => {
             this.isInvulnerable = false;
@@ -557,6 +573,7 @@ class Mario extends Phaser.GameObjects.Sprite
             if (this.isHurt) {
                 this.isHurt = false;
             }
+            this.setCollidesWith([CATEGORY_TERRAIN, CATEGORY_ENEMY, CATEGORY_POWERUP]);
         });
     }
 
@@ -585,6 +602,7 @@ class Mario extends Phaser.GameObjects.Sprite
 
     enterBubbleState() {
         const camera = this.scene.cameras.main;
+        const velBubble = -3; // Velocidad burbuja a la izquierda
 
         // 1. Marcar el estado inmediatamente
         this.isInBubble = true;
@@ -617,13 +635,13 @@ class Mario extends Phaser.GameObjects.Sprite
         this.y = initialY;
 
         // 5. Esperar 2500ms sin moverse (Fase 1 - Espera)
-        this.scene.time.delayedCall(2500, () => {
+        this.scene.time.delayedCall(1000, () => {
             if (!this.isInBubble) return;
         
             this.bubblePhase = 2; // Fase 1 - Movimiento
         
             // 6. Movimiento diagonal
-            this.setVelocityX(-9); // Velocidad hacia izquierda
+            this.setVelocityX(velBubble); // Velocidad hacia izquierda
             
             // Calcular velocidad Y para llegar a la posición Y objetivo (290)
             const targetY = 290; // Posición Y objetivo
@@ -641,14 +659,14 @@ class Mario extends Phaser.GameObjects.Sprite
                 onUpdate: () => {
                     // Mantener velocidad X constante
                     if (this.x > 50) {
-                        this.setVelocityX(-9);
+                        this.setVelocityX(velBubble);
                     } else {
                         this.setVelocityX(0);
                     }
                 },
                 onComplete: () => {
                     // Guardar velocidades iniciales
-                    const startVelX = -9;
+                    const startVelX = velBubble;
                     const endVelX = -2.45;
 
                     // Segundo tween: desaceleración (250ms)

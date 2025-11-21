@@ -8,7 +8,7 @@ export const POWERUP_TYPES = {
 };
 
 const STAR_DURATION = 8000; // ms
-const POWERUP_SPEED = 70;  // Velocidad horizontal básica de los Power-Ups
+const POWERUP_SPEED = 50;  // Velocidad horizontal básica de los Power-Ups
 
 export class PowerUp extends Phaser.GameObjects.Sprite {
   /**
@@ -28,6 +28,7 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
     scene.add.existing(this);
     scene.matter.add.gameObject(this);
     this.setOrigin(0.5, 0.5);
+
     // this.setActive(true).setVisible(true);
     // this.body.setAllowGravity(true);
     // this.body.setCollideWorldBounds(true);
@@ -70,6 +71,19 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
     this.setExistingBody(compoundBody);
     // El cuerpo a la posición inicial
     M.Body.setPosition(compoundBody, { x, y });
+
+    
+    const CATEGORY_PLAYER  = 0x0001;
+    const CATEGORY_TERRAIN = 0x0004;
+    const CATEGORY_POWERUP = 0x0003;
+    
+    // const mask = CATEGORY_PLAYER | CATEGORY_TERRAIN | CATEGORY_POWERUP;
+
+    // // Apply to all parts
+    // this.enemyBody.collisionFilter.category = CATEGORY_ENEMY;
+    // this.enemyBody.collisionFilter.mask = mask;
+    this.setCollisionCategory(CATEGORY_POWERUP);
+    this.setCollidesWith([CATEGORY_PLAYER, CATEGORY_TERRAIN]);
 
     // Asociamos el cuerpo al sprite
     this.setPosition(x, y); // sincronizar la posición del sprite
