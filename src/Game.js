@@ -1,7 +1,7 @@
 import PreloadScene from './Scenes/PreloadScene.js';
 import MainMenu from './Scenes/MainMenu.js';
 import MapScene from './Scenes/Map.js';
-import NivelScene from './Scenes/Nivel.js';
+import Nivel_T from './Scenes/Nivel.js';
 import Nivel_R from './Scenes/Nivel_R.js';
 
 /**
@@ -11,18 +11,20 @@ import Nivel_R from './Scenes/Nivel_R.js';
 let config = {
 	type: Phaser.AUTO,
 	pixelArt: true,
+	snapToPixels: false,
 	parent: 'game',
+	fps:300,
 	scale: {
 		autoCenter: Phaser.Scale.CENTER_BOTH,
 		mode: Phaser.Scale.FIT,
 		fullscreenTarget: 'game'
 	},
-	scene:[PreloadScene, MainMenu, MapScene, NivelScene, Nivel_R],	// Decimos a Phaser cual es nuestra escena
+	scene:[PreloadScene, MainMenu, MapScene, Nivel_T, Nivel_R],	// Decimos a Phaser cual es nuestra escena
 	physics: { 
-		default: 'arcade', 
-		arcade: { 
-			gravity: { y: 700}, 
-			debug: false
+		default: 'matter', 
+		matter: { 
+			gravity: { y: 1}, 
+			debug: true
 		} 
 	},
 };

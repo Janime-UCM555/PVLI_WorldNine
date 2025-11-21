@@ -41,10 +41,6 @@ class PreloadScene extends Phaser.Scene {
             frameHeight: 30
         });
         this.load.image('GombRome_Stomp', 'GameSprites/Characters/Enemigos/Goomba/GombRome_Stomp.png');
-        this.load.spritesheet('GombRome_Walk', 'GameSprites/Characters/Enemigos/Goomba/GombRome_Walk.png', {
-            frameWidth: 30,
-            frameHeight: 30
-        });
 
         // Koopa
         this.load.image('Koopa_idle_R', 'GameSprites/Characters/Enemigos/Koopa/Koopa_idle_R.png');
@@ -57,6 +53,13 @@ class PreloadScene extends Phaser.Scene {
         this.load.spritesheet('Koopa_walk', 'GameSprites/Characters/Enemigos/Koopa/Koopa_walk.png', {
             frameWidth: 41,
             frameHeight: 50
+        });
+
+        this.load.image('Piranha_plant', 'GameSprites/Characters/Enemigos/PiranhaPlant/PiranhaPlant_Idle.png');
+
+        this.load.spritesheet('pokey', 'GameSprites/Characters/Enemigos/Pokey/Pokey.png', {
+            frameWidth: 30,
+            frameHeight: 30
         });
 
         // Mario
@@ -88,10 +91,13 @@ class PreloadScene extends Phaser.Scene {
             frameWidth: 32,
             frameHeight: 56
         });
-
-          this.load.spritesheet('mario_throw', 'GameSprites/Characters/Mario/Mario_hammer_throw.png', {
+        this.load.spritesheet('mario_throw', 'GameSprites/Characters/Mario/Mario_hammer_throw.png', {
             frameWidth: 48,
             frameHeight: 55,
+        });
+        this.load.spritesheet('mario_bubble', 'GameSprites/Characters/Mario/Mario_bubble.png', {
+            frameWidth: 72,
+            frameHeight: 72,
         });
 
         //PowerUps

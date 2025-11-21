@@ -6,7 +6,7 @@ class Mario extends Phaser.GameObjects.Sprite
         super(scene, x, y, texture);
         
         scene.add.existing(this);
-        scene.physics.add.existing(this);
+        scene.matter.add.gameObject(this);
         
         // Propiedades esenciales
         this.speed = speed; // Velocidad del jugador
@@ -15,9 +15,13 @@ class Mario extends Phaser.GameObjects.Sprite
         this.isGrounded = false; // Controlar si está en el suelo
         this.wasGrounded = false; // Para rastrear el estado anterior
         this.isStopped = false; // Controlar si está detenido
-        this.canJump = true; // Controlar si puede saltar
+        this.canEnemyJump = false; // Controlar si puede saltar encima de enemigos
         this.isBeingPushed = false; // Indica si está siendo empujado
-        this.isInvulnerable = false; // Para controlar la invulnerabilidad temporal
+        this.isInvulnerable = false; // Controlar la invulnerabilidad temporal
+        this.bubblePhase = 0; // 0: no burbuja, 1: espera, 2: movimiento fase1, 3: fase2
+        this.isInBubble = false; // Controlar si está en la burbuja
+        this.canDrop = false; // Indica si puede salir de la burbuja
+        this.bubblesLeft = 2; // Número de burbujas restantes
 
         // Sistema de salto
         this.isJumping = false; // Indica si está en proceso de salto
@@ -28,12 +32,13 @@ class Mario extends Phaser.GameObjects.Sprite
         // Control del salto
         this.jumpVelocity = 0; // Velocidad de salto
         this.maxJumpVelocity = jumpForce; // Velocidad máxima hacia arriba
-        this.minJumpVelocity = -100; // Velocidad mínima hacia arriba
-        this.jumpAcceleration = -800; // Aceleración hacia arriba durante el salto
+        this.minJumpVelocity = -1.0; // Velocidad mínima hacia arriba
+        this.jumpAcceleration = -8.0; // Aceleración hacia arriba durante el salto
         
         // Coyote time
         this.coyoteTime = 50; // Tiempo en ms para permitir salto después de dejar el suelo (50 ms)
         this.coyoteTimeCounter = 0; // Contador para el coyote time
+        this.enemyCoyoteTime = 1; // Tiempo en ms para permitir salto después de saltar encima de un enemigo (20 ms)
 
         // Control de entrada
         this.jumpRequested = false;
@@ -46,20 +51,90 @@ class Mario extends Phaser.GameObjects.Sprite
         if (flipHorizontal) {
             this.flipX = true; // Voltear horizontalmente
         }
+
+        //Sensores
+        this.blocked = {
+            left: false,
+            right: false,
+            bottom: false,
+            up: false
+        },
+
+        this.numTouching = {
+                left: 0,
+                right: 0,
+                bottom: 0,
+                up:0
+        };
+
+        // MatterBody
+        // this.setBody({
+        //     type:'rectangle',
+        //     width:this.width,
+        //     height:this.height,
+        // },{label:'mario',chamfer:{radius:10}})
+
+        const sx = this.width/2;
+        const sy = this.height/2;
+        const w = this.width;
+        const h = this.height;
+        const M = Phaser.Physics.Matter.Matter;
+        this.playerBody = M.Bodies.rectangle(sx,sy, w * 0.75, h, { chamfer: { radius: 10 } });
+        this.sensors = {
+            bottom: M.Bodies.rectangle(sx, h, sx/2, 2, { isSensor: true }),
+            left: M.Bodies.rectangle(sx-w*0.45, sy, 5, h*0.25, { isSensor: true }),
+            right: M.Bodies.rectangle(sx+w*0.45, sy, 5, h*0.25, { isSensor: true }),
+            up: M.Bodies.rectangle(sx, -h/sy, sx, 5, { isSensor: true })
+        };
+
+        const compoundBody = M.Body.create({
+        parts: [this.playerBody,this.sensors.bottom, this.sensors.left, this.sensors.right/*, this.sensors.up*/],
+        friction: 0,
+        frictionAir: 0,
+        restitution: 0.05 // El jugador no se pega a paredes
+        });
+
         
+        const CATEGORY_PLAYER  = 0x0001;
+        const CATEGORY_ENEMY   = 0x0002;
+        const CATEGORY_TERRAIN = 0x0004;
+        const CATEGORY_POWERUP = 0x0003;
+        this.setCollisionCategory(CATEGORY_PLAYER);
+        this.setCollidesWith([CATEGORY_TERRAIN, CATEGORY_ENEMY, CATEGORY_POWERUP]);
+
+        this.setExistingBody(compoundBody);
         // Configuración de física
         if (this.body) {
-            this.body.setVelocityX(this.speed);
-            this.body.setGravityY(700);
-            this.body.setCollideWorldBounds(false); // Desactivar colisión con bordes del mundo
+            this.setFriction(0);
+            this.setFrictionAir(0.02);
+            this.setBounce(0.05);
+            
+            this.setVelocityX(this.speed);
+            //     this.body.setGravityY(700);
+            // this.setCollideWorldBounds(false); // Desactivar colisión con bordes del mundo
 
-            // Asegurar que el cuerpo es dinámico y puede colisionar
-            this.body.setImmovable(false);
-            this.body.moves = true;
+            //     // Asegurar que el cuerpo es dinámico y puede colisionar
+            //     this.body.setImmovable(false);
+            this.setStatic(false);
+            // El cuerpo a la posición inicial
+            M.Body.setPosition(compoundBody, { x, y });
 
-            // Mejorar la detección de colisiones
-            this.body.onWorldBounds = true;
+            // Asociamos el cuerpo al sprite
+            this.setExistingBody(compoundBody);
+            this.setPosition(x, y); // sincronizar la posición del sprite
+            this.setFixedRotation();
         }
+        this.body.moves = true;
+
+        //     // Mejorar la detección de colisiones
+        this.body.onWorldBounds = true;
+        // }
+        this.setBounce(0); // optional
+        this.setFriction(0.05);
+        this.setFixedRotation(); // Mario won't spin on collision
+        this.setIgnoreGravity(false); // default false, so gravity applies
+
+
         
         this.jumpSound = scene.sound.add('salto');
         this.hurtSound = scene.sound.add('PowerDown');
@@ -79,21 +154,26 @@ class Mario extends Phaser.GameObjects.Sprite
             scaleY: 0.85
         }
 
+        
         this.setScale(this.base.scaleX, this.base.scaleY);
 
-        if(this.body){
-            this.baseBody = {
-                w: this.body.width,
-                h: this.body.height,
-                offsetX: this.body.offset.x || 0,
-                offsetY: this.body.offset.y || 0
-            };
-        }
+        // if(this.body){
+        //     this.baseBody = {
+        //         w: this.body.width,
+        //         h: this.body.height,
+        //         offsetX: this.body.offset.x || 0,
+        //         offsetY: this.body.offset.y || 0
+        //     };
+        // }
 
-        this.body.setSize(
-            this.baseBody.w * this.base.scaleX,
-            this.baseBody.h * this.base.scaleY
-        );
+        // this.body.setSize(
+        //     this.baseBody.w * this.base.scaleX,
+        //     this.baseBody.h * this.base.scaleY
+        // );
+
+        // Daño
+        this.warningTimer = null;
+        this.blinkEvent = null;
 
         this.activePowerUp = null;
 
@@ -104,8 +184,6 @@ class Mario extends Phaser.GameObjects.Sprite
 
         //Martillo
         this.canThrowHammer = false;
-        this.hammerCooldown = 0;
-        const HAMMER_COOLDOWN_TIME = 1000; // 1 segundo de cooldown
 
         //Doble Salto
         this.canDoubleJump = false;
@@ -125,36 +203,145 @@ class Mario extends Phaser.GameObjects.Sprite
         this.isSuperSize = false;
         this.scaleMultiplier = 1.35;
 
+        // Configurar colisión con los bordes del mundo
+        this.setUpWorldBoundsCollision();
+
         // Configurar entrada del ratón para saltar
         this.setupMouseInput();
+
+        // Configurar colisión con los bordes del mundo
+        this.setUpWorldBoundsCollision();
     }
 
+    setUpWorldBoundsCollision() {
+        const world = this.scene.matter.world;
+
+        // Por si acaso se vuelve a crear el jugador, limpiamos listeners antiguos
+        world.off('beforeupdate', this.handleBeforeUpdate, this);
+        world.off('collisionactive', this.handleCollisionActive, this);
+        world.off('afterupdate', this.handleAfterUpdate, this);
+
+        world.on('beforeupdate', this.handleBeforeUpdate, this);
+        world.on('collisionactive', this.handleCollisionActive, this);
+        world.on('afterupdate', this.handleAfterUpdate, this);
+    }
+
+    handleBeforeUpdate(event) {
+        // Resetear contadores de sensores antes de la actualización
+        this.numTouching.left = 0;
+        this.numTouching.right = 0;
+        this.numTouching.bottom = 0;
+        this.numTouching.up = 0;
+    }
+
+    handleCollisionActive(event) {
+        for (let i = 0; i < event.pairs.length; i++)
+        {
+            const bodyA = event.pairs[i].bodyA;
+            const bodyB = event.pairs[i].bodyB;
+
+            // Saltar si uno de los cuerpos es el jugador
+            if (bodyA === this.playerBody || bodyB === this.playerBody)
+            {
+                continue;
+            }
+
+            // verificamos si esta tocando suelo
+            if (bodyA === this.sensors.bottom || bodyB === this.sensors.bottom)
+            {
+                // Contar cualquier superficie como suelo (por ejemplo, saltar sobre una caja no estática).
+                this.numTouching.bottom += 1;
+            }
+
+            // verificamos si esta tocando pared izquierda
+            if ((bodyA === this.sensors.left && bodyB.isStatic) || (bodyB === this.sensors.left && bodyA.isStatic))
+            {
+                // Solo los objetos estáticos cuentan ya que no queremos ser bloqueados por un objeto que
+                // podemos empujar.
+                this.numTouching.left += 1;
+            }
+
+            // verificamos si esta tocando pared derecha
+            if ((bodyA === this.sensors.right && bodyB.isStatic) || (bodyB === this.sensors.right && bodyA.isStatic))
+            {
+                this.numTouching.right += 1;
+            }
+
+            // verificamos si esta tocando techo
+            if ((bodyA === this.sensors.up && bodyB.isStatic) || (bodyB === this.sensors.up && bodyA.isStatic))
+            {
+                this.numTouching.up += 1;
+            }
+        };
+    }
+
+    handleAfterUpdate(event) {
+
+        const wasGrounded = this.isGrounded;
+
+        // Actualizar estados de bloqueo basados en sensores
+        this.blocked.right = this.numTouching.right > 0;
+        this.blocked.left = this.numTouching.left > 0;
+        this.blocked.bottom = this.numTouching.bottom > 0;
+        this.blocked.up = this.numTouching.up > 0;
+
+        // Actualizar si está en el suelo
+        this.isGrounded = this.blocked.bottom;
+
+        if (this.isGrounded) {
+            this.canEnemyJump = false;
+            this.hasDoubleJumped = false; // Resetear doble salto al tocar suelo
+        }
+    }
+    
     setupMouseInput() {
         // Limpiar eventos previos
         this.scene.input.off('pointerdown');
         this.scene.input.off('pointerup');
+        
+        if (!this.contextMenuDisabled) {
+        this.contextMenuDisabled = true;
+
+            if (this.scene.input.mouse && this.scene.input.mouse.disableContextMenu) {
+                this.scene.input.mouse.disableContextMenu();
+            }
+
+            else {
+                // Opción navegador estándar
+                window.addEventListener("contextmenu", (e) => e.preventDefault());
+            }
+        }
 
         // Al presionar el ratón
         this.scene.input.on('pointerdown', (pointer) => {
             if (pointer.leftButtonDown() && this.scene.scene.isActive()) {
-                this.jumpRequested = true;
-                this.jumpHeld = true;
-                // Activar el buffer de salto cuando se presiona el botón en el aire
-                if (!this.isGrounded) {
-                    this.hasBufferedJump = true;
-                    this.wasHoldingJumpWhenBuffered = true; // Recordar que se estaba manteniendo el botón
+                // Si está en burbuja y puede salir, manejar la salida
+                if (this.isInBubble && this.canDrop) {
+                    this.exitBubbleState();
+                    return;
+                }
+
+                // Comportamiento normal de salto
+                if (!this.isInBubble) {
+                    this.jumpRequested = true;
+                    this.jumpHeld = true;
+                    // Activar el buffer de salto cuando se presiona el botón en el aire
+                    if (!this.isGrounded) {
+                        this.hasBufferedJump = true;
+                        this.wasHoldingJumpWhenBuffered = true; // Recordar que se estaba manteniendo el botón
+                }
                 }
             }
-            if (pointer.rightButtonDown() && this.scene.scene.isActive()) {
+            if (pointer.rightButtonDown()) {
                 if (this.canThrowHammer) {
-                this.tryThrowHammer();
+                    this.tryThrowHammer();
+                }
             }
-    }
         });
 
         // Al soltar el ratón
         this.scene.input.on('pointerup', (pointer) => {
-            if (this.scene.scene.isActive()) {
+            if (this.scene.scene.isActive() && !this.isInBubble) {
                 this.jumpHeld = false;
                 this.isHoldingJump = false;
                 // Si se suelta el botón, marcar que ya no se está manteniendo para el buffer
@@ -164,22 +351,39 @@ class Mario extends Phaser.GameObjects.Sprite
     }
 
     handleJump(time, delta) {
+
+        const canGroundJump = this.isGrounded || this.canEnemyJump || this.coyoteTimeCounter > 0;
+
+        const canDoubleJump = this.canDoubleJump && !this.isGrounded && !this.hasDoubleJumped && !this.isInBubble;
+
         // Manejar inicio del salto desde buffer si está disponible solo si todavía se está manteniendo el botón
-        if (this.hasBufferedJump && this.isGrounded && this.canJump && this.wasHoldingJumpWhenBuffered) {
-            this.startJump(time);
+        if (this.hasBufferedJump && this.wasHoldingJumpWhenBuffered) {
+            if (canGroundJump) {
+                this.startJump(time)
+                this.hasDoubleJumped = false; // Resetear doble salto al usar el buffer para salto desde suelo
+            };
+
             this.hasBufferedJump = false;
             this.wasHoldingJumpWhenBuffered = false;
         }
-        
         // Manejar inicio del salto normal
-        if (this.jumpRequested && this.canJump && (this.isGrounded || this.coyoteTimeCounter > 0)) {
-            this.startJump(time);
-            this.hasBufferedJump = false; // Limpiar el buffer también en salto normal
-            this.wasHoldingJumpWhenBuffered = false;
+        if (this.jumpRequested) {
+            console.log(this.canEnemyJump);
+            if (canGroundJump) {
+                console.log("Puedo");
+                this.startJump(time);
+                this.hasDoubleJumped = false; // Resetear doble salto al saltar desde suelo
+                this.hasBufferedJump = false; // Limpiar el buffer también en salto normal
+                this.wasHoldingJumpWhenBuffered = false;
+            }
+            else if (canDoubleJump) {
+                this.startJump(time);
+                this.hasDoubleJumped = true;
+            }
         }
         
         // Aplicar fuerza de salto progresiva mientras se mantiene presionado y no está chocando por arriba
-        if (this.isJumping && this.jumpHeld && this.isHoldingJump && !this.body.blocked.up) {
+        if (this.isJumping && this.jumpHeld && this.isHoldingJump && !this.blocked.up) {
             this.applyProgressiveJumpForce(time, delta);
         }
 
@@ -190,10 +394,10 @@ class Mario extends Phaser.GameObjects.Sprite
     startJump(time) {
         // Iniciar el salto con velocidad mínima
         this.jumpVelocity = this.minJumpVelocity;
-        this.body.setVelocityY(this.jumpVelocity);
+        this.setVelocityY(this.jumpVelocity);
         
         this.isGrounded = false; // Ya no está en el suelo
-        this.canJump = false; // No puede saltar nuevamente
+        // this.canEnemyJump = false;
         this.isJumping = true;
         this.isHoldingJump = true;
         this.jumpStartTime = time;
@@ -225,7 +429,7 @@ class Mario extends Phaser.GameObjects.Sprite
             this.jumpVelocity = Phaser.Math.Clamp(this.jumpVelocity, -650, this.maxJumpVelocity);
             
             // Aplicar la velocidad calculada
-            this.body.setVelocityY(this.jumpVelocity);
+            this.setVelocityY(this.jumpVelocity);
         } else {
             // Tiempo máximo alcanzado
             this.isHoldingJump = false;
@@ -245,7 +449,7 @@ class Mario extends Phaser.GameObjects.Sprite
         this.isHurt = false; // Asegurar que ya no está en estado hurt
         
         // Reanudar movimiento normal
-        if (this.body && !this.body.blocked.right) {
+        if (this.body && !this.blocked.right) {
             this.resume();
         }
     }
@@ -254,7 +458,7 @@ class Mario extends Phaser.GameObjects.Sprite
     resume() {
         this.isStopped = false;
         if (this.body) {
-            this.body.setVelocityX(this.speed);
+            this.setVelocityX(this.speed);
         }
         if (!this.isJumping && this.scene.anims.exists('mario_run')) {
             this.play('mario_run', true);
@@ -265,7 +469,7 @@ class Mario extends Phaser.GameObjects.Sprite
     stop() {
         this.isStopped = true;
         if (this.body) {
-            this.body.setVelocityX(0);
+            this.setVelocityX(0);
         }
         // Cambiar a animación idle cuando se detiene
         if (!this.isJumping && this.scene.anims.exists('mario_idle')) {
@@ -290,37 +494,60 @@ class Mario extends Phaser.GameObjects.Sprite
     }
 
     takeDamage(pushDirection) {
+        // Si ya es invencible (estrella) o está en ventana de daño, ignorar
+        if (this.isInvincible || this.isInvulnerable) {
+            return;
+        }
+
         // Configurar tiempos
         const PUSH_DURATION = 200; // Tiempo de empuje
         const EXTRA_INVULNERABILITY = 1550; // Tiempo extra durante el que Mario es invulnerable
         const TOTAL_INVULNERABILITY = PUSH_DURATION + EXTRA_INVULNERABILITY; // Tiempo total: Tiempo de empuje + Tiempo extra de invulnerabilidad
+
+        const hasMushroom = this.isSuperSize || this.activePowerUp === POWERUP_TYPES.MUSHROOM;
+        const hasNonMushroomPower =
+            this.activePowerUp &&
+            this.activePowerUp !== POWERUP_TYPES.MUSHROOM &&
+            this.activePowerUp !== POWERUP_TYPES.STAR;
+
+        // ---- Gestión de estados de power-ups ----
+        if (hasNonMushroomPower) {
+            // Tenías martillo / doble salto / dash / botas
+            // → Pierdes ese power-up ofensivo, pero te quedas como Super Mario
+            this.deactivatePowerUp({ keepSize: true });
+
+            // Nos aseguramos de marcar que ahora estás en estado "solo champiñón"
+            if (hasMushroom || this.isSuperSize) {
+                this.isSuperSize = true;
+                this.activePowerUp = POWERUP_TYPES.MUSHROOM;
+            }
+        }
         
         // Desactivar el estado de super tamaño si estaba activo
-        if (this.isSuperSize) {
+        if (!this.isSuperSize) {
             this.hurtSound.play();
-            this.isSuperSize = false;
-            this.setScale(this.base.scaleX, this.base.scaleY); // Restaurar tamaño original
-        }
+        } else {
+            // Solo champiñón → lo pierdes y te quedas pequeño
+            this.deactivatePowerUp({ keepSize: false });
+            this.hurtSound.play();
+        } 
 
-        // Activar estado de daño
+        // ---- Empuje y ventana de invulnerabilidad ----
         this.hurt();
+        const CATEGORY_ENEMY   = 0x0002;
+        const CATEGORY_TERRAIN = 0x0004;
+        const CATEGORY_POWERUP = 0x0003;
+
         this.startPush();
         this.isInvulnerable = true;
 
         // Empujar a Mario hacia la izquierda
-        const pushSpeed = Phaser.Math.Clamp(500, -650, 650); // Velocidad alta para el empuje
-        this.body.setVelocityX(pushSpeed * pushDirection);
+        const pushSpeed = Phaser.Math.Clamp(15, -40, 40); // Velocidad alta para el empuje
+        this.setVelocityX(0);
+        this.setCollidesWith([CATEGORY_TERRAIN, CATEGORY_POWERUP]);
 
-        // Actualizar el cuerpo físico después del cambio de posición
-        this.body.updateFromGameObject();
-    
-        // Restaurar hitbox original si existe
-        if (this.baseBody && this.body) {
-            this.body.setSize(this.baseBody.w, this.baseBody.h);
-            this.body.setOffset(this.baseBody.offsetX, this.baseBody.offsetY);
-        }
-    
-        // Efecto visual temporal (parpadeo)
+
+        // Parpadeo visual
         let blinkCount = 0;
         const maxBlinks = Math.floor(TOTAL_INVULNERABILITY / 50); // Calcular parpadeos basado en tiempo
         const blinkInterval = setInterval(() => {
@@ -337,36 +564,314 @@ class Mario extends Phaser.GameObjects.Sprite
             this.isHurt = false;
             this.endPush(); // Esto quita isBeingPushed y reanuda movimiento
         });
-
+        
         // Quitar la inmunidad después del tiempo total
         this.scene.time.delayedCall(TOTAL_INVULNERABILITY, () => {
             this.isInvulnerable = false;
             this.setVisible(true);
             clearInterval(blinkInterval);
-            // Asegurarse de que el estado de hurt esté desactivado
             if (this.isHurt) {
                 this.isHurt = false;
+            }
+            this.setCollidesWith([CATEGORY_TERRAIN, CATEGORY_ENEMY, CATEGORY_POWERUP]);
+        });
+    }
+
+
+    Bubble() {
+        if (this.isInBubble) {
+            return;
+        }
+
+        this.bubblesLeft -= 1;
+
+        this.isInBubble = true;
+
+        // Detener cualquier movimiento previo inmediatamente
+        this.setVelocity(0, 0);
+        // Detener el movimiento automático
+        this.isStopped = true;
+        if (this.body) {
+            this.body.velocity.x = 0;
+            this.body.velocity.y = 0;
+            this.body.ignoreGravity = true;
+        }
+
+        this.enterBubbleState();
+    }
+
+    enterBubbleState() {
+        const camera = this.scene.cameras.main;
+        const velBubble = -3; // Velocidad burbuja a la izquierda
+
+        // 1. Marcar el estado inmediatamente
+        this.isInBubble = true;
+        this.canDrop = false;
+        this.bubblePhase = 1;
+
+        // 2. Detener inmediatamente todas las físicas
+        this.setVelocity(0, 0);
+        if (this.body) {
+            this.body.ignoreGravity = true;
+            this.setSensor(true);
+            this.body.collisionFilter.mask = 0; // Desactivar completamente las colisiones
+            // Forzar velocidad cero
+            this.body.velocity.x = 0;
+            this.body.velocity.y = 0;
+        }
+
+        // 3. Cambiar a textura de burbuja
+        this.play('mario_bubble', true);
+
+        // 4. Posicionar a Mario cerca del punto de caída
+        const cameraViewHeight = camera.height / camera.zoom;
+        let initialX = this.x;
+        let initialY = this.y;
+
+        initialX = Phaser.Math.Clamp(initialX, 100, this.scene.map.widthInPixels - 100);
+        initialY = Phaser.Math.Clamp(initialY, 100, this.scene.map.heightInPixels + 100);
+
+        this.x = initialX;
+        this.y = initialY;
+
+        // 5. Esperar 2500ms sin moverse (Fase 1 - Espera)
+        this.scene.time.delayedCall(1000, () => {
+            if (!this.isInBubble) return;
+        
+            this.bubblePhase = 2; // Fase 1 - Movimiento
+        
+            // 6. Movimiento diagonal
+            this.setVelocityX(velBubble); // Velocidad hacia izquierda
+            
+            // Calcular velocidad Y para llegar a la posición Y objetivo (290)
+            const targetY = 290; // Posición Y objetivo
+            const currentY = this.y;
+
+            // Calcular posición intermedia (90% del camino) para el movimiento constante
+            const intermediateY = currentY + ((targetY - currentY) * 0.9);
+
+            // Primer tween: movimiento constante (1000ms)
+            this.scene.tweens.add({
+                targets: this,
+                y: intermediateY,
+                duration: 1000,
+                ease: 'Linear', // Movimiento completamente lineal/constante
+                onUpdate: () => {
+                    // Mantener velocidad X constante
+                    if (this.x > 50) {
+                        this.setVelocityX(velBubble);
+                    } else {
+                        this.setVelocityX(0);
+                    }
+                },
+                onComplete: () => {
+                    // Guardar velocidades iniciales
+                    const startVelX = velBubble;
+                    const endVelX = -2.45;
+
+                    // Segundo tween: desaceleración (250ms)
+                    this.scene.tweens.add({
+                        targets: this,
+                        y: targetY,
+                        duration: 250,
+                        ease: 'Cubic.Out',
+                        onUpdate: (tween) => {
+                            // Calcular progreso manualmente (0 a 1)
+                            const progress = tween.progress;
+            
+                            // Interpolar velocidad X basada en el progreso
+                            const currentVelX = startVelX + ((endVelX - startVelX) * progress);
+            
+                            // Aplicar velocidad
+                            if (this.x > 50) {
+                                this.setVelocityX(currentVelX);
+                            } else {
+                                this.setVelocityX(0);
+                            }
+
+                            // Actualizar cuerpo de Matter
+                            if (this.body) {
+                                const M = Phaser.Physics.Matter.Matter;
+                                M.Body.setPosition(this.body, { 
+                                    x: this.x, 
+                                    y: this.y 
+                                });
+                            }
+                        },
+                        onComplete: () => {
+                            if (this.isInBubble) {
+                                this.startBubblePhase2();
+                            }
+                        }
+                    });
+                }
+            });
+
+            // 7. Permitir salir después de 400ms de empezar el movimiento
+            this.scene.time.delayedCall(400, () => {
+                if (this.isInBubble) {
+                    this.canDrop = true;
+                }
+            });
+        });
+    }
+
+    startBubblePhase2() {
+        if (!this.isInBubble) return;
+
+        this.bubblePhase = 3; // Fase 2
+    
+        // 1. Detener movimiento vertical inicial
+        this.setVelocityY(0);
+    
+        // 2. Configurar velocidad horizontal inicial
+        this.setVelocityX(-2.45);
+    
+        // 3. Configurar movimiento oscilatorio vertical
+        this.bubbleOscillation = {
+            amplitude: 40, // Amplitud de la oscilación
+            frequency: 0.002, // Frecuencia de la oscilación
+            baseY: this.y, // Posición base para la oscilación
+            startTime: this.scene.time.now
+        };
+
+        // 4. Acelerar gradualmente después de 1500ms
+        this.scene.time.delayedCall(1500, () => {
+            if (this.isInBubble && this.bubblePhase === 3) {
+                // Solo acelerar si no ha llegado al borde izquierdo
+                if (this.x > 50) {
+                    // Transición suave a mayor velocidad
+                    this.scene.tweens.add({
+                        targets: this.body.velocity,
+                        x: -5.75,
+                        duration: 1250, // Duración de la transición en ms
+                        ease: 'Cubic.InOut',
+                        onComplete: () => {
+                            if (this.isInBubble && this.bubblePhase === 3) {
+                                // Establecer velocidad constante después de la transición
+                                this.setVelocityX(-5.75);
+                            }
+                        }
+                    });
+                }
             }
         });
     }
 
+    exitBubbleState() {
+        if (!this.isInBubble) {
+            return;
+        }
+    
+        // 1. Limpiar propiedades de la burbuja
+        this.isInBubble = false;
+        this.canDrop = false;
+        this.bubblePhase = 0;
+        this.bubbleOscillation = null;
+
+        // 2. Reactivar el cuerpo físico
+        if (this.body) {
+            this.body.ignoreGravity = false; // Reactivar gravedad
+            this.setSensor(false); // Restaurar colisiones normales
+            this.body.collisionFilter.mask = 0xFFFFFFFF; // Máscara para colisionar con todo
+        }
+    
+        // 3. Cambiar a animación de caída
+        this.play('mario_fall', true);
+    
+        // 4. Asegurarse de que no sea superSize
+        this.deactivatePowerUp({ keepSize: false });
+
+        // 5. Resetear velocidades para caída
+        this.setVelocityX(this.speed);
+        this.setVelocityY(0);
+
+        // 6. Posicionar a Mario en una posición segura
+        this.x = Math.max(this.x, 50);
+        this.y = Math.max(this.y, 100);
+
+        // 7. Resetear estados de salto
+        this.isJumping = false;
+        this.isHoldingJump = false;
+    }
+
     update(time, delta) {
+        // Verificación de seguridad
+        if (!this.body || !this.scene) {
+            return;
+        }
+        
         // Si está herido, no procesar otras lógicas
         if (this.isHurt) {
             // Solo mantener la animación de hurt y salir
             this.handleAnimations();
             return;
         }
+
+        // Si está en burbuja, no ejecutar la lógica normal
+        if (this.isInBubble) {
+            // Forzar gravedad cero durante todo el estado de burbuja
+            if (this.body) {
+                this.body.ignoreGravity = true;
+
+                // En fase 2 y 3, mantener la velocidad X constante si no hay tweens activos
+                if (this.bubblePhase === 2 || this.bubblePhase === 3) {
+                    // Solo aplicar si no está cerca del borde izquierdo
+                    if (this.x > 50) {
+                        // Mantener velocidad X mínima en fase 3
+                        if (this.bubblePhase === 3 && this.body.velocity.x > -2.45) {
+                            this.setVelocityX(-2.45);
+                        }
+                    } else {
+                        // Detener al llegar al borde izquierdo
+                        this.setVelocityX(0);
+                    }
+                
+                    // Mantener velocidad Y en 0 para fase 3
+                    if (this.bubblePhase === 3) {
+                        // Mantener velocidad X constante si no está cerca del borde
+                        if (this.x > 50) {
+                            // Si ya ha completado la aceleración, mantener velocidad constante
+                            const currentTime = this.scene.time.now;
+                            if (currentTime - this.bubbleOscillation.startTime > 2500) { // 1500 + 1000 = 2500ms
+                                this.setVelocityX(-5.75);
+                            }
+                        } else {
+                            // Detener al llegar al borde izquierdo
+                            this.setVelocityX(0);
+                        }
+
+                        this.setVelocityY(0);
+                    }
+                }
+            }
+
+            // Actualizar movimiento oscilatorio de la fase 2 de la burbuja
+            if (this.bubblePhase === 3 && this.bubbleOscillation) {
+                const elapsed = time - this.bubbleOscillation.startTime;
+                
+                // Aplicar oscilación vertical
+                const oscillationY = Math.sin(elapsed * this.bubbleOscillation.frequency) * this.bubbleOscillation.amplitude;
+                this.y = this.bubbleOscillation.baseY + oscillationY;
+            }
+
+            // Manejar animaciones
+            this.handleAnimations();
+            return; // Salir inmediatamente - no ejecutar física normal
+        }
+
         if (this.footstepCooldown > 0) {
             this.footstepCooldown -= delta;
         }
+
+        const previousGrounded = this.isGrounded;
 
         // Manejar el salto
         this.handleJump(time, delta);
         
         // Si está detenido
         if (this.isStopped) {
-            if (this.body && !this.body.blocked.right) {
+            if (this.body && !this.blocked.right) {
                 this.resume();
             }
             return;
@@ -374,34 +879,26 @@ class Mario extends Phaser.GameObjects.Sprite
 
         // Manejo de animaciones
         this.handleAnimations();
-        
+
+
         if (this.body && !this.isHurt && !this.hasWon) {
-            // Solo aplicar velocidad hacia la derecha si no está siendo empujado
-            if (!this.isBeingPushed) {
-                this.body.setVelocityX(this.speed);
+            // Solo aplicar velocidad hacia la derecha si no está siendo empujado y no está en la burbuja
+            if (!this.isBeingPushed && !this.isInBubble) {
+                this.setVelocityX(this.speed);
             }
 
-            // Guardar el estado anterior antes de actualizar
-            const previousGrounded = this.isGrounded; // Variable local para este frame
-            
-            // Verificar si está en el suelo
-            this.isGrounded = this.body.blocked.down || this.body.touching.down;
-
             // Si choca por arriba, cancelar el salto progresivo
-            if (this.body.blocked.up) {
+            if (this.blocked.up) {
                 this.isHoldingJump = false;
                 // Ajustar la velocidad Y para que comience a caer inmediatamente
                 if (this.body.velocity.y < 0) {
-                    this.body.setVelocityY(0);
+                    this.setVelocityY(0);
                 }
             }
-
+                // console.log(this.isGrounded);
             if (this.isGrounded) {
                 this.coyoteTimeCounter = this.coyoteTime; // Resetear cuando está en suelo
                 // Solo resetear estados de salto si no está actualmente saltando
-                if (!this.isJumping) {
-                    this.canJump = true;
-                }
             } else if (this.wasGrounded && !this.isGrounded) {
                 // Acaba de dejar el suelo, iniciar coyote time
                 this.coyoteTimeCounter = this.coyoteTime;
@@ -423,13 +920,13 @@ class Mario extends Phaser.GameObjects.Sprite
             this.wasGrounded = previousGrounded;
             
             // Detectar colisión con paredes
-            if (this.body.blocked.right) {
+            if (this.blocked.right) {
                 this.stop();
             }
         }
 
         // Limitar velocidades después de todas las actualizaciones
-        if (this.body && !this.isHurt) {
+        if (this.body && !this.isHurt && !this.isInBubble) {
             // Asegurar que las velocidades sean números válidos
             if (typeof this.body.velocity.x !== 'number' || isNaN(this.body.velocity.x)) {
                 this.body.velocity.x = this.isBeingPushed ? 0 : this.speed;
@@ -448,6 +945,15 @@ class Mario extends Phaser.GameObjects.Sprite
 
     handleAnimations() {
         if (!this.body) return;
+
+        // Mostrar siempre animación de burbuja si está en la burbuja
+        if (this.isInBubble) {
+            this.setScale(this.base.scaleX, this.base.scaleY);
+            if (this.anims.currentAnim?.key !== 'mario_bubble') {
+                this.play('mario_bubble', true);
+            }
+            return; // Salir inmediatamente - no permitir otras animaciones
+        }
 
         // Mostrar siempre animación de hurt si está herido
         if (this.isHurt) {
@@ -501,9 +1007,136 @@ class Mario extends Phaser.GameObjects.Sprite
         }
     }
 
+    setUpWorldBoundsCollision() {
+        const world = this.scene.matter.world;
+
+        // Por si acaso se vuelve a crear el jugador, limpiamos listeners antiguos
+        world.off('beforeupdate', this.handleBeforeUpdate, this);
+        world.off('collisionactive', this.handleCollisionActive, this);
+        world.off('afterupdate', this.handleAfterUpdate, this);
+
+        world.on('beforeupdate', this.handleBeforeUpdate, this);
+        world.on('collisionactive', this.handleCollisionActive, this);
+        world.on('afterupdate', this.handleAfterUpdate, this);
+    }
+
+    handleBeforeUpdate(event) {
+        // Resetear contadores de sensores antes de la actualización
+        this.numTouching.left = 0;
+        this.numTouching.right = 0;
+        this.numTouching.bottom = 0;
+        this.numTouching.up = 0;
+    }
+
+    handleCollisionActive(event) {
+        for (let i = 0; i < event.pairs.length; i++)
+        {
+            const bodyA = event.pairs[i].bodyA;
+            const bodyB = event.pairs[i].bodyB;
+
+            // Saltar si uno de los cuerpos es el jugador
+            if (bodyA === this.playerBody || bodyB === this.playerBody)
+            {
+                continue;
+            }
+
+            // verificamos si esta tocando suelo
+            if (bodyA === this.sensors.bottom || bodyB === this.sensors.bottom)
+            {
+                // Contar cualquier superficie como suelo (por ejemplo, saltar sobre una caja no estática).
+                this.numTouching.bottom += 1;
+            }
+
+            // verificamos si esta tocando pared izquierda
+            if ((bodyA === this.sensors.left && bodyB.isStatic) || (bodyB === this.sensors.left && bodyA.isStatic))
+            {
+                // Solo los objetos estáticos cuentan ya que no queremos ser bloqueados por un objeto que
+                // podemos empujar.
+                this.numTouching.left += 1;
+            }
+
+            // verificamos si esta tocando pared derecha
+            if ((bodyA === this.sensors.right && bodyB.isStatic) || (bodyB === this.sensors.right && bodyA.isStatic))
+            {
+                this.numTouching.right += 1;
+            }
+
+            // verificamos si esta tocando techo
+            if ((bodyA === this.sensors.up && bodyB.isStatic) || (bodyB === this.sensors.up && bodyA.isStatic))
+            {
+                this.numTouching.up += 1;
+            }
+        };
+    }
+
+    handleAfterUpdate(event) {
+        // Actualizar estados de bloqueo basados en sensores
+        this.blocked.right = this.numTouching.right > 0;
+        this.blocked.left = this.numTouching.left > 0;
+        this.blocked.bottom = this.numTouching.bottom > 0;
+        this.blocked.up = this.numTouching.up > 0;
+
+        // Actualizar si está en el suelo
+        this.isGrounded = this.blocked.bottom;
+    }
+
+    centerCameraOnPlayer() {
+        // Obtener las dimensiones reales de la vista de la cámara considerando el zoom
+        const camera = this.scene.cameras.main;
+        const cameraViewWidth = camera.width / camera.zoom;
+        const cameraViewHeight = camera.height / camera.zoom;
+
+        // Seguimiento horizontal
+        let targetX;
+
+        // Establecer el objetivo de la cámara horizontalmente
+        if (this.x < cameraViewWidth *0.25) {
+            targetX = -200;
+        }
+        else if(Math.abs(this.body.velocity.x) < 1) {
+            targetX = this.x - cameraViewWidth *0.66;
+        }
+        else {
+            targetX = this.x - cameraViewWidth * 0.5;
+        }
+
+        // Seguimiento vertical
+        let targetY;
+    
+        if (this.isInBubble) {
+            // Cuando está en la burbuja, posicionar más alto en la pantalla
+            targetY = this.y - cameraViewHeight * 0.4;
+        } else {
+            // Calcular la posición vertical ideal
+            const baseTargetY = this.y - cameraViewHeight * 0.65;
+
+            if (!this.isGrounded) {
+                // Cuando salta, mantener la cámara un poco más alta
+                targetY = this.y - cameraViewHeight * 0.7;
+            } else {
+                // Cuando está en el suelo, mantenerlo en la posición vertical ideal
+                targetY = baseTargetY
+            }
+        }
+
+        // Suavizado tipo "spring" con LERP para el movimiento suave
+        const smoothFactorX = 0.1;  // Ajustar la suavidad horizontal
+        const smoothFactorY = 0.05; // Ajustar la suavidad vertical
+
+        // // Movimiento de la cámara suavizado
+        // const dx = targetX - cam.scrollX;
+        // const dy = targetY - cam.scrollY;
+
+        // // Aplicar el suavizado con un Lerp (Interpolación lineal)
+        // const moveX = cam.scrollX + dx * smoothFactorX;
+        // const moveY = cam.scrollY + dy * smoothFactorY;
+
+        camera.scrollX += (targetX-camera.scrollX)*smoothFactorX;
+        camera.scrollY += (targetY-camera.scrollY)*smoothFactorY;
+    }
+
     // Resetear estados
     resetStates() {
-        this.canJump = true;
         this.isJumping = false;
         this.isHoldingJump = false;
         this.jumpVelocity = 0;
@@ -514,21 +1147,30 @@ class Mario extends Phaser.GameObjects.Sprite
         this.wasHoldingJumpWhenBuffered = false;
         this.isHurt = false;
         this.hasWon = false;
+        this.bubblePhase = 0;
+        this.isInBubble = false;
+        this.canDrop = false;
+        this.bubblesLeft = 2;
         this.setScale(this.base.scaleX, this.base.scaleY);
         this.isSuperSize = false;
         this.deactivatePowerUp();
     }
     
     setInvincible(durationMs) {
+        // Solo gestiona la estrella, no toca otros powerups
+        this.isInvincible = true;
 
-        if (this.isInvincible) {
-            this.invTimer.remove(false);
+        this.speed = this.base.speed * 1.75;
+
+        // Música
+        if (this.scene.levelMusic && this.scene.levelMusic.isPlaying) {
+            this.scene.levelMusic.pause();
+        }
+        if (this.starman) {
+            this.starman.play({ loop: true });
         }
 
-        this.isInvincible = true;
-        this.activePowerUp = POWERUP_TYPES.STAR;
-        this.scene.levelMusic.pause();
-        this.starman.play();
+        // Efecto arcoíris
         const rainbowColors = [
             0xFF0000, // Rojo
             0xFF7F00, // Naranja
@@ -536,11 +1178,13 @@ class Mario extends Phaser.GameObjects.Sprite
             0x00FF00, // Verde
             0x0000FF, // Azul
             0x4B0082, // Índigo
-            0x8B00FF // Violeta
+            0x8B00FF  // Violeta
         ];
-
         let colorIndex = 0;
 
+        if (this.invEvent?.remove) {
+            this.invEvent.remove(false);
+        }
         this.invEvent = this.scene.time.addEvent({
             delay: 100,
             loop: true,
@@ -550,81 +1194,168 @@ class Mario extends Phaser.GameObjects.Sprite
             }
         });
 
-    const warningTime = 1000; // 3 segundos antes del final
-    const timeUntilWarning = durationMs - warningTime;
-    
-    this.warningTimer = this.scene.time.delayedCall(timeUntilWarning, () => {
-        // Crear y reproducir el sonido de advertencia si no existe
-        if (!this.starEndingSound) {
-            this.starEndingSound = this.scene.sound.add('starEnding');
-        }
-        this.starEndingSound.play();
-    });
+        // Timer de aviso de que se acaba la estrella
+        const warningTime = 1000;
+        const timeUntilWarning = durationMs - warningTime;
 
+        if (this.warningTimer?.remove) {
+            this.warningTimer.remove(false);
+        }
+        this.warningTimer = this.scene.time.delayedCall(timeUntilWarning, () => {
+            if (!this.starEndingSound) {
+                this.starEndingSound = this.scene.sound.add('starEnding');
+            }
+            this.starEndingSound.play();
+        });
+
+        // Timer principal de invencibilidad
+        if (this.invTimer?.remove) {
+            this.invTimer.remove(false);
+        }
         this.invTimer = this.scene.time.delayedCall(durationMs, () => {
-           this.deactivatePowerUp();
+            this.endStarInvincibility();
         });
     }
 
+    endStarInvincibility() {
+        // Cancelar eventos y timers
+        if (this.invEvent?.remove) {
+            this.invEvent.remove(false);
+            this.invEvent = null;
+        }
+        if (this.invTimer?.remove) {
+            this.invTimer.remove(false);
+            this.invTimer = null;
+        }
+        if (this.warningTimer?.remove) {
+            this.warningTimer.remove(false);
+            this.warningTimer = null;
+        }
+
+        this.speed = this.base.speed;
+
+        // Parar músicas de estrella y reanudar música de nivel
+        if (this.starman && this.starman.isPlaying) {
+                this.starman.stop();
+        }
+        if (this.starEndingSound && this.starEndingSound.isPlaying) {
+                this.starEndingSound.stop();
+        }
+        if (this.scene.levelMusic && this.scene.levelMusic.isPaused) {
+                this.scene.levelMusic.resume();
+        }
+
+        // Restaurar apariencia
+        this.clearTint();
+        this.alpha = 1;
+        this.isInvincible = false;
+    }
+
     enableHammer() {
+        // Cambiar de power-up ofensivo, pero conservar tamaño si es Super Mario
+        this.deactivatePowerUp({ keepSize: this.isSuperSize });
+        if(!this.isSuperSize) this.enableSuperSize();
         this.activePowerUp = POWERUP_TYPES.HAMMER;
         this.canThrowHammer = true;
     }
 
     tryThrowHammer() {
-        if (!this.canThrowHammer || !this.body) return;
-        const currentTime = this.scene.time.now;
-        if(currentTime < this.hammerCooldown) return;
-        this.hammerCooldown = currentTime + 1000;
+    if (!this.canThrowHammer) return;
 
-        if(!this.scene.hammers){
-            console.warn("No hay grupo de martillos en la escena.");
-            return;
-        }
+    const currentTime = this.scene.time.now || 0;
+    if (currentTime < this.hammerCooldown) return;
+    this.hammerCooldown = currentTime + 1000; // 1 segundo de cooldown
 
-        const hammer = this.scene.requestHammer(this);
-        if (!hammer) return;
-
-        const dir = 1;
-        const offsetX = this.body.width * 0.6 * dir;
-        const offsetY = this.body.height * 0.2;
-
-        hammer.setPosition(this.x + offsetX, this.y - offsetY);
-
-        const hammerSpeedX = 400 * dir;
-        const hammerSpeedY = -300; // Ligeramente hacia arriba
-        hammer.body.setVelocity(hammerSpeedX, hammerSpeedY);
-
-        if (this.scene.anims.exists('mario_Throw')) {
-            this.play('mario_Throw');
-        }
+    if (!this.scene.hammers) {
+        console.warn("No hay grupo de martillos en la escena.");
+        return;
     }
+
+    if (!this.scene.requestHammer) {
+        console.warn("La escena no tiene el método requestHammer.");
+        return;
+    }
+
+    const hammer = this.scene.requestHammer(this);
+    if (!hammer) return;
+
+    // Dirección según hacia dónde mira Mario
+    const dir = 1;
+
+    // Offset respecto al sprite (no usamos body.width porque es Matter)
+    const offsetX = this.width * this.scaleX * 0.6 * dir;
+    const offsetY = this.height * this.scaleY * 0.2;
+
+    hammer.setPosition(this.x + offsetX, this.y - offsetY);
+
+    // 💡 Velocidad en la misma escala que Mario (speed ≈ 3.5)
+    const hammerSpeedX = this.speed * 2.5 * dir; // algo tipo 8–9
+    const hammerSpeedY = -6;                      // pequeño salto en arco
+
+    if (hammer.setVelocity) {
+        hammer.setVelocity(hammerSpeedX, hammerSpeedY);
+    } else if (hammer.body && hammer.body.setVelocity) {
+        hammer.body.setVelocity(hammerSpeedX, hammerSpeedY);
+    }
+
+    if (this.scene.anims.exists('mario_throw')) {
+        this.play('mario_throw', true);
+    }
+}
+
 
     enableDoubleJump() {
-    
+        this.deactivatePowerUp({ keepSize: this.isSuperSize });
+        if(!this.isSuperSize) this.enableSuperSize();
+        this.activePowerUp = POWERUP_TYPES.DOUBLE_JUMP;
+        this.canDoubleJump = true;
+        this.hasDoubleJumped = false;
     }
 
-    enableDash(){
+    // enableDash() {
+    //     this.deactivatePowerUp({ keepSize: this.isSuperSize });
+    //     if(!this.isSuperSize) this.enableSuperSize();
+    //     this.activePowerUp = POWERUP_TYPES.DASH;
+    //     this.canDash = true;
 
+    // Aumentamos velocidad base mientras esté activo
+    //         this.speed = this.base.speed * 1.5;
+    //     if (this.body) {
+    //         this.body.setVelocityX(this.speed);
+    //     }
+    // }
+
+    enableHighJump() {
+        this.deactivatePowerUp({ keepSize: this.isSuperSize });
+        if(!this.isSuperSize) this.enableSuperSize();
+        this.activePowerUp = POWERUP_TYPES.JUMP_BOOTS;
+        this.canHighJump = true;
+
+        // Hacer el salto más alto (más negativo)
+        const baseMaxJump = this.base.maxJumpVelocity ?? this.base.jumpForce ?? this.maxJumpVelocity;
+        this.maxJumpVelocity = baseMaxJump * this.highJumpMultiplier;
+        // Lo hacemos más rapido también para diferenciarlo del doble salto
+        this.speed = this.base.speed * 1.5;
     }
 
-    enableHighJump(){
+    deactivatePowerUp(options = {}) {
+        // Si no hay power-up activo y no es Super Mario, no hacer nada
+        if (!this.activePowerUp && !this.isSuperSize) return;
 
-    }
+        const keepSize = options.keepSize ?? false;
 
-    deactivatePowerUp(){
-       // 1. Cancelar eventos de la estrella (arcoíris)
-        if (this.invEvent?.remove){
+        // 1. Quitar efectos de estrella
+        if (this.invEvent?.remove) {
             this.invEvent.remove(false);
             this.invEvent = null;
-        } 
+        }
 
-        if (this._invTimer?.remove){
-            this._invTimer.remove(false);
-            this._invTimer = null;
-        } 
+        if (this.invTimer?.remove) {
+            this.invTimer.remove(false);
+            this.invTimer = null;
+        }
 
-        if (this.warningTimer?.remove){
+        if (this.warningTimer?.remove) {
             this.warningTimer.remove(false);
             this.warningTimer = null;
         }
@@ -639,49 +1370,59 @@ class Mario extends Phaser.GameObjects.Sprite
             this.scene.levelMusic.resume();
         }
 
-
         // 2. Restaurar apariencia
         this.clearTint();
         this.alpha = 1;
 
-        // 3. Restaurar tamaño si había super size
-        if (this.activePowerUp === 'mushroom' && this._baseBody) {
+        // 3. Restaurar tamaño si toca
+        if (!keepSize && this.isSuperSize) {
             this.setScale(this.base.scaleX, this.base.scaleY);
-            this.body.setSize(this._baseBody.w, this._baseBody.h, true);
-            this.body.setOffset(this._baseBody.ox, this._baseBody.oy);
+
+            // Solo si es arcade, esto existe
+            if (this.baseBody && this.body && this.body.setSize) {
+                this.body.setSize(
+                    this.baseBody.w * this.base.scaleX,
+                    this.baseBody.h * this.base.scaleY
+                );
+                this.body.setOffset(this.baseBody.offsetX, this.baseBody.offsetY);
+            }
+
             this.isSuperSize = false;
         }
 
         // 4. Resetear flags y multiplicadores
         this.isInvincible = false;
         this.canThrowHammer = false;
-        this.doubleJumpEnabled = false;
-        this.doubleJumpAvailable = false;
-        this.dashMultiplier = 1;
-        this.highJumpMultiplier = 1;
+        this.canDoubleJump = false;
+        this.hasDoubleJumped = false;
+        this.canDash = false;
+        this.isDashing = false;
+        this.canHighJump = false;
+        this.highJumpMultiplier = 1.5;
 
         // 5. Restaurar velocidad y salto base
         this.speed = this.base.speed;
-        this.minJumpVelocity = this.base.minJumpVelocity ?? this.base.jumpForce ?? this.minJumpVelocity;
-        this.maxJumpVelocity = this.base.maxJumpVelocity ?? this.maxJumpVelocity;
+        this.minJumpVelocity = this.base.minJumpVelocity ?? this.minJumpVelocity;
+        this.maxJumpVelocity = this.base.maxJumpVelocity ?? this.base.jumpForce ?? this.maxJumpVelocity;
 
-        // 6. Limpieza final
-        this.activePowerUp = null;
+        // 6. Power-up activo
+        this.activePowerUp = keepSize && this.isSuperSize
+            ? POWERUP_TYPES.MUSHROOM
+            : null;
     }
 
-    enableSuperSize(){
-        // evita duplicar power-ups
-        if (this.isSuperSize) {
-            // aquí podrías sumar puntos, etc.
-            return;
-        }
-        this.powerUpSound.play();
+    enableSuperSize() {
+        // Evita duplicar
+        if (this.isSuperSize) return;
+
+        this.powerUpSound?.play();
+
         const k = this.scaleMultiplier;
-        this.activePowerUp = POWERUP_TYPES.MUSHROOM;
         this.isSuperSize = true;
 
-        // Escala visual
+        // Escala visual (Super Mario / Powered-Up)
         this.setScale(this.base.scaleX * k, this.base.scaleY * k);
     }
+
 }
 export default Mario;

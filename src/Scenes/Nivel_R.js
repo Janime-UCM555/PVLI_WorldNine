@@ -3,6 +3,7 @@ import Mario from '../gameObjects/Mario.js';
 import Fin from '../gameObjects/BarraFin.js';
 import Goomba from '../gameObjects/Goomba.js';
 import Koopa from '../gameObjects/Koopa.js';
+import PiranhaPlant from '../gameObjects/PiranhaPlant.js';
 import { PowerUp, POWERUP_TYPES } from '../gameObjects/PowerUps.js';
 class Nivel_R extends Phaser.Scene
 {
@@ -33,11 +34,6 @@ class Nivel_R extends Phaser.Scene
     }
 
     create(){
-
-window.addEventListener('contextmenu', e => e.preventDefault());
-this.input.mouse?.disableContextMenu();
-
-
         // this.cameras.main.setZoom(2);
         // Crear mapa desde Tiled
         this.map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
@@ -88,17 +84,17 @@ this.input.mouse?.disableContextMenu();
             const tex = props.texture || 'bloque'; // si no tiene, usa la por defecto
 
             // Crear sprite con esa textura
-            const block = this.add.sprite(x, y, tex);
-            this.physics.add.existing(block, true);
+            const block = this.matter.add.sprite(x, y, tex);
+            // this.physics.add.existing(block, true);
 
             // Ajustar el hitbox al tamaño del objeto
-            block.body.setSize(obj.width, obj.height);
-            block.body.updateFromGameObject();
+            // block.body.setSize(obj.width, obj.height);
+            // block.body.updateFromGameObject();
 
             // Guardar sus props para blockHit()
-            block._props = props;
+            // block._props = props;
 
-            this.blocks.add(block);
+            // this.blocks.add(block);
         });
 
         this.coinsGroup = this.add.group();
@@ -134,6 +130,7 @@ this.input.mouse?.disableContextMenu();
         }
         this.goombas = this.physics.add.group();
         this.koopas = this.physics.add.group();
+        this.piranhas = this.add.group();
         for (const enemie of enemies)
         {
             if (enemie.name === 'Goomba')
@@ -151,6 +148,7 @@ this.input.mouse?.disableContextMenu();
             }
             else if (enemie.name === 'Koopa')
             {
+                console.log('KOOPA');
                 const koopa = new Koopa(
                     this,
                     enemie.x,
@@ -161,14 +159,21 @@ this.input.mouse?.disableContextMenu();
                 );
                 koopa.direction = -1;
                 this.koopas.add(koopa);
+            }//
+            else if (enemie.name === 'Piranha')
+            {
+                console.log('PIRANYA');
+                const piranha = new PiranhaPlant(
+                    this,
+                    enemie.x,
+                    enemie.y - 50, 
+                    'Piranha_plant',
+                    2000,
+                    2000
+                );
+                this.piranhas.add(piranha);
             }
         }
-
-        this.hammers = this.physics.add.group({
-            defaultKey: 'hammer',
-            maxSize: 5
-        });
-
 
         // // Grupo de Goombas - Añadidos manualmente
         // this.goombas = this.physics.add.group();
@@ -208,7 +213,7 @@ this.input.mouse?.disableContextMenu();
 
         this.powerups = this.add.group();
 
-        this.spawnPowerUp(200, 600, POWERUP_TYPES.HAMMER, POWERUP_TYPES.HAMMER);
+        this.spawnPowerUp(200, 600, POWERUP_TYPES.MUSHROOM, 'mushroom');
 
         this.setupCollisions();
 
@@ -325,6 +330,13 @@ this.input.mouse?.disableContextMenu();
         });
 
         this.anims.create({
+            key: 'mario_bubble',
+            frames: this.anims.generateFrameNumbers('mario_bubble', {start: 0, end: 0}),
+            frameReate: 8,
+            repeat: -1
+        })
+
+        this.anims.create({
             key: 'goombarome_walk',
             frames: this.anims.generateFrameNumbers('gombrome_walk', { start: 0, end: 3 }),
             frameRate: 8,
@@ -336,6 +348,18 @@ this.input.mouse?.disableContextMenu();
             frameRate: 8,
             repeat: -1
         });
+        this.anims.create({
+            key: 'Piranha_plant',
+            frames: this.anims.generateFrameNumbers('Piranha_plant', { start: 0, end: 0 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        // this.anims.create({
+        //     key: 'piranha_bite',
+        //     frames: this.anims.generateFrameNumbers('piranha_plant', { start: 0, end: 1 }),
+        //     frameRate: 4,
+        //     repeat: -1
+        // });
     }
     
     setupCollisions() {
@@ -374,6 +398,18 @@ this.input.mouse?.disableContextMenu();
             null,
             this
         );
+        // Colisión con plantas piraña
+        this.matter.world.on('collisionstart', (event) => {
+            event.pairs.forEach(pair => {
+                const { bodyA, bodyB } = pair;
+        
+                if (bodyB.gameObject instanceof PiranhaPlant && bodyA.gameObject === this.jugador) {
+                    bodyB.gameObject.handlePlayerCollision(this.jugador);
+                } else if (bodyA.gameObject instanceof PiranhaPlant && bodyB.gameObject === this.jugador) {
+                    bodyA.gameObject.handlePlayerCollision(this.jugador);
+                }
+            });
+        });
 
         // Colisión entre Goombas
         this.physics.add.collider(
@@ -402,41 +438,7 @@ this.input.mouse?.disableContextMenu();
             this
         );
 
-           this.physics.add.collider(
-            this.hammers,
-            this.blocks,
-            (hammers, block) => {
-                this.recycleHammer(hammers);
-                this.blockHit(this.jugador, block);
-            },
-            null,
-            this
-        );
-
-        this.physics.add.overlap(
-            this.hammers,
-            this.goombas,
-            (hammer, goomba) => {
-                goomba.stomp();
-                this.recycleHammer(hammer);
-            },
-            null,
-            this
-        );
-
-        this.physics.add.overlap(
-            this.hammers,
-            this.koopas,
-            (hammer, koopa) => {
-                koopa.stomp();
-                this.recycleHammer(hammer);
-            },
-            null,
-            this
-        );
-
-
-        // Colisiones powerups con suelo y bloques
+        // Colisiones powerups con suelo y bloques        
         this.physics.add.collider(this.powerups, this.groundLayer);
 
         this.physics.add.collider(this.powerups, this.blocks);
@@ -445,7 +447,7 @@ this.input.mouse?.disableContextMenu();
             this.jugador, 
             this.blocks,
             (player, block) => {
-                if (!(player.body.velocity.y == 0 && player.body.center.y > block.body.bottom)){
+                if (!(player.body.velocity.y >= 0 && player.body.center.y > block.body.bottom)){
                     return; // Solo al golpear desde abajo
                 } 
                 const aim = this.findSpawnBlockAbovePlayer(player, 16, 10); // (toleranciaX, toleranciaY)
@@ -539,6 +541,13 @@ this.input.mouse?.disableContextMenu();
         this.koopas.getChildren().forEach(koopa => {
             if (koopa.safeDestroy && !koopa.shouldBeDestroyed) {
                 koopa.safeDestroy();
+            }
+        });
+
+        // Destruir todas las plantas piraña
+        this.piranhas.getChildren().forEach(piranha => {
+            if (piranha.safeDestroy && !piranha.shouldBeDestroyed) {
+                piranha.safeDestroy();
             }
         });
 
@@ -799,14 +808,15 @@ this.input.mouse?.disableContextMenu();
             if (!this.endTimer)
             {
                 this.textTimer.setText(timer.toString().padStart(2, '0'));
-                if (timer == 0)
-                {
+                if (timer == 0) {
                     this.endTimer=true;
                     this.sound.play('muerte');
                     this.jugador.hurt();
                     this.transition('MainMenu'); // Llamar a la transición cuando se acaba el tiempo
-                }   
-                timer = (timer - 1 + 60) % 60; // reinicia a 60
+                }
+                if (!this.jugador.isInBubble) {
+                    timer = (timer - 1 + 60) % 60; // reinicia a 60
+                }
             }
             else{
                 timer = 0;
@@ -850,11 +860,6 @@ this.input.mouse?.disableContextMenu();
         }
     }
 
-    playerFell() {
-        this.restartLevel();
-    }
-
-
     restartLevel() {
         // Reiniciar la escena o reposicionar el jugador
         this.jugador.x = 25;
@@ -871,6 +876,9 @@ this.input.mouse?.disableContextMenu();
         // Resetear invulnerabilidad
         this.jugador.isInvulnerable = false;
         this.jugador.setVisible(true);
+        this.jugador.bubblePhase = 0;
+        this.jugador.isInBubble = false;
+        this.jugador.canDrop = false;
     }
 
     update(time, delta) {
@@ -879,54 +887,59 @@ this.input.mouse?.disableContextMenu();
             // Actualizar jugador
             this.jugador.update(time,delta);
 
-            // Actualizar barra final
-            if (this.barraFin)
-            {
-                this.barraFin.update(time,delta);
-            }
-
-            // Actualizar Goombas
-            if (this.goombas) {
-                this.goombas.getChildren().forEach(goomba => {
-                    goomba.update(time, delta);
-                });
-            }
-            // Actualizar Koopas
-            if (this.koopas) {
-                this.koopas.getChildren().forEach(koopa => {
-                    koopa.update(time, delta);
-                });
-            }
+            // Actualizar objetos
+            this.updateObjects(time, delta);
 
             // Posicionar bien la cámara respecto al jugador
-            this.centerCameraOnPlayer();
+            this.jugador.centerCameraOnPlayer();
 
             // Detección manual de monedas
             this.checkCoinCollection();
 
             // Comprobar si el jugador se ha caído
-            if (this.jugador.y > this.map.heightInPixels + 100) {
-                this.sound.play('muerte');
-                this.playerFell();
-            }
+            this.checkPlayerFell();
+        }
+    }
 
+    // Actualizar objetos
+    updateObjects(time, delta) {
+        // Actualizar barra final
+        if (this.barraFin) {
+            this.barraFin.update(time, delta);
+        }
 
-            if (this.hammers) {
-                const cam = this.cameras.main;
-                const margin = 64;
+        // Actualizar Goombas
+        if (this.goombas) {
+            this.goombas.getChildren().forEach(goomba => {
+                goomba.update(time, delta);
+            });
+        }
+    
+        // Actualizar Koopas
+        if (this.koopas) {
+            this.koopas.getChildren().forEach(koopa => {
+                koopa.update(time, delta);
+            });
+        }
+    
+        // Actualizar plantas piraña
+        if (this.piranhas) {
+            this.piranhas.getChildren().forEach(piranha => {
+                piranha.update(time, delta);
+            });
+        }
+    }
 
-                this.hammers.children.iterate(hammer => {
-                    if (!hammer || !hammer.active) return;
-
-                    if (
-                        hammer.x < cam.worldView.x - margin ||
-                        hammer.x > cam.worldView.x + cam.worldView.width + margin ||
-                        hammer.y > cam.worldView.y + cam.worldView.height + margin
-                    ) {
-                        this.recycleHammer(hammer);
-                    }
-                });
-            }
+    // Verificar si el jugador se ha caído
+    checkPlayerFell() {
+        if (this.jugador.y > this.map.heightInPixels + 50 && !this.jugador.isInBubble && !this.jugador.canDrop && this.jugador.bubblesLeft > 0) {
+            this.sound.play('muerte');
+            this.jugador.Bubble();
+        } else if (this.jugador.y > this.map.heightInPixels + 50 && this.jugador.bubblesLeft <= 0 && !this.jugador.isInBubble) {
+            this.sound.play('muerte');
+            this.jugador.y = this.map.heightInPixels + 45;
+            this.jugador.hurt();
+            this.transition('MainMenu');
         }
     }
 
@@ -939,7 +952,7 @@ this.input.mouse?.disableContextMenu();
                 const coinBounds = coin.getBounds();
             
                 // Verificar superposición
-                if (Phaser.Geom.Rectangle.Overlaps(playerBounds, coinBounds)) {
+                if (!this.jugador.isInBubble && Phaser.Geom.Rectangle.Overlaps(playerBounds, coinBounds)) {
                     this.collectCoin(this.jugador, coin);
                     coin.collected = true;
                 }
@@ -947,75 +960,12 @@ this.input.mouse?.disableContextMenu();
         });
     }
 
-     // Spawner simple (tu PowerUp ya añade físicas y movimiento)
+    // Spawner simple (tu PowerUp ya añade físicas y movimiento)
     spawnPowerUp(x, y, type, textureKey) {
         let power = new PowerUp(this, x, y, type, textureKey)
         power.body.setVelocity(power.body.velocity.x * 3,-150); // Salir del bloque hacia arriba
         this.powerups.add(power);
         return this.powerups;
-    }
-
-
-    centerCameraOnPlayer() {
-        // Obtener las dimensiones reales de la vista de la cámara considerando el zoom
-        const cameraViewWidth = this.cameras.main.width / this.cameras.main.zoom;
-        const cameraViewHeight = this.cameras.main.height / this.cameras.main.zoom;
-
-        // Seguimiento horizontal
-        let targetX;
-    
-        if (this.jugador.x < cameraViewWidth / 4) {
-            targetX = -200;
-        } else {
-            targetX = this.jugador.x - cameraViewWidth / 1.5;
-        }
-
-        // Seguimiento vertical
-        let targetY;
-    
-        // Calcular la posición vertical ideal
-        const baseTargetY = this.jugador.y - cameraViewHeight * 0.65;
-    
-        if (!(this.jugador.isGrounded || this.jugador.body.blocked.down)) {
-            // Cuando salta, mantener la cámara un poco más alta
-            targetY = this.jugador.y - cameraViewHeight * 0.7;
-        } else {
-            // Cuando está en el suelo, mantenerlo en la posición vertical ideal
-            targetY = baseTargetY
-        }
-
-        // Suavizado tipo "spring"
-        const springFactorX = 0.05;
-        const springFactorY = 0.015;
-        const dx = targetX - this.cameras.main.scrollX;
-        const dy = targetY - this.cameras.main.scrollY;
-
-        const maxSpeedY = 15;
-        const moveY = Phaser.Math.Clamp(dy * springFactorY, -maxSpeedY, maxSpeedY);
-
-        this.cameras.main.scrollX += dx * springFactorX;
-        this.cameras.main.scrollY += moveY;
-    }
-
-    requestHammer(player) {
-        if (!this.hammers) return null;
-
-        const hammer = this.hammers.get(player.x, player.y, 'hammer');
-        if (!hammer) return null; // no hay libres en la pool
-
-        hammer.setActive(true).setVisible(true);
-        hammer.body.enable = true;
-
-        // Opcional: tamaño del cuerpo físico
-        hammer.body.setSize(hammer.width, hammer.height);
-
-        return hammer;
-    }
-    
-    recycleHammer(hammer) {
-        hammer.setActive(false).setVisible(false);
-        hammer.body.stop();
-        hammer.body.enable = false;
     }
 }
 
