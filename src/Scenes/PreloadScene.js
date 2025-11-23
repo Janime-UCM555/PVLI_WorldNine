@@ -99,6 +99,10 @@ class PreloadScene extends Phaser.Scene {
             frameWidth: 72,
             frameHeight: 72,
         });
+        this.load.spritesheet('mario_idle', 'GameSprites/Characters/Mario/Mario_idle.png', {
+            frameWidth: 32,
+            frameHeight: 56,
+        });
 
         //PowerUps
         this.load.image('star', 'GameSprites/PowerUps/star.png');
@@ -112,6 +116,27 @@ class PreloadScene extends Phaser.Scene {
         this.load.image('block?', 'GameSprites/Items/blockint.png');
         this.load.image('blockempty', 'GameSprites/Items/blockempty.png');
         this.load.image('block', 'GameSprites/Items/blockBreakable.png');
+
+        //FallBlocks
+        this.load.image('fallOffBlock1', 'GameSprites/Items/FallOffBlock.png');
+        this.load.image('fallOffBlock2', 'GameSprites/Items/FallOffBlock2.png');
+        
+        //Bloques Pause y Continue
+        this.load.image('Pause', 'GameSprites/Items/PauseBlock.png');
+        this.load.image('Resume', 'GameSprites/Items/ResumeBlock.png');
+        
+        //Pinchos
+        this.load.image('spikes', 'GameSprites/Items/Spikes.png');
+
+        //CoinPass 2 direcciones
+        this.load.image('CoinPassD', 'GameSprites/Items/CoinPassDiagonal.png');
+        this.load.image('CoinPassS', 'GameSprites/Items/CoinPassStraight.png');
+
+        //Intensidad soles
+        this.load.spritesheet('Impulsos', 'GameSprites/Items/SunIntensity.png', {
+            frameWidth: 32,
+            frameHeight: 32,
+        });
 
         // Tilesets
         this.load.image('mi_tileset', 'GameSprites/Tilesets/base_tileset.png');
@@ -144,6 +169,7 @@ class PreloadScene extends Phaser.Scene {
         this.load.audio('starEnding', 'sonidos/SE/Items/PowerUps/estrellaSeAcaba.wav');
         this.load.audio('BrickBlock', 'sonidos/SE/Items/Bloques/BrickBlock.wav');
         this.load.audio('Bump', 'sonidos/SE/Items/Bloques/Bump.wav');
+        this.load.audio('PauseBlq', 'sonidos/SE/Items/Bloques/PauseBlock.wav');
 
         // Música
         this.load.audio('level_music', 'sonidos/BGM/level_theme.mp3');

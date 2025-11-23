@@ -218,8 +218,11 @@ class Pokey extends Phaser.GameObjects.Container
                     player.Bubble(); // Entra en burbuja sin empuje
                 } else {
                     player.hurt();
-                    this.body.collisionFilter.mask = 0; // Desactivar completamente las colisiones
-                    this.setStatic(true);
+                    if (this.compoundBody)
+                    {
+                        this.compoundBody.collisionFilter.mask = 0;
+                        Phaser.Physics.Matter.Matter.Body.setStatic(this.compoundBody, true);
+                    }
                     this.scene.transition('MainMenu'); // Volver al menú si no le quedan burbujas al jugador
                 }
             }

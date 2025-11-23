@@ -41,7 +41,7 @@ class Koopa extends Phaser.GameObjects.Sprite
         const M = Phaser.Physics.Matter.Matter;
         this.enemyBody = M.Bodies.rectangle(sx,sy*1.5, w, h, { chamfer: { radius: 10 } });
         this.sensors = {
-            bottom: M.Bodies.rectangle(sx, h, sx, 5, { isSensor: true }),
+            bottom: M.Bodies.rectangle(sx, h+sy, sx, 5, { isSensor: true }),
             left: M.Bodies.rectangle(sx-w*0.45, sy, 5, h, { isSensor: true }),
             right: M.Bodies.rectangle(sx+w*0.45, sy, 5, h, { isSensor: true }),
         };
@@ -87,6 +87,7 @@ class Koopa extends Phaser.GameObjects.Sprite
             this.stompSound = scene.sound.add('aplastar');
 
         }
+        
     }
 
     die(killType = DIE_TYPES.STOMP) {
@@ -239,7 +240,7 @@ class Koopa extends Phaser.GameObjects.Sprite
 
         // Verificar si Mario está cayendo y golpea desde arriba
         // console.log(player.body.velocity.y);
-        if (player.body.velocity.y>0.7) {
+        if ((player.body.velocity.y > 0.7 || player.getCenter().y > this.sy)) {
             // Hacer a Mario invulnerable temporalmente
             player.isInvulnerable = true;
 
@@ -282,15 +283,6 @@ class Koopa extends Phaser.GameObjects.Sprite
             } else {
                 // Colisión lateral
                 let pushDirection = 0; // Determinar dirección del empuje
-
-                // Calcular la dirección de la colisión
-                if (player.x < this.x) {
-                    // Goomba está a la derecha de Mario -> empujar a Mario hacia la izquierda
-                    pushDirection = -1;
-                } else {
-                    // Goomba está a la izquierda de Mario -> empujar a Mario hacia la derecha
-                    pushDirection = 1;
-                }
 
                 player.takeDamage(pushDirection);
             }
