@@ -66,7 +66,7 @@ class Nivel_TO extends Phaser.Scene
         const pausaL = this.map.getObjectLayer('PauseBlocks').objects;
         const OneWayL = this.map.getObjectLayer('OneWays').objects;
         const impulsosL = this.map.getObjectLayer('Impulsos').objects;
-        let platform = this.matter.add.rectangle(400, 550, 200, 20, { isStatic: true, label: 'oneWay' });
+        const coinPathL = this.map.getObjectLayer('CaminoMonedas').objects;
 
         const coins = this.map.getObjectLayer('Monedas').objects;
         // const enemies = this.map.getObjectLayer('Enemigos').objects;
@@ -122,6 +122,7 @@ class Nivel_TO extends Phaser.Scene
             //Ajustar el hitbox al tamaño del objeto
             block.setSize(obj.width, obj.height);
             block.setIgnoreGravity(true);
+            // Quita la fricción
             block.friction = 0;
             block.frictionStatic = 0;
             block.frictionAir = 0;
@@ -151,6 +152,7 @@ class Nivel_TO extends Phaser.Scene
             //Ajustar el hitbox al tamaño del objeto
             block.setSize(obj.width, obj.height);
             block.setIgnoreGravity(true);
+            // Quita la fricción
             block.friction = 0;
             block.frictionStatic = 0;
             block.frictionAir = 0;
@@ -181,6 +183,7 @@ class Nivel_TO extends Phaser.Scene
             //Ajustar el hitbox al tamaño del objeto
             block.setSize(obj.width, obj.height);
             block.setIgnoreGravity(true);
+            // Quita la fricción
             block.friction = 0;
             block.frictionStatic = 0;
             block.frictionAir = 0;
@@ -204,12 +207,12 @@ class Nivel_TO extends Phaser.Scene
             // Crear sprite con esa textura
             const block = this.matter.add.sprite(x, y, 'Resume');
             this.add.existing(block, true);
-            block.name = "oneway";
             block.setDepth(2);
 
             //Ajustar el hitbox al tamaño del objeto
             block.setSize(obj.width, obj.height);
             block.setIgnoreGravity(true);
+            // Quita la fricción
             block.friction = 0;
             block.frictionStatic = 0;
             block.frictionAir = 0;
@@ -218,12 +221,67 @@ class Nivel_TO extends Phaser.Scene
             block.setFixedRotation();
             // block.setFixedRotation();
             //Guardar sus props para blockHit()
-            
             block.setCollisionCategory(CATEGORY_TERRAIN);
             block.setCollidesWith([CATEGORY_ENEMY]);
+
+            const sensorHeight = 10;
+            const sensor = this.matter.add.rectangle(x, y-block.height*2+sensorHeight/2, obj.width, 5, { isSensor: true });
+            sensor.name = "oneway";
+            sensor.blockTop = block;
+            // Asegurar que el sensor no sea afectado por la gravedad
+            sensor.ignoreGravity = true;
+
+            // Configurar las colisiones en el cuerpo del sensor
+            sensor.collisionFilter = {
+                category: CATEGORY_TERRAIN, // Asignamos una categoría de colisión al sensor
+                mask: CATEGORY_PLAYER // Especificamos con qué categorías debe colisionar
+            };
+            block.sensor = sensor;
             this.pausa.add(block);
         });
+        
+        this.coinPath = this.add.group();
+        coinPathL.forEach(obj => {
+            // Coordenadas de Tiled → Phaser
+            const x = obj.x + obj.width / 2;
+            const y = obj.y - obj.height / 2;
 
+            // Crear sprite con esa textura
+            let tex = 'CoinPassD';
+            let blocName = "pathAbD";
+            const coinPathType = obj.name;
+            // console.log(obj.name);
+            if (coinPathType === 'PasoMonedasArDer') 
+            {
+                blocName = "pathArD";
+                tex = 'CoinPassD';
+            } 
+            else if (coinPathType == 'PasoMonedasAr') 
+            {
+                blocName = "pathAr";
+                tex = 'CoinPassS';
+            } 
+            else if (coinPathType == 'PasoMonedasDer')
+            {
+                blocName = "pathD";
+                tex = 'CoinPassS';
+            }
+            const block = this.matter.add.sprite(x, y, tex);
+            block.name = blocName;
+            block.setDepth(2);
+            // block.setSize(obj.width, obj.height);
+            block.setSensor(true);
+            block.setIgnoreGravity(true);
+            block.setStatic(true);
+            block.setRotation(Phaser.Math.DegToRad(obj.rotation));
+            block.setFixedRotation();
+            // block.setFixedRotation();
+            //Guardar sus props para blockHit()
+        
+            // block.setCollisionCategory(CATEGORY_TERRAIN);
+            // block.setCollidesWith([CATEGORY_PLAYER]);
+            this.coinPath.add(block);
+        });
         
         this.impulsos = this.add.group();
         impulsosL.forEach(obj => {
@@ -598,32 +656,138 @@ class Nivel_TO extends Phaser.Scene
                     player.takeDamage(pushDirection);
                 }
             }
+            if ((bodyA.gameObject == this.jugador &&bodyB.gameObject?.name=="pathAr") ||
+            (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="pathAr")) 
+            {
+                const coinDistanceX = 10;
+                const coinDistanceY = -40;
+                let blockPass;
+                if (bodyB.gameObject?.name == "pathAr")
+                {
+                    blockPass = bodyB.gameObject;
+                }
+                else{
+                    blockPass = bodyA.gameObject;
+                }
+                this.spawnCoins(coinDistanceX,coinDistanceY,blockPass);
+            }
+            if ((bodyA.gameObject == this.jugador && bodyB.gameObject?.name=="pathAbD") ||
+            (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="pathAbD")) 
+            {
+                // 4 monedas Abajo Diagonal
+                const coinDistanceX = 20;
+                const coinDistanceY = 40;
+                let blockPass;
+                if (bodyB.gameObject?.name == "pathAbD")
+                {
+                    blockPass = bodyB.gameObject;
+                }
+                else{
+                    blockPass = bodyA.gameObject;
+                }
+                this.spawnCoins(coinDistanceX,coinDistanceY,blockPass);
+            }
+            if ((bodyA.gameObject == this.jugador && bodyB.gameObject?.name=="pathArD") ||
+                (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="pathArD")) 
+            {
+                // 4 monedas Arriba Diagonal
+                const coinDistanceX = 20;
+                const coinDistanceY = -40;
+                const scene = this;
+                let blockPass;
+                if (bodyB.gameObject?.name == "pathArD")
+                {
+                    blockPass = bodyB.gameObject;
+                }
+                else{
+                    blockPass = bodyA.gameObject;
+                }
+                this.spawnCoins(coinDistanceX,coinDistanceY,blockPass);
+            }
+            if ((bodyA.gameObject == this.jugador && bodyB.gameObject?.name=="pathD") ||
+                (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="pathD")) 
+            {
+                // 4 monedas Derecha
+                const coinDistanceX = 40;
+                const coinDistanceY = 0;
+                let blockPass;
+                if (bodyB.gameObject?.name == "pathD")
+                {
+                    blockPass = bodyB.gameObject;
+                }
+                else{
+                    blockPass = bodyA.gameObject;
+                }
+                this.spawnCoins(coinDistanceX,coinDistanceY,blockPass);
+            }
             if ((bodyA.gameObject == this.jugador &&bodyB.gameObject?.name=="impulsoA") ||
             (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="impulsoA")) 
             {
+                console.log(this.jugador.jumpRequested);
+                if (bodyA.gameObject?.name = "impulsoA")
+                {
+                    this.impulsoActivo = bodyA.gameObject;
+                }
+                else{
+                    this.impulsoActivo = bodyB.gameObject;
+                }
                 if (this.jugador.jumpRequested)
                 {
                     M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -10 });
                 }
-                // console.log("Player detected by sensor!");
             }
             if ((bodyA.gameObject == this.jugador && bodyB.gameObject?.name=="impulsoM") ||
             (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="impulsoM")) 
             {
+                console.log(this.jugador.jumpRequested);
+                if (bodyA.gameObject?.name = "impulsoM")
+                {
+                    this.impulsoActivo = bodyA.gameObject;
+                }
+                else{
+                    this.impulsoActivo = bodyB.gameObject;
+                }
                 if (this.jugador.jumpRequested)
                 {
                     M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -7 });
                 }
-                // console.log("Player detected by sensor!");
             }
             if ((bodyA.gameObject == this.jugador && bodyB.gameObject?.name=="impulsoB") ||
                 (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="impulsoB")) 
-            {
+            {                
+                console.log(this.jugador.jumpRequested)
+                if (bodyA.gameObject?.name = "impulsoB")
+                {
+                    this.impulsoActivo = bodyA.gameObject;
+                }
+                else{
+                    this.impulsoActivo = bodyB.gameObject;
+                }
                 if (this.jugador.jumpRequested)
                 {
                     M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -5 });
                 }
-                // console.log("Player detected by sensor!");
+            }
+            if ((bodyA.name === "oneway" &&  bodyA.isSensor &&bodyB.gameObject === this.jugador) ||
+                (bodyB.name === "oneway"&& bodyB.isSensor && bodyA.gameObject === this.jugador ))
+            {
+                let sensor;
+                if (bodyA.name==="oneway")
+                {
+                    sensor = bodyA;
+                }
+                else
+                {
+                    sensor = bodyB;
+                } 
+                const activarOneWay = () => {
+                    sensor.blockTop.setCollidesWith([CATEGORY_ENEMY, CATEGORY_PLAYER]);
+                };
+                if (this.jugador.getCenter().x < sensor.bounds.max.x-6) {
+                    this.time.delayedCall(90, activarOneWay);
+                } else {
+                    activarOneWay();
+                }
             }
             if(bodyA.gameObject == this.jugador && bodyB.gameObject && bodyB.gameObject._props) 
             {
@@ -635,9 +799,48 @@ class Nivel_TO extends Phaser.Scene
                 this.blockHit(this.jugador, target);
             }
         }
-
+        const exitHandle = (event, bodyA, bodyB) => {
+            if ((bodyA.name === "oneway" &&  bodyA.isSensor &&bodyB.gameObject === this.jugador) ||
+                (bodyB.name === "oneway"&& bodyB.isSensor && bodyA.gameObject === this.jugador ))
+            {
+                if (bodyA.name==="oneway")
+                {
+                    bodyA.blockTop.setCollidesWith([CATEGORY_ENEMY]);
+                }
+                else
+                {
+                    bodyB.blockTop.setCollidesWith([CATEGORY_ENEMY]);
+                }
+            }
+        }
         this.matter.world.on('collisionstart', handle);
+        this.matter.world.off('collisionexit', exitHandle);
         this.matter.world.on('collisionactive', handle);
+    }
+
+    spawnCoins(distX, distY, blockPass)
+    {
+        blockPass.setTint(Phaser.Display.Color.GetColor(140, 140, 140, 0.5));
+        const center = blockPass.getCenter();
+        const delay = 50;
+        // 4 monedas 
+        for (let i=0; i < 4; ++i)
+        {
+            this.time.delayedCall(delay*i,()=> { this.delayedCoins(center,distX,distY, i)}, [], this);
+        }
+    }
+
+    delayedCoins(center, distX, distY, i)
+    {
+        const coin = this.coinsGroup.create(center.x+i*distX, center.y+i*distY, 'coin_tileset');
+        coin.setOrigin(0.5);
+        // Desactivar cualquier cuerpo físico que pueda haberse creado automáticamente
+        if (coin.body) {
+            coin.destroy();
+            coin.body = null;
+        }
+        coin.play('coin_gold_spin');
+        coin.coinValue = 100;
     }
 
     findSpawnBlockAbovePlayer(player, toleranciaX = 16, toleranciaY = 10) {

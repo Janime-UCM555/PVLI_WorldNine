@@ -367,9 +367,7 @@ class Mario extends Phaser.GameObjects.Sprite
         }
         // Manejar inicio del salto normal
         if (this.jumpRequested) {
-            console.log(this.canEnemyJump);
             if (canGroundJump) {
-                console.log("Puedo");
                 this.startJump(time);
                 this.hasDoubleJumped = false; // Resetear doble salto al saltar desde suelo
                 this.hasBufferedJump = false; // Limpiar el buffer también en salto normal
