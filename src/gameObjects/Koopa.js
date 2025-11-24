@@ -21,14 +21,10 @@ class Koopa extends Phaser.GameObjects.Sprite
         this.blocked= {
             left: false,
             right: false,
-            bottom: false,
-            up: false
         },
         this.numTouching= {
                 left: 0,
                 right: 0,
-                bottom: 0,
-                up:0
         }; 
         const sx = this.width/2;
         const sy = this.height/2;
@@ -41,12 +37,11 @@ class Koopa extends Phaser.GameObjects.Sprite
         const M = Phaser.Physics.Matter.Matter;
         this.enemyBody = M.Bodies.rectangle(sx,sy*1.5, w, h, { chamfer: { radius: 10 } });
         this.sensors = {
-            bottom: M.Bodies.rectangle(sx, h+sy, sx, 5, { isSensor: true }),
             left: M.Bodies.rectangle(sx-w*0.45, sy, 5, h, { isSensor: true }),
             right: M.Bodies.rectangle(sx+w*0.45, sy, 5, h, { isSensor: true }),
         };
         const compoundBody = M.Body.create({
-        parts: [this.enemyBody,this.sensors.bottom, this.sensors.left, this.sensors.right],
+        parts: [this.enemyBody, this.sensors.left, this.sensors.right],
         friction: 0,
         frictionAir: 0,
         restitution: 0.05 // El jugador no se pega a paredes
@@ -85,9 +80,35 @@ class Koopa extends Phaser.GameObjects.Sprite
             this.setFixedRotation();
 
             this.stompSound = scene.sound.add('aplastar');
+        this.scene.matter.world.on('beforeupdate', function (event) {
+        this.numTouching.left = 0;
+        this.numTouching.right = 0;
+        }, this);
+        this.scene.matter.world.on('collisionactive', (event) => {
+        for (let i = 0; i < event.pairs.length; i++)            
+        {
+            const bodyA = event.pairs[i].bodyA;
+            const bodyB = event.pairs[i].bodyB;
+            if (bodyA === this.playerBody || bodyB === this.playerBody)
+            {
+                continue;
+            }
+            if (bodyA === this.sensors.left || bodyB === this.sensors.left)
+            {
+            this.numTouching.left++;
+            }
+            if (bodyA === this.sensors.right || bodyB === this.sensors.right)
+            {
+            this.numTouching.right++;
+            }
+        }
+        });
+        this.scene.matter.world.on('afterupdate', function (event) {
+        this.blocked.right = this.numTouching.right > 0 ? true : false;
+        this.blocked.left = this.numTouching.left > 0 ? true : false;
+        }, this);
 
         }
-        
     }
 
     die(killType = DIE_TYPES.STOMP) {
@@ -408,30 +429,13 @@ class Koopa extends Phaser.GameObjects.Sprite
         this.destroy();
     }
     
-    resetTouching() {
-        this.numTouching.left = 0;
-        this.numTouching.right = 0;
-        this.numTouching.bottom = 0;
-    }
-
-    handleCollisions(bodyA, bodyB) 
-    {
-        if (bodyA === this.sensors.bottom || bodyB === this.sensors.bottom) {
-            this.numTouching.bottom += 1;
-        }
-        if ((bodyA === this.sensors.left && bodyB.isStatic) || (bodyB === this.sensors.left && bodyA.isStatic)) {
-            this.numTouching.left += 1;
-        }
-        if ((bodyA === this.sensors.right && bodyB.isStatic) || (bodyB === this.sensors.right && bodyA.isStatic)) {
-            this.numTouching.right += 1;
-        }
-    }
     
-    updateBlocked() 
-    {
-        this.blocked.right = this.numTouching.right > 0;
-        this.blocked.left = this.numTouching.left > 0;
-        this.blocked.bottom = this.numTouching.bottom > 0;
+    /** Update simple para rebotar en paredes y moverse. */
+    preUpdate(time, delta) {
+        super.preUpdate(time, delta);
+        // console.log(this.blocked.left);
+        if (this.blocked.left) this.setVelocityX(Math.abs(this.body.velocity.x));
+        else if (this.blocked.right) this.setVelocityX(-Math.abs(this.body.velocity.x));
     }
 
     update(time, delta) {
@@ -452,17 +456,10 @@ class Koopa extends Phaser.GameObjects.Sprite
             return; // Salir inmediatamente después de marcar para destrucción
         }
 
-        if (!this.listenersAdded) {
-            this.scene.matter.world.on('beforeupdate', this.resetTouching, this);
-            this.scene.matter.world.on('collisionactive', this.handleCollisions, this);
-            this.scene.matter.world.on('afterupdate', this.updateBlocked, this);
-            this.listenersAdded = true;
-        }
-
         // Verificar bordes
-        if (this.isAlive && !this.shouldBeDestroyed && !this.blocked.bottom) {
-            this.checkForLedges();
-        }
+        // if (this.isAlive && !this.shouldBeDestroyed && !this.blocked.bottom) {
+        //     this.checkForLedges();
+        // }
 
         // Actualizar movimiento solo si está vivo y no está marcado para destrucción
         if (this.isAlive && !this.shouldBeDestroyed) {

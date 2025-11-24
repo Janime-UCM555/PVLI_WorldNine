@@ -23,12 +23,10 @@ class Pokey extends Phaser.GameObjects.Container
         this.blocked = {
             left: false,
             right: false,
-            bottom: false
         };
         this.numTouching = {
             left: 0,
             right: 0,
-            bottom: 0
         };
 
         // Arrays para guardar las partes
@@ -42,6 +40,39 @@ class Pokey extends Phaser.GameObjects.Container
         this.setupPhysics();
 
         this.hitSound = scene.sound.add('aplastar');
+
+        // this.scene.matter.world.on('beforeupdate', this.resetTouching, this);
+        // this.scene.matter.world.on('collisionactive', this.handleCollisions);
+        // this.scene.matter.world.on('afterupdate', this.updateBlocked, this);
+        // this.listenersAdded = true;
+
+        this.scene.matter.world.on('beforeupdate', function (event) {
+        this.numTouching.left = 0;
+        this.numTouching.right = 0;
+        }, this);
+        this.scene.matter.world.on('collisionactive', (event) => {
+        for (let i = 0; i < event.pairs.length; i++)            
+        {
+            const bodyA = event.pairs[i].bodyA;
+            const bodyB = event.pairs[i].bodyB;
+            if (bodyA === this.playerBody || bodyB === this.playerBody)
+            {
+                continue;
+            }
+            if (bodyA === this.sensors.left || bodyB === this.sensors.left)
+            {
+            this.numTouching.left++;
+            }
+            if (bodyA === this.sensors.right || bodyB === this.sensors.right)
+            {
+            this.numTouching.right++;
+            }
+        }
+        });
+        this.scene.matter.world.on('afterupdate', function (event) {
+        this.blocked.right = this.numTouching.right > 0 ? true : false;
+        this.blocked.left = this.numTouching.left > 0 ? true : false;
+        }, this);
     }
 
     die(killType = DIE_TYPES.STOMP) {
@@ -114,17 +145,17 @@ class Pokey extends Phaser.GameObjects.Container
 
         // Sensores para detectar paredes y suelo (sin colisión física)
         this.sensors = {
-            bottom: M.Bodies.rectangle(this.x, this.y + 5, totalWidth * 1.5, 5, { isSensor: true ,
-            collisionFilter: {
-                category: CATEGORY_ENEMY,
-                mask: mask
-            }}), // Más largo para detectar bordes
-            left: M.Bodies.rectangle(this.x - totalWidth * 0.45, bodyCenterY, 5, this.totalHeight * 0.5, { isSensor: true,
+            // bottom: M.Bodies.rectangle(this.x, this.y + 5, totalWidth * 1.5, 5, { isSensor: true ,
+            // collisionFilter: {
+            //     category: CATEGORY_ENEMY,
+            //     mask: mask
+            // }}), // Más largo para detectar bordes
+            left: M.Bodies.rectangle(this.x - totalWidth * 1.05, bodyCenterY, 5, this.totalHeight * 0.5, { isSensor: true,
             collisionFilter: {
                 category: CATEGORY_ENEMY,
                 mask: mask
             }}),
-            right: M.Bodies.rectangle(this.x + totalWidth * 0.45, bodyCenterY, 5, this.totalHeight * 0.5, { isSensor: true,
+            right: M.Bodies.rectangle(this.x + totalWidth * 1.05, bodyCenterY, 5, this.totalHeight * 0.5, { isSensor: true,
             collisionFilter: {
                 category: CATEGORY_ENEMY,
                 mask: mask
@@ -133,7 +164,7 @@ class Pokey extends Phaser.GameObjects.Container
 
         // Crear un cuerpo compuesto con el cuerpo principal y los sensores
         this.compoundBody = M.Body.create({
-            parts: [this.enemyBody, this.sensors.bottom, this.sensors.left, this.sensors.right],
+            parts: [this.enemyBody,this.sensors.left, this.sensors.right],
             friction: 0,
             frictionAir: 0.01,
             collisionFilter: {
@@ -143,8 +174,6 @@ class Pokey extends Phaser.GameObjects.Container
             restitution: 0.05
         });
         // Mask categories
-
-
 
         // Apply to all parts
         // this.enemyBody.collisionFilter.category = CATEGORY_ENEMY;
@@ -175,7 +204,7 @@ class Pokey extends Phaser.GameObjects.Container
         // Guardar referencia al Pokey en TODOS los cuerpos (incluyendo sensores)
         this.compoundBody.gameObject = this;
         this.enemyBody.gameObject = this;
-        this.sensors.bottom.gameObject = this;
+        // this.sensors.bottom.gameObject = this;
         this.sensors.left.gameObject = this;
         this.sensors.right.gameObject = this;
 
@@ -252,7 +281,8 @@ class Pokey extends Phaser.GameObjects.Container
 
         // Aplicar la nueva dirección
         const M = Phaser.Physics.Matter.Matter;
-        M.Body.setVelocity(this.compoundBody, { x: this.speed * this.direction, y: this.compoundBody.velocity.y });
+        M.Body.setVelocity(this.compoundBody, { x: this.compoundBody.velocity.x * this.direction, y: this.compoundBody.velocity.y });
+        
     }
 
     // Actualizar movimiento basado en visibilidad
@@ -335,31 +365,22 @@ class Pokey extends Phaser.GameObjects.Container
         }
     }
 
-    // Reset de sensores
-    resetTouching() {
-        this.numTouching.left = 0;
-        this.numTouching.right = 0;
-        this.numTouching.bottom = 0;
-    }
-
-    // Manejar colisiones de sensores
-    handleCollisions(bodyA, bodyB) {
-        if (bodyA === this.sensors.bottom || bodyB === this.sensors.bottom) {
-            this.numTouching.bottom += 1;
+    
+    /** Update simple para rebotar en paredes y moverse. */
+    preUpdate(time, delta) {
+        // super.preUpdate(time, delta);
+        // console.log(this.blocked.left);
+        if (this.blocked.left) 
+        {
+            const M = Phaser.Physics.Matter.Matter;
+            M.Body.setVelocity(this.compoundBody, { x: Math.abs(this.compoundBody.velocity.x), y: this.compoundBody.velocity.y });
+        
         }
-        if ((bodyA === this.sensors.left && bodyB.isStatic) || (bodyB === this.sensors.left && bodyA.isStatic)) {
-            this.numTouching.left += 1;
+        else if (this.blocked.right) 
+        {
+            const M = Phaser.Physics.Matter.Matter;
+            M.Body.setVelocity(this.compoundBody, { x: -Math.abs(this.compoundBody.velocity.x), y: this.compoundBody.velocity.y });
         }
-        if ((bodyA === this.sensors.right && bodyB.isStatic) || (bodyB === this.sensors.right && bodyA.isStatic)) {
-            this.numTouching.right += 1;
-        }
-    }
-
-    // Actualizar estado de bloqueo
-    updateBlocked() {
-        this.blocked.right = this.numTouching.right > 0;
-        this.blocked.left = this.numTouching.left > 0;
-        this.blocked.bottom = this.numTouching.bottom > 0;
     }
 
     safeDestroy() {
@@ -400,17 +421,17 @@ class Pokey extends Phaser.GameObjects.Container
         }
 
         // Configurar listeners de Matter (solo una vez)
-        if (!this.listenersAdded) {
-            this.scene.matter.world.on('beforeupdate', this.resetTouching, this);
-            this.scene.matter.world.on('collisionactive', this.handleCollisions, this);
-            this.scene.matter.world.on('afterupdate', this.updateBlocked, this);
-            this.listenersAdded = true;
-        }
+        // if (!this.listenersAdded) {
+        //     this.scene.matter.world.on('beforeupdate', this.resetTouching, this);
+        //     this.scene.matter.world.on('collisionactive', this.handleCollisions, this);
+        //     this.scene.matter.world.on('afterupdate', this.updateBlocked, this);
+        //     this.listenersAdded = true;
+        // }
 
         // Verificar bordes si está en el suelo
-        if (this.isAlive && !this.shouldBeDestroyed && this.blocked.bottom) {
-            this.checkForLedges();
-        }
+        // if (this.isAlive && !this.shouldBeDestroyed && this.blocked.bottom) {
+        //     this.checkForLedges();
+        // }
 
         // Manejar colisiones con paredes
         if (this.isAlive && !this.shouldBeDestroyed) {
@@ -421,6 +442,8 @@ class Pokey extends Phaser.GameObjects.Container
         if (this.isAlive && !this.shouldBeDestroyed) {
             this.updateMovement();
         }
+        
+        // console.log(this);
     }
 }
 

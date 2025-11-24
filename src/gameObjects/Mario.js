@@ -472,6 +472,9 @@ class Mario extends Phaser.GameObjects.Sprite
         if (!this.isJumping && this.scene.anims.exists('mario_idle')) {
             this.play('mario_idle', true);
         }
+        else if(!this.blocked.bottom){
+            this.play('mario_fall', true);
+        }
     }
     
     // Detener el jugador
@@ -793,6 +796,7 @@ class Mario extends Phaser.GameObjects.Sprite
     }
 
     update(time, delta) {
+        const dt = delta / 16.666;
         // Verificación de seguridad
         if (!this.body || !this.scene) {
             return;
@@ -817,7 +821,7 @@ class Mario extends Phaser.GameObjects.Sprite
                     if (this.x > 50) {
                         // Mantener velocidad X mínima en fase 3
                         if (this.bubblePhase === 3 && this.body.velocity.x > -2.45) {
-                            this.setVelocityX(-2.45);
+                            this.setVelocityX(-2.45 * dt);
                         }
                     } else {
                         // Detener al llegar al borde izquierdo
@@ -831,7 +835,7 @@ class Mario extends Phaser.GameObjects.Sprite
                             // Si ya ha completado la aceleración, mantener velocidad constante
                             const currentTime = this.scene.time.now;
                             if (currentTime - this.bubbleOscillation.startTime > 2500) { // 1500 + 1000 = 2500ms
-                                this.setVelocityX(-5.75);
+                                this.setVelocityX(-5.75* dt);
                             }
                         } else {
                             // Detener al llegar al borde izquierdo
