@@ -13671,17 +13671,8 @@
          "tilewidth":64
         }, 
         {
-         "columns":4,
          "firstgid":1429,
-         "image":"..\/assets\/GameSprites\/Characters\/Enemigos\/Goomba\/GombRome_Walk.png",
-         "imageheight":30,
-         "imagewidth":120,
-         "margin":0,
-         "name":"Goomba",
-         "spacing":0,
-         "tilecount":4,
-         "tileheight":30,
-         "tilewidth":30
+         "source":"Goomba.tsx"
         }, 
         {
          "columns":1,
