@@ -105,296 +105,114 @@ class Nivel_TO extends Phaser.Scene
         }
         const frontLayer = this.map.createLayer('CapaFrente', tileset, 0, 0);
 
-
-        this.fallBlock = this.add.group();
-        fallBlocks.forEach(obj => {
-            // Coordenadas de Tiled → Phaser
-            const x = obj.x + obj.width / 2;
-            const y = obj.y - obj.height / 2;
-
-            // Crear sprite con esa textura
-            const block = this.matter.add.sprite(x, y, 'fallOffBlock1');
-            this.add.existing(block, true);
-            block.name = "BloqueCae";
-            block.setDepth(2);
-            block.fallActive = false;
-            block.startPosY = block.y;
-
-            //Ajustar el hitbox al tamaño del objeto
-            block.setSize(obj.width, obj.height);
-            block.setIgnoreGravity(true);
-            // Quita la fricción
-            block.friction = 0;
-            block.frictionStatic = 0;
-            block.frictionAir = 0;
-            block.restitution = 0;
-            block.setStatic(true);
-            block.setFixedRotation();
-            // block.setFixedRotation();
-            //Guardar sus props para blockHit()
-            
-            block.setCollisionCategory(CATEGORY_FALLOFF);
-            block.setCollidesWith([CATEGORY_ENEMY, CATEGORY_PLAYER]);
-            this.fallBlock.add(block);
-        });
-
-        this.spikes = this.add.group();
-        spikesL.forEach(obj => {
-            // Coordenadas de Tiled → Phaser
-            const x = obj.x + obj.width / 2;
-            const y = obj.y - obj.height / 2;
-
-            // Crear sprite con esa textura
-            const block = this.matter.add.sprite(x, y, 'spikes');
-            this.add.existing(block, true);
-            block.name = "spikes";
-            block.setDepth(2);
-
-            //Ajustar el hitbox al tamaño del objeto
-            block.setSize(obj.width, obj.height);
-            block.setIgnoreGravity(true);
-            // Quita la fricción
-            block.friction = 0;
-            block.frictionStatic = 0;
-            block.frictionAir = 0;
-            block.restitution = 0;
-            block.setStatic(true);
-            block.setFixedRotation();
-            // block.setFixedRotation();
-            //Guardar sus props para blockHit()
-            
-            block.setCollisionCategory(CATEGORY_TERRAIN);
-            block.setCollidesWith([CATEGORY_ENEMY, CATEGORY_PLAYER]);
-            this.spikes.add(block);
-        });
-
-        this.pausa = this.add.group();
-        pausaL.forEach(obj => {
-            // Coordenadas de Tiled → Phaser
-            const x = obj.x + obj.width / 2;
-            const y = obj.y - obj.height / 2;
-
-            // Crear sprite con esa textura
-            const block = this.matter.add.sprite(x, y, 'Resume');
-            this.add.existing(block, true);
-            block.name = "pausa";
-            block.hasPlayer = false;
-            block.setDepth(2);
-
-            //Ajustar el hitbox al tamaño del objeto
-            block.setSize(obj.width, obj.height);
-            block.setIgnoreGravity(true);
-            // Quita la fricción
-            block.friction = 0;
-            block.frictionStatic = 0;
-            block.frictionAir = 0;
-            block.restitution = 0;
-            block.setStatic(true);
-            block.setFixedRotation();
-            // block.setFixedRotation();
-            //Guardar sus props para blockHit()
-            
-            block.setCollisionCategory(CATEGORY_TERRAIN);
-            block.setCollidesWith([CATEGORY_ENEMY, CATEGORY_PLAYER]);
-            this.pausa.add(block);
-        });
-
-        this.oneway = this.add.group();
-        OneWayL.forEach(obj => {
-            // Coordenadas de Tiled → Phaser
-            const x = obj.x + obj.width / 2;
-            const y = obj.y - obj.height / 2;
-
-            // Crear sprite con esa textura
-            const block = this.matter.add.sprite(x, y, 'Resume');
-            this.add.existing(block, true);
-            block.setDepth(2);
-
-            //Ajustar el hitbox al tamaño del objeto
-            block.setSize(obj.width, obj.height);
-            block.setIgnoreGravity(true);
-            // Quita la fricción
-            block.friction = 0;
-            block.frictionStatic = 0;
-            block.frictionAir = 0;
-            block.restitution = 0;
-            block.setStatic(true);
-            block.setFixedRotation();
-            // block.setFixedRotation();
-            //Guardar sus props para blockHit()
-            block.setCollisionCategory(CATEGORY_TERRAIN);
-            block.setCollidesWith([CATEGORY_ENEMY]);
-
-            const sensorHeight = 10;
-            const sensor = this.matter.add.rectangle(x, y-block.height*2+sensorHeight/2, obj.width, 5, { isSensor: true });
-            sensor.name = "oneway";
-            sensor.blockTop = block;
-            // Asegurar que el sensor no sea afectado por la gravedad
-            sensor.ignoreGravity = true;
-
-            // Configurar las colisiones en el cuerpo del sensor
-            sensor.collisionFilter = {
-                category: CATEGORY_TERRAIN, // Asignamos una categoría de colisión al sensor
-                mask: CATEGORY_PLAYER // Especificamos con qué categorías debe colisionar
-            };
-            block.sensor = sensor;
-            this.pausa.add(block);
-        });
-        
-        this.coinPath = this.add.group();
-        coinPathL.forEach(obj => {
-            // Coordenadas de Tiled → Phaser
-            const x = obj.x + obj.width / 2;
-            const y = obj.y - obj.height / 2;
-
-            // Crear sprite con esa textura
-            let tex = 'CoinPassD';
-            let blocName = "pathAbD";
-            const coinPathType = obj.name;
-            // console.log(obj.name);
-            if (coinPathType === 'PasoMonedasArDer') 
-            {
-                blocName = "pathArD";
-                tex = 'CoinPassD';
-            } 
-            else if (coinPathType == 'PasoMonedasAr') 
-            {
-                blocName = "pathAr";
-                tex = 'CoinPassS';
-            } 
-            else if (coinPathType == 'PasoMonedasDer')
-            {
-                blocName = "pathD";
-                tex = 'CoinPassS';
+        this.fallBlock = this.createTiledObjects(fallBlocks, {
+            texture: 'fallOffBlock1',
+            name: 'BloqueCae',
+            category: CATEGORY_FALLOFF,
+            extra: (b) => {
+                b.fallActive = false;
+                b.startPosY = b.y;
             }
-            const block = this.matter.add.sprite(x, y, tex);
-            block.name = blocName;
-            block.setDepth(2);
-            // block.setSize(obj.width, obj.height);
-            block.setSensor(true);
-            block.setIgnoreGravity(true);
-            block.setStatic(true);
-            block.setRotation(Phaser.Math.DegToRad(obj.rotation));
-            block.setFixedRotation();
-            // block.setFixedRotation();
-            //Guardar sus props para blockHit()
-        
-            // block.setCollisionCategory(CATEGORY_TERRAIN);
-            // block.setCollidesWith([CATEGORY_PLAYER]);
-            this.coinPath.add(block);
         });
-        
-        this.impulsos = this.add.group();
-        impulsosL.forEach(obj => {
-            // Coordenadas de Tiled → Phaser
-            const x = obj.x + obj.width / 2;
-            const y = obj.y - obj.height / 2;
-
-            // Crear sprite con esa textura
-            const block = this.matter.add.sprite(x, y, 'Impulsos',null,{ 
-                isSensor: true,
-                isStatic: true });
-            block.setOrigin(0.5);
-            block.hasPlayer = false;
-            block.setDepth(2);
-
-            //Ajustar el hitbox al tamaño del objeto
-            block.setBody({
-                type: 'rectangle',
-                width: obj.width * 2,
-                height: obj.height * 2
-            });
-            block.setSensor(true);
-            // block.setSize(obj.width, obj.height);
-            block.setIgnoreGravity(true);
-            block.setFixedRotation();
-
-            const impulsoType = obj.name;
-            // console.log(obj.name);
-            if (impulsoType === 'ImpulsoB') 
-            {
-                block.play('sunB_move');
-                block.name = "impulsoB";
-            } 
-            else if (impulsoType == 'ImpulsoM') 
-            {
-                block.play('sunM_move');
-                block.name = "impulsoM";
-            } 
-            else
-            {
-                block.play('sunA_move');
-                block.name = "impulsoA";
-            }
-            // block.setFixedRotation();
-            //Guardar sus props para blockHit()
-        
-            // block.setCollisionCategory(CATEGORY_TERRAIN);
-            // block.setCollidesWith([CATEGORY_PLAYER]);
-            this.impulsos.add(block);
+        this.spikes = this.createTiledObjects(spikesL, {
+            texture: 'spikes',
+            name: 'spikes'
         });
-        
-        // Crear bloques a partir de objetos Tiled
-        this.blocks = this.add.group();
-        blocks.forEach(obj => {
-            // Coordenadas de Tiled → Phaser
-            const x = obj.x + obj.width / 2;
-            const y = obj.y - obj.height / 2;
+        this.pausa = this.createTiledObjects(pausaL, {
+            texture: 'Resume',
+            name: 'pausa',
+            extra: b => b.hasPlayer = false
+        });
+        this.impulsos = this.createTiledObjects(impulsosL, {
+            texture: 'Impulsos',
+            sensor: true,
+            extra: (block, obj) => {
+                const type = obj.name;
+                block.hasPlayer = false;
 
-            // Propiedades del objeto en Tiled → convertir a objeto plano
-            const props = {};
-            obj.properties?.forEach(p => props[p.name] = p.value);
+                block.setBody({
+                    type: 'rectangle',
+                    width: obj.width * 2,
+                    height: obj.height * 2
+                });
 
-            // Si tiene propiedad 'texture', úsalo
-            if(props.Breakable){
-                props.texture = 'block';
+                if (type === 'ImpulsoB') { block.play('sunB_move'); block.name = 'impulsoB'; }
+                else if (type === 'ImpulsoM') { block.play('sunM_move'); block.name = 'impulsoM'; }
+                else { block.play('sunA_move'); block.name = 'impulsoA'; }
             }
-            else{
-                props.texture = 'block?';
+        });
+        this.coinPath = this.createTiledObjects(coinPathL, {
+            sensor: true,
+            staticBody: true,
+            extra: (block, obj) => {
+                let tex = 'CoinPassD';
+                let name = "pathAbD";
+
+                if (obj.name === 'PasoMonedasArDer') name = "pathArD";
+                else if (obj.name === 'PasoMonedasAr') { tex = 'CoinPassS'; name = "pathAr"; }
+                else if (obj.name === 'PasoMonedasDer') { tex = 'CoinPassS'; name = "pathD"; }
+
+                block.setTexture(tex);
+                block.name = name;
+                block.setRotation(Phaser.Math.DegToRad(obj.rotation));
             }
+        });
 
-            const tex = props.texture || 'bloque'; // si no tiene, usa la por defecto
+        this.oneway = this.createTiledObjects(OneWayL, {
+            texture: 'Resume',
+            collidesWith: [CATEGORY_ENEMY],
+            extra: (block, obj) => {
 
-            // Crear sprite con esa textura
-            const block = this.matter.add.sprite(x, y, tex);
-            this.add.existing(block, true);
+                const sensorHeight = 10;
+                const x = block.x;
+                const y = block.y - block.height * 2 + sensorHeight / 2;
 
-            //Ajustar el hitbox al tamaño del objeto
-            block.setSize(obj.width, obj.height);
-            block.setIgnoreGravity(true);
-            block.friction = 0;
-            block.frictionStatic = 0;
-            block.frictionAir = 0;
-            block.restitution = 0;
-            block.setStatic(true);
-            // block.setFixedRotation();
-            //Guardar sus props para blockHit()
-            block._props = props;
-            
-            block.setCollisionCategory(CATEGORY_TERRAIN);
-            block.setCollidesWith([CATEGORY_ENEMY, CATEGORY_PLAYER]);
-            this.blocks.add(block);
+                const sensor = this.matter.add.rectangle(x, y, obj.width, 5, {
+                    isSensor: true,
+                    isStatic: true
+                });
+
+                sensor.name = "oneway";
+                sensor.blockTop = block;
+                sensor.ignoreGravity = true;
+
+                sensor.collisionFilter = {
+                    category: CATEGORY_TERRAIN,
+                    mask: CATEGORY_PLAYER
+                };
+
+                block.sensor = sensor;
+            }
+        });
+        this.blocks = this.createTiledObjects(blocks, {
+            extra: (block, obj) => {
+                const props = {};
+                obj.properties?.forEach(p => props[p.name] = p.value);
+
+                const tex = props.Breakable ? 'block' : 'block?';
+                block.setTexture(tex);
+
+                block._props = props;
+            }
         });
 
         this.coinsGroup = this.add.group();
-        for (const coinObj of coins)
-        {
-            const coin = this.coinsGroup.create(coinObj.x, coinObj.y, 'coin_tileset');
-            coin.setOrigin(0, 1);
-            // Desactivar cualquier cuerpo físico que pueda haberse creado automáticamente
-            if (coin.body) {
-                coin.destroy();
-                coin.body = null;
-            }
-            const coinType = coinObj.name;
-            if (coinType === 'purple') {
+        coins.forEach(o => {
+            const coin = this.coinsGroup.create(o.x, o.y, 'coin_tileset').setOrigin(0, 1);
+            
+            if (coin.body) coin.body = null;
+
+            if (o.name === 'purple') {
                 coin.play('coin_purple_spin');
                 coin.coinValue = 500;
             } else {
                 coin.play('coin_gold_spin');
                 coin.coinValue = 100;
             }
-        }
+        });
+
+
+
         for (const barraPart of barraFinLayer)
         {
             this.barraFin = new Fin(
@@ -477,6 +295,65 @@ class Nivel_TO extends Phaser.Scene
         this.spawnPowerUp(220, 600, POWERUP_TYPES.STAR);
 
     }
+
+    createTiledObjects(list, config = {}) {
+
+        //Máscaras de colisión
+        const CATEGORY_PLAYER  = 0x0001;
+        const CATEGORY_ENEMY   = 0x0002;
+        const CATEGORY_POWERUP = 0x0003;
+        const CATEGORY_TERRAIN = 0x0004;
+        const CATEGORY_FALLOFF = 0x0005;    
+        // Parámetros con valores por defecto
+        const {
+            texture = null,
+            name = null,
+            depth = 2,
+            category = CATEGORY_TERRAIN,
+            collidesWith = [CATEGORY_PLAYER, CATEGORY_ENEMY],
+            staticBody = true,
+            sensor = false,
+            extra = () => {}
+        } = config;
+
+        const group = this.add.group();
+
+        list.forEach(obj => {
+
+            const x = obj.x + obj.width / 2;
+            const y = obj.y - obj.height / 2;
+
+            // Crear sprite
+            const sprite = this.matter.add.sprite(x, y, texture);
+            sprite.setDepth(depth);
+
+            if (name) sprite.name = name;
+
+            // Propiedades básicas del cuerpo
+            sprite.setIgnoreGravity(true);
+            sprite.setStatic(staticBody);
+            sprite.setSensor(sensor);
+            sprite.setFixedRotation();
+            sprite.setSize(obj.width, obj.height);
+
+            sprite.friction = 0;
+            sprite.frictionStatic = 0;
+            sprite.frictionAir = 0;
+            sprite.restitution = 0;
+
+            // Colisiones
+            sprite.setCollisionCategory(category);
+            sprite.setCollidesWith(collidesWith);
+
+            // Config extra personalizada para cada tipo de bloque
+            extra(sprite, obj);
+
+            group.add(sprite);
+        });
+
+        return group;
+    }
+
 
     createAnimations() {
         this.anims.create({
@@ -1055,7 +932,7 @@ class Nivel_TO extends Phaser.Scene
 
     timerMethod ()
     {
-        let timer =5;
+        let timer =60;
         this.endTimer = false;
         this.timerEvent = this.time.addEvent({
         delay: 1000,
