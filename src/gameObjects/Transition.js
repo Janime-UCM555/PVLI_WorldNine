@@ -1,10 +1,7 @@
-class TransitionCode extends Phaser.Scene
-{
-    constructor(cam, endPos, startRadius, endRadius, durationS, scene, callback)
-    {
-        super(scene);
+const TransitionCode = {
+    invoke(scene, cam, duration, playerWorld, startR, endR, callback) {
         // Fondo negro que cubrirá todo
-        const blackout = scene.add.rectangle(0, 0, cam.width, cam.height, 0x000000)
+        const blackout = scene  .add.rectangle(0, 0, cam.width, cam.height, 0x000000)
             .setOrigin(0)
             .setScrollFactor(0)
             .setDepth(1000); // Asegura que esté por encima de todo
@@ -12,11 +9,11 @@ class TransitionCode extends Phaser.Scene
         // Crear un círculo
         const circle = scene.make.graphics({ x: 0, y: 0, add: false });
 
-        var radius = startRadius; // Tamaño al principio
+        var radius = startR; // Tamaño al principio
 
         // Dibujar círculo blanco
         circle.fillStyle(0xffffff);
-        circle.fillCircle(endPos.x,  endPos.y, radius);
+        circle.fillCircle(playerWorld.x,  playerWorld.y, radius);
 
         // Crear máscara y aplicarla invertida
         const mask = circle.createGeometryMask();
@@ -25,22 +22,28 @@ class TransitionCode extends Phaser.Scene
         blackout.setMask(mask);
         scene.tweens.add({
             targets: { r: radius}, 
-            r: endRadius,
-            duration: durationS,
+            r: endR,
+            duration: duration,
             ease: 'Cubic.easeInOut',
             onUpdate: (tween, target) => {
                 scene.circleMask.clear();
                 scene.circleMask.fillStyle(0xffffff);
-                scene.circleMask.fillCircle(endPos.x, endPos.y, target.r);
+                scene.circleMask.fillCircle(playerWorld.x, playerWorld.y, target.r);
             },
             onComplete:()=>
             {
-                callback;
+                callback();
+                scene.time.delayedCall(100, () => {
+                    if (blackout)
+                    {
+                        blackout.clearMask(true);
+                        blackout.destroy();
+                    }
+                });
             }
         });
-        // Guardar referencias para otros métodos
-        // scene.circleMask = circle;
-        // scene.blackoutMask = blackout;
+        scene.circleMask = circle;
+        scene.blackoutMask = blackout;
     }
-}
-export default TransitionCode;
+};
+export default TransitionCode

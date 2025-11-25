@@ -5,6 +5,7 @@ import Goomba from '../gameObjects/Goomba.js';
 import Koopa from '../gameObjects/Koopa.js';
 import PiranhaPlant from '../gameObjects/PiranhaPlant.js';
 import Pokey from '../gameObjects/Pokey.js';
+import TransitionCode from '../gameObjects/Transition.js'
 import { PowerUp, POWERUP_TYPES } from '../gameObjects/PowerUps.js';
 import { DIE_TYPES } from "../gameObjects/Goomba.js";
 class Nivel_TO extends Phaser.Scene
@@ -436,9 +437,6 @@ class Nivel_TO extends Phaser.Scene
 
         // Configurar mejor los límites del mundo
         this.matter.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
-        // this.buttonPrueba = new Button(this, 0, 0,'Prueba',() =>{
-        //     this.transition('MainMenu'); // Llamar a la transición cuando se acaba el tiempo
-        // });
 
         this.ui = this.add.container(this.cameras.main.width/2, this.cameras.main.height/2).setDepth(10);
         // this.ui.add([this.buttonPrueba]);
@@ -457,7 +455,18 @@ class Nivel_TO extends Phaser.Scene
         var openedScene = false;
         if (!openedScene)
         {
-            this.openSceneTransition();
+            this.jugador.setStatic(true);
+            TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador.getCenter(), 0, 120, ()=>{
+                transition2();
+            });
+            const transition2 = () => {
+                TransitionCode.invoke(this, this.cameras.main, 600,this.jugador.getCenter(), 120, this.cameras.main.width,
+                ()=>{
+                    this.openedScene=true;
+                    this.jugador.setStatic(false);
+                    this.jugador.resume(); // Reanudar movimiento
+                });
+            }
         }
         this.irisSound = this.sound.add('iris-out');
 
@@ -648,7 +657,6 @@ class Nivel_TO extends Phaser.Scene
                         player.Bubble(); // Entra en burbuja
                     } else {
                         player.hurt();
-                        this.transition('MainMenu'); // Volver al menú si no le quedan burbujas al jugador
                     }
                 } else {
                     // Colisión lateral
@@ -723,7 +731,7 @@ class Nivel_TO extends Phaser.Scene
             if ((bodyA.gameObject == this.jugador &&bodyB.gameObject?.name=="impulsoA") ||
             (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="impulsoA")) 
             {
-                console.log(this.jugador.jumpRequested);
+                // console.log(this.jugador.jumpRequested);
                 if (bodyA.gameObject?.name == "impulsoA")
                 {
                     this.impulsoActivo = bodyA.gameObject;
@@ -739,7 +747,7 @@ class Nivel_TO extends Phaser.Scene
             if ((bodyA.gameObject == this.jugador && bodyB.gameObject?.name=="impulsoM") ||
             (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="impulsoM")) 
             {
-                console.log(this.jugador.jumpRequested);
+                // console.log(this.jugador.jumpRequested);
                 if (bodyA.gameObject?.name == "impulsoM")
                 {
                     this.impulsoActivo = bodyA.gameObject;
@@ -755,7 +763,7 @@ class Nivel_TO extends Phaser.Scene
             if ((bodyA.gameObject == this.jugador && bodyB.gameObject?.name=="impulsoB") ||
                 (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="impulsoB")) 
             {                
-                console.log(this.jugador.jumpRequested)
+                // console.log(this.jugador.jumpRequested)
                 if (bodyA.gameObject?.name == "impulsoB")
                 {
                     this.impulsoActivo = bodyA.gameObject;
@@ -821,6 +829,7 @@ class Nivel_TO extends Phaser.Scene
     spawnCoins(distX, distY, blockPass)
     {
         blockPass.setTint(Phaser.Display.Color.GetColor(140, 140, 140, 0.5));
+        blockPass.setCollidesWith([]);
         const center = blockPass.getCenter();
         const delay = 50;
         // 4 monedas 
@@ -929,9 +938,25 @@ class Nivel_TO extends Phaser.Scene
         victoryMusic.once('complete', () => {
         this.jugador.play('mario_victory', true);
         setTimeout(() => {
-        this.transition('MainMenu'); // Llamar a la transición cuando se acaba el tiempo
+            this.doubleEndTransition(
+                ()=>{this.scene.launch('MainMenu');
+                this.scene.stop();});
         }, 1000);
         });
+    }
+
+    doubleEndTransition(callback)
+    {
+        TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador.getCenter(), this.cameras.main.width, 120,
+        ()=>{
+            transition2();
+        });
+        const transition2 = () => {
+            TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador.getCenter(), 120, 0,
+            ()=>{
+                callback();
+            });
+        }
     }
 
     moveCameraToBottomRight() {
@@ -1027,161 +1052,10 @@ class Nivel_TO extends Phaser.Scene
 
         // this.ui.add([this.fpsText,this.textPurpleCoins,this.textCoins,this.textScore,this.textTimer]);
     }
-    
-    transition(sceneName)
-    {
-        // Detener música al salir de la escena
-        if (this.levelMusic && this.levelMusic.isPlaying) {
-            this.levelMusic.stop();
-        }
-
-        const cam = this.cameras.main;
-
-        // Fondo negro que cubrirá todo
-        const blackout = this.add.rectangle(0, 0, cam.width, cam.height, 0x000000)
-            .setOrigin(0)
-            .setScrollFactor(0)
-            .setDepth(1000); // Asegura que esté por encima de todo
-
-        // Crear un círculo
-        const circle = this.make.graphics({ x: 0, y: 0, add: false });
-
-        // Recogemos la pos del jugador actualmente
-        var playerWorld = this.jugador.getCenter();
-        // this.jugador.setVelocity(0, 0);
-        // this.jugador.setGravityY(-7);
-        // this.jugador.body=false;
-        this.jugador.setStatic(true);
-        var radius = 1500; // Tamaño al principio
-
-        // Dibujar círculo blanco
-        circle.fillStyle(0xffffff);
-        circle.fillCircle(playerWorld.x,  playerWorld.y, radius);
-
-        // Crear máscara y aplicarla invertida
-        const mask = circle.createGeometryMask();
-        mask.invertAlpha = true; //ESTA LÍNEA invierte la visibilidad
-
-        blackout.setMask(mask);
-        this.tweens.add({
-            targets: { r: radius}, 
-            r: 120,
-            duration: 1000,
-            ease: 'Cubic.easeInOut',
-            onUpdate: (tween, target) => {
-                this.circleMask.clear();
-                this.circleMask.fillStyle(0xffffff);
-                this.circleMask.fillCircle(playerWorld.x, playerWorld.y, target.r);
-            },
-            onComplete:()=>
-            {
-                this.irisSound.play();
-                this.tweens.add({
-                    targets: { r: 120, py:playerWorld.y}, 
-                    r: 0,
-                    py: playerWorld.y+10, // Se dirige a los pies el círculo.
-                    duration: 1500,
-                    ease: 'Cubic.easeInOut',
-                    onUpdate: (tween, target) => {
-                        // if(this.endTimer && playerWorld.x-(this.cameras.main.width / this.cameras.main.zoom/2)>10)
-                        // {
-                        //     this.cameras.main.setPosition(
-                        //         playerWorld.x-(this.cameras.main.width / this.cameras.main.zoom/2), 
-                        //         this.cameras.main.y);
-                        // }
-                        this.circleMask.clear();
-                        this.circleMask.fillStyle(0xffffff);
-                        this.circleMask.fillCircle(playerWorld.x, target.py, target.r);
-                    },
-                    onComplete: () => {
-                        this.scene.launch(sceneName);
-                        this.scene.stop();
-                    }
-                });
-            }
-        });
-        // Guardar referencias para otros métodos
-        this.circleMask = circle;
-        this.blackoutMask = blackout;
-    }
-
-    openSceneTransition()
-    {
-        const cam = this.cameras.main;
-
-        // Recogemos la pos del jugador actualmente
-        this.jugador.setStatic(true);
-        if(this.jugador)
-        {
-            var playerWorld = this.jugador.getCenter();
-        }
-        // Fondo negro que cubrirá todo
-        const blackout = this.add.rectangle(0, 0, cam.width, cam.height, 0x000000)
-            .setOrigin(0)
-            .setScrollFactor(0)
-            .setDepth(1000); // Asegura que esté por encima de todo
-
-        // Crear un círculo
-        const circle = this.make.graphics({ x: 0, y: 0, add: false });
-
-        var radius = 0; // Tamaño al principio
-
-        // Dibujar círculo blanco
-        circle.fillStyle(0xffffff);
-        circle.fillCircle(playerWorld.x,  playerWorld.y, radius);
-
-        // Crear máscara y aplicarla invertida
-        const mask = circle.createGeometryMask();
-        mask.invertAlpha = true; //ESTA LÍNEA invierte la visibilidad
-
-        blackout.setMask(mask);
-        this.tweens.add({
-            targets: { r: radius}, 
-            r: 120,
-            duration: 1000,
-            ease: 'Cubic.easeInOut',
-            onUpdate: (tween, target) => {
-                this.circleMask.clear();
-                this.circleMask.fillStyle(0xffffff);
-                this.circleMask.fillCircle(playerWorld.x, playerWorld.y, target.r);
-                // this.jugador.x = 25;
-                // this.jugador.y = 625;
-                // this.jugador.setVelocity(0, 0);    
-            },
-            onComplete:()=>
-            {
-                this.jugador.setStatic(false);
-                this.tweens.add({
-                    targets: { r: 120, py:playerWorld.y}, 
-                    r: Math.max(cam.width*2,cam.height*2),  
-                    py: playerWorld.y+10, // Se dirige a los pies el círculo.
-                    duration: 1500,
-                    ease: 'Cubic.easeInOut',
-                    onUpdate: (tween, target) => {
-                        this.circleMask.clear();
-                        this.circleMask.fillStyle(0xffffff);
-                        this.circleMask.fillCircle(playerWorld.x, target.py, target.r);
-                    },
-                    onComplete: () => {
-                        this.openedScene=true;
-                        blackout.clearMask(true);
-                        if(blackout)
-                        {
-                            blackout.destroy();
-                        }
-                        this.jugador.resume(); // Reanudar movimiento
-                    }
-                });
-            }
-        });
-        // Guardar referencias para otros métodos
-        this.circleMask = circle;
-        // this.blackoutMask = blackout;
-    }
 
     timerMethod ()
     {
-        let timer =60;
+        let timer =5;
         this.endTimer = false;
         this.timerEvent = this.time.addEvent({
         delay: 1000,
@@ -1194,7 +1068,9 @@ class Nivel_TO extends Phaser.Scene
                     this.endTimer=true;
                     this.sound.play('muerte');
                     this.jugador.hurt();
-                    this.transition('MainMenu'); // Llamar a la transición cuando se acaba el tiempo
+                    this.jugador.setStatic(true);
+                    this.doubleEndTransition(()=>{this.scene.launch('MainMenu');
+                this.scene.stop();});
                 }
                 if (!this.jugador.isInBubble && !this.enPausa) {
                     this.textTimer.setFill('#ffffffff');
@@ -1369,7 +1245,8 @@ class Nivel_TO extends Phaser.Scene
             this.sound.play('muerte');
             this.jugador.y = this.map.heightInPixels + 45;
             this.jugador.hurt();
-            this.transition('MainMenu');
+            this.doubleEndTransition(()=>{this.scene.launch('MainMenu');
+                this.scene.stop();});
         }
     }
 

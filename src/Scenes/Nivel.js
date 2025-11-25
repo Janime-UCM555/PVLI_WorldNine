@@ -285,7 +285,18 @@ class Nivel_T extends Phaser.Scene
         var openedScene = false;
         if (!openedScene)
         {
-            this.openSceneTransition();
+            this.jugador.setStatic(true);
+            TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador.getCenter(), 0, 120, ()=>{
+                transition2();
+            });
+            const transition2 = () => {
+                TransitionCode.invoke(this, this.cameras.main, 600,this.jugador.getCenter(), 120, this.cameras.main.width,
+                ()=>{
+                    this.openedScene=true;
+                    this.jugador.setStatic(false);
+                    this.jugador.resume(); // Reanudar movimiento
+                });
+            }
         }
         this.irisSound = this.sound.add('iris-out');
 
@@ -476,6 +487,20 @@ class Nivel_T extends Phaser.Scene
         this.matter.world.on('collisionactive', handle);
     }
 
+    doubleEndTransition(callback)
+    {
+        TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador.getCenter(), this.cameras.main.width, 120,
+        ()=>{
+            transition2();
+        });
+        const transition2 = () => {
+            TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador.getCenter(), 120, 0,
+            ()=>{
+                callback();
+            });
+        }
+    }
+
     findSpawnBlockAbovePlayer(player, toleranciaX = 16, toleranciaY = 10) {
         let best = null;
         let bestDx = Infinity;
@@ -589,7 +614,9 @@ class Nivel_T extends Phaser.Scene
         victoryMusic.once('complete', () => {
         this.jugador.play('mario_victory', true);
         setTimeout(() => {
-        this.transition('MainMenu'); // Llamar a la transición cuando se acaba el tiempo
+            this.doubleEndTransition(
+                ()=>{this.scene.launch('MainMenu');
+                this.scene.stop();});        
         }, 1000);
         });
     }
@@ -854,7 +881,10 @@ class Nivel_T extends Phaser.Scene
                     this.endTimer=true;
                     this.sound.play('muerte');
                     this.jugador.hurt();
-                    this.transition('MainMenu'); // Llamar a la transición cuando se acaba el tiempo
+                    this.jugador.setStatic(true);
+                    this.doubleEndTransition(
+                    ()=>{this.scene.launch('MainMenu');
+                    this.scene.stop();});
                 }
                 if (!this.jugador.isInBubble) {
                     timer = (timer - 1 + 60) % 60; // reinicia a 60
@@ -990,7 +1020,9 @@ class Nivel_T extends Phaser.Scene
             this.sound.play('muerte');
             this.jugador.y = this.map.heightInPixels + 45;
             this.jugador.hurt();
-            this.transition('MainMenu');
+            this.doubleEndTransition(
+                ()=>{this.scene.launch('MainMenu');
+                this.scene.stop();});
         }
     }
 
