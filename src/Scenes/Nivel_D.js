@@ -98,7 +98,7 @@ class Nivel_D extends Phaser.Scene
 
 
 
-        this.jugador = new Mario(this, 25, 625, 'mario_run', 3.5, -3.75, true);
+        this.jugador = new Mario(this, 25, 625, 'mario_run', 3.5, -3.75, true, false);
         this.jugador.setDepth(3);
 
         // Forzar la inicialización de animaciones
@@ -577,7 +577,7 @@ class Nivel_D extends Phaser.Scene
             if ((bodyA.label=="Mario" && bodyB.gameObject?.name=="pathAbD") ||
             (bodyB.label=="Mario" && bodyA.gameObject?.name=="pathAbD")) 
             {
-                // 4 monedas Abajo Diagonal
+                // 5 monedas Abajo Diagonal
                 const coinDistanceX = 20;
                 const coinDistanceY = 40;
                 let blockPass;
@@ -593,7 +593,7 @@ class Nivel_D extends Phaser.Scene
             if ((bodyA.label=="Mario" && bodyB.gameObject?.name=="pathArD") ||
                 (bodyB.label=="Mario" && bodyA.gameObject?.name=="pathArD")) 
             {
-                // 4 monedas Arriba Diagonal
+                // 5 monedas Arriba Diagonal
                 const coinDistanceX = 20;
                 const coinDistanceY = -40;
                 const scene = this;
@@ -610,7 +610,7 @@ class Nivel_D extends Phaser.Scene
             if ((bodyA.label=="Mario" && bodyB.gameObject?.name=="pathD") ||
                 (bodyB.label=="Mario" && bodyA.gameObject?.name=="pathD")) 
             {
-                // 4 monedas Derecha
+                // 5 monedas Derecha
                 const coinDistanceX = 40;
                 const coinDistanceY = 0;
                 let blockPass;
@@ -761,12 +761,13 @@ class Nivel_D extends Phaser.Scene
 
     spawnCoins(distX, distY, blockPass)
     {
+        this.sound.play('coinPath');
         blockPass.setTint(Phaser.Display.Color.GetColor(140, 140, 140, 0.5));
         blockPass.setCollidesWith([]);
         const center = blockPass.getCenter();
         const delay = 50;
         // 4 monedas 
-        for (let i=0; i < 4; ++i)
+        for (let i=0; i < 5; ++i)
         {
             this.time.delayedCall(delay*i,()=> { this.delayedCoins(center,distX,distY, i)}, [], this);
         }

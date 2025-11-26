@@ -5,6 +5,7 @@ import Nivel_T from './Scenes/Nivel.js';
 import Nivel_R from './Scenes/Nivel_R.js';
 import Nivel_TO from './Scenes/Nivel_TO.js';
 import Nivel_D from './Scenes/Nivel_D.js';
+import BossJ from './Scenes/BossJ.js';
 
 /**
  * Inicio del juego en Phaser. Creamos el archivo de configuración del juego y creamos
@@ -21,7 +22,7 @@ let config = {
 		mode: Phaser.Scale.FIT,
 		fullscreenTarget: 'game'
 	},
-	scene:[PreloadScene, MainMenu, MapScene, Nivel_T, Nivel_R, Nivel_TO, Nivel_D],	// Decimos a Phaser cual es nuestra escena
+	scene:[PreloadScene, MainMenu, MapScene, Nivel_T, Nivel_R, Nivel_TO, Nivel_D, BossJ],	// Decimos a Phaser cual es nuestra escena
 	physics: { 
 		default: 'matter', 
 		matter: { 

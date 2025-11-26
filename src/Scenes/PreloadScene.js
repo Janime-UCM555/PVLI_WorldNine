@@ -103,6 +103,18 @@ class PreloadScene extends Phaser.Scene {
             frameWidth: 32,
             frameHeight: 56,
         });
+        this.load.spritesheet('mario_panicrun', 'GameSprites/Characters/Mario/Mario_panicrun.png', {
+            frameWidth: 44,
+            frameHeight: 56,
+        });
+        this.load.spritesheet('mario_panicjump', 'GameSprites/Characters/Mario/Mario_panicjump.png', {
+            frameWidth: 44,
+            frameHeight: 56,
+        });
+        this.load.spritesheet('mario_panicfall', 'GameSprites/Characters/Mario/Mario_panicfall.png', {
+            frameWidth: 44,
+            frameHeight: 56,
+        });
 
         //PowerUps
         this.load.image('star', 'GameSprites/PowerUps/star.png');
@@ -175,6 +187,9 @@ class PreloadScene extends Phaser.Scene {
         this.load.audio('ImpB', 'sonidos/SE/Items/Bloques/ImpulseA.wav');
         this.load.audio('ImpM', 'sonidos/SE/Items/Bloques/ImpulseB.wav');
         this.load.audio('ImpA', 'sonidos/SE/Items/Bloques/ImpulseM.wav');
+        this.load.audio('bubblePop', 'sonidos/SE/Mario/Acciones/BubblePop.wav');
+        this.load.audio('bubbleCreate', 'sonidos/SE/Mario/Acciones/BubbleCreate.wav');
+        this.load.audio('coinPath', 'sonidos/SE/Items/Bloques/CoinPath.wav');
 
         // Música
         this.load.audio('level_music', 'sonidos/BGM/level_theme.mp3');

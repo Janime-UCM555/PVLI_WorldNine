@@ -85,7 +85,7 @@ class Nivel_T extends Phaser.Scene
 
 
 
-        this.jugador = new Mario(this, 25, 625, 'mario_run', 3.5, -3.75, true);
+        this.jugador = new Mario(this, 25, 625, 'mario_run', 3.5, -3.75, true, false);
 
         // Forzar la inicialización de animaciones
         if (this.anims.exists('mario_run')) {

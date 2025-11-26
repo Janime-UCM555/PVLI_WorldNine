@@ -2,7 +2,7 @@ import { POWERUP_TYPES } from "./PowerUps.js";
 
 class Mario extends Phaser.GameObjects.Sprite
 {
-    constructor(scene, x, y, texture, speed = 200, jumpForce = -225, flipHorizontal = true) {
+    constructor(scene, x, y, texture, speed = 200, jumpForce = -225, flipHorizontal = true, inBoss=false) {
         super(scene, x, y, texture);
         
         scene.add.existing(this);
@@ -22,6 +22,8 @@ class Mario extends Phaser.GameObjects.Sprite
         this.isInBubble = false; // Controlar si está en la burbuja
         this.canDrop = false; // Indica si puede salir de la burbuja
         this.bubblesLeft = 2; // Número de burbujas restantes
+
+        this.inBoss = inBoss;
 
         // Sistema de salto
         this.isJumping = false; // Indica si está en proceso de salto
@@ -82,8 +84,8 @@ class Mario extends Phaser.GameObjects.Sprite
         this.playerBody = M.Bodies.rectangle(sx,sy, w * 0.75, h, { chamfer: { radius: 10 }, label:"Mario" });
         this.sensors = {
             bottom: M.Bodies.rectangle(sx, h, sx, h*0.1, { isSensor: true, label:"Mario" }),
-            left: M.Bodies.rectangle(sx - w * 0.5, sy / 1.5, 5, h*0.3, { isSensor: true, label:"Mario" }),
-            right: M.Bodies.rectangle(sx + w * 0.5, sy / 1.5, 5, h*0.3, { isSensor: true, label:"Mario" }),
+            left: M.Bodies.rectangle(sx - w * 0.5, sy / 1.4, 5, h*0.3, { isSensor: true, label:"Mario" }),
+            right: M.Bodies.rectangle(sx + w * 0.5, sy / 1.4, 5, h*0.3, { isSensor: true, label:"Mario" }),
         };
 
         const compoundBody = M.Body.create({
@@ -317,6 +319,7 @@ class Mario extends Phaser.GameObjects.Sprite
             {
                 // Si está en burbuja y puede salir, manejar la salida
                 if (this.isInBubble && this.canDrop) {
+                    this.scene.sound.play("bubblePop");
                     this.exitBubbleState();
                     return;
                 }
@@ -407,8 +410,12 @@ class Mario extends Phaser.GameObjects.Sprite
         this.hasBufferedJump = false; // Limpiar el buffer al iniciar el salto
         this.wasHoldingJumpWhenBuffered = false;
         this.jumpSound.play();
-        if (this.scene.anims.exists('mario_jump') && !this.isGrounded) {
+        if (this.scene.anims.exists('mario_jump') && !this.isGrounded && !this.inBoss) {
             this.play('mario_jump', true);
+        }
+        else if (this.scene.anims.exists('mario_panicjump') && !this.isGrounded)
+        {
+            this.play('mario_panicjump', true);
         }
 
         // Reanudar movimiento horizontal al saltar
@@ -460,8 +467,12 @@ class Mario extends Phaser.GameObjects.Sprite
         if (this.body) {
             this.setVelocityX(this.speed);
         }
-        if (!this.isJumping && this.scene.anims.exists('mario_run')) {
+        if (!this.isJumping && this.scene.anims.exists('mario_run') && !this.inBoss) {
             this.play('mario_run', true);
+        }
+        else if (!this.isJumping && this.scene.anims.exists('mario_panicrun'))
+        {
+            this.play('mario_panicrun', true);
         }
     }
 
@@ -475,8 +486,12 @@ class Mario extends Phaser.GameObjects.Sprite
         if (this.scene.anims.exists('mario_idle') && this.isGrounded) {
             this.play('mario_idle', true);
         }
-        else if(this.scene.anims.exists('mario_fall')){
+        else if(this.scene.anims.exists('mario_fall') && !this.inBoss){
             this.play('mario_fall', true);
+        }
+        else if (this.scene.anims.exists('mario_panicfall'))
+        {
+            this.play('mario_panicfall', true);
         }
     }
     
@@ -640,7 +655,7 @@ class Mario extends Phaser.GameObjects.Sprite
         // 5. Esperar 2500ms sin moverse (Fase 1 - Espera)
         this.scene.time.delayedCall(1000, () => {
             if (!this.isInBubble) return;
-        
+            this.scene.sound.play("bubbleCreate");
             this.bubblePhase = 2; // Fase 1 - Movimiento
         
             // 6. Movimiento diagonal
@@ -780,7 +795,13 @@ class Mario extends Phaser.GameObjects.Sprite
         }
     
         // 3. Cambiar a animación de caída
-        this.play('mario_fall', true);
+        if (!this.inBoss)
+        {
+            this.play('mario_fall', true);
+        }
+        else{
+            this.play('mario_panicfall', true);
+        }
     
         // 4. Asegurarse de que no sea superSize
         this.deactivatePowerUp({ keepSize: false });
@@ -971,15 +992,23 @@ class Mario extends Phaser.GameObjects.Sprite
         if (!this.isGrounded) {
             // Saltando (velocidad Y negativa)
             if (this.body.velocity.y < 0) {
-                if (this.anims.currentAnim?.key !== 'mario_jump' && !this.isGrounded) {
+                if (this.anims.currentAnim?.key !== 'mario_jump' && !this.isGrounded && !this.inBoss) {
                     this.play('mario_jump', true);
+                }
+                else if (this.anims.currentAnim?.key !== 'mario_panicjump' && !this.isGrounded)
+                {
+                    this.play('mario_panicjump', true);
                 }
                 return; // Salir temprano - no verificar otras animaciones
             }
             // Cayendo (velocidad Y positiva)
             else if (this.body.velocity.y > 0) {
-                if (this.anims.currentAnim?.key !== 'mario_fall' && !this.isGrounded) {
+                if (this.anims.currentAnim?.key !== 'mario_fall' && !this.isGrounded && !this.inBoss) {
                     this.play('mario_fall', true);
+                }
+                else if (this.anims.currentAnim?.key !== 'mario_panicfall' && !this.isGrounded)
+                {
+                    this.play('mario_panicfall', true);
                 }
                 return; // Salir temprano - no verificar otras animaciones
             }
@@ -988,8 +1017,11 @@ class Mario extends Phaser.GameObjects.Sprite
         // Animaciones en el suelo
         if (this.isGrounded) {
             if (this.body.velocity.x !== 0 && !this.isStopped) {
-                if (this.anims.currentAnim?.key !== 'mario_run') {
+                if (this.anims.currentAnim?.key !== 'mario_run' && !this.inBoss) {
                     this.play('mario_run', true);
+                }
+                else if(this.anims.currentAnim?.key !== 'mario_panicrun'){
+                    this.play('mario_panicrun', true);
                 }
                 if (this.footstepCooldown <= 0) {
                     if (!this.paso1.isPlaying && !this.paso2.isPlaying) {
@@ -1007,9 +1039,13 @@ class Mario extends Phaser.GameObjects.Sprite
                 if (this.anims.currentAnim?.key !== 'mario_idle') {
                     this.play('mario_idle', true);
                 }
-                else if (this.anims.currentAnim?.key !== 'mario_fall' && !this.isGrounded)
+                else if (this.anims.currentAnim?.key !== 'mario_fall' && !this.isGrounded && !this.inBoss)
                 {
                     this.play('mario_fall', true);
+                }
+                else if (this.anims.currentAnim?.key !== 'mario_fall' && !this.isGrounded)
+                {
+                    this.play('mario_panicfall', true);   
                 }
             }
         }
