@@ -1,5 +1,5 @@
 const TransitionCode = {
-    invoke(scene, cam, duration, playerWorld, startR, endR, callback) {
+    invoke(scene, cam, duration, centerWorld, startR, endR, callback) {
         // Fondo negro que cubrirá todo
         const blackout = scene  .add.rectangle(0, 0, cam.width, cam.height, 0x000000)
             .setOrigin(0)
@@ -8,7 +8,7 @@ const TransitionCode = {
 
         // Crear un círculo
         const circle = scene.make.graphics({ x: 0, y: 0, add: false });
-
+        const playerWorld = centerWorld; 
         var radius = startR; // Tamaño al principio
 
         // Dibujar círculo blanco

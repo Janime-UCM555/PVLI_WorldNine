@@ -346,13 +346,7 @@ class Koopa extends Phaser.GameObjects.Sprite
             this.safeDestroy();
         });
     }
-        /** Update simple para rebotar en paredes y moverse. */
-    // preUpdate(time, delta) {
-    //     // super.preUpdate(time, delta);
-    //     // console.log(this.blocked.left);
-    //     if (this.blocked.left) this.setVelocityX(Math.abs(this.body.velocity.x));
-    //     else if (this.blocked.right) this.setVelocityX(-Math.abs(this.body.velocity.x));
-    // }
+
 
     checkForLedges() {
         if (!this.body) return;
@@ -461,6 +455,10 @@ class Koopa extends Phaser.GameObjects.Sprite
         if (this.y > this.scene.matter.world.bounds + 100) {
             this.safeDestroy();
             return; // Salir inmediatamente después de marcar para destrucción
+        }
+        if(this.blocked.right || this.blocked.left)
+        {
+            this.handleWallCollision();
         }
 
         // Verificar bordes

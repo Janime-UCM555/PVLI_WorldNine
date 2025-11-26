@@ -405,7 +405,7 @@ class Mario extends Phaser.GameObjects.Sprite
         this.wasHoldingJumpWhenBuffered = false;
         this.jumpSound.play();
         if (this.scene.anims.exists('mario_jump') && !this.isGrounded) {
-            // this.play('mario_jump', true);
+            this.play('mario_jump', true);
         }
 
         // Reanudar movimiento horizontal al saltar
@@ -777,7 +777,7 @@ class Mario extends Phaser.GameObjects.Sprite
         }
     
         // 3. Cambiar a animación de caída
-        // this.play('mario_fall', true);
+        this.play('mario_fall', true);
     
         // 4. Asegurarse de que no sea superSize
         this.deactivatePowerUp({ keepSize: false });
@@ -969,15 +969,15 @@ class Mario extends Phaser.GameObjects.Sprite
             // Saltando (velocidad Y negativa)
             if (this.body.velocity.y < 0) {
                 if (this.anims.currentAnim?.key !== 'mario_jump' && !this.isGrounded) {
-                    // this.play('mario_jump', true);
+                    this.play('mario_jump', true);
                 }
                 return; // Salir temprano - no verificar otras animaciones
             }
             // Cayendo (velocidad Y positiva)
             else if (this.body.velocity.y > 0) {
-                // if (this.anims.currentAnim?.key !== 'mario_fall' && !this.isGrounded) {
-                //     this.play('mario_fall', true);
-                // }
+                if (this.anims.currentAnim?.key !== 'mario_fall' && !this.isGrounded) {
+                    this.play('mario_fall', true);
+                }
                 return; // Salir temprano - no verificar otras animaciones
             }
         }
@@ -1004,10 +1004,10 @@ class Mario extends Phaser.GameObjects.Sprite
                 if (this.anims.currentAnim?.key !== 'mario_idle') {
                     this.play('mario_idle', true);
                 }
-                // else if (this.anims.currentAnim?.key !== 'mario_fall' && !this.isGrounded)
-                // {
-                //     this.play('mario_fall', true);
-                // }
+                else if (this.anims.currentAnim?.key !== 'mario_fall' && !this.isGrounded)
+                {
+                    this.play('mario_fall', true);
+                }
             }
         }
     }
