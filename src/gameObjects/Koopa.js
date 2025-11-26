@@ -37,11 +37,11 @@ class Koopa extends Phaser.GameObjects.Sprite
         const M = Phaser.Physics.Matter.Matter;
         this.enemyBody = M.Bodies.rectangle(sx,sy*1.5, w, h, { chamfer: { radius: 10 } });
         this.sensors = {
-            left: M.Bodies.rectangle(sx-w*0.45, sy, 5, h, { isSensor: true }),
-            right: M.Bodies.rectangle(sx+w*0.45, sy, 5, h, { isSensor: true }),
+            left: M.Bodies.rectangle(sx-w*0.7, sy, 5, h, { isSensor: true }),
+            right: M.Bodies.rectangle(sx+w*0.7, sy, 5, h, { isSensor: true }),
         };
         const compoundBody = M.Body.create({
-        parts: [this.enemyBody, this.sensors.left, this.sensors.right],
+        parts: [this.enemyBody,this.sensors.left, this.sensors.right,],
         friction: 0,
         frictionAir: 0,
         restitution: 0.05 // El jugador no se pega a paredes
@@ -80,34 +80,33 @@ class Koopa extends Phaser.GameObjects.Sprite
             this.setFixedRotation();
 
             this.stompSound = scene.sound.add('aplastar');
-        this.scene.matter.world.on('beforeupdate', function (event) {
-        this.numTouching.left = 0;
-        this.numTouching.right = 0;
-        }, this);
-        this.scene.matter.world.on('collisionactive', (event) => {
-        for (let i = 0; i < event.pairs.length; i++)            
-        {
-            const bodyA = event.pairs[i].bodyA;
-            const bodyB = event.pairs[i].bodyB;
-            if (bodyA === this.playerBody || bodyB === this.playerBody)
+            this.scene.matter.world.on('beforeupdate', function (event) {
+            this.numTouching.left = 0;
+            this.numTouching.right = 0;
+            }, this);
+            this.scene.matter.world.on('collisionactive', (event) => {
+            for (let i = 0; i < event.pairs.length; i++)            
             {
-                continue;
+                const bodyA = event.pairs[i].bodyA;
+                const bodyB = event.pairs[i].bodyB;
+                if (bodyA === this.playerBody || bodyB === this.playerBody)
+                {
+                    continue;
+                }
+                if (bodyA === this.sensors.left || bodyB === this.sensors.left)
+                {
+                this.numTouching.left++;
+                }
+                if (bodyA === this.sensors.right || bodyB === this.sensors.right)
+                {
+                this.numTouching.right++;
+                }
             }
-            if (bodyA === this.sensors.left || bodyB === this.sensors.left)
-            {
-            this.numTouching.left++;
-            }
-            if (bodyA === this.sensors.right || bodyB === this.sensors.right)
-            {
-            this.numTouching.right++;
-            }
-        }
-        });
-        this.scene.matter.world.on('afterupdate', function (event) {
-        this.blocked.right = this.numTouching.right > 0 ? true : false;
-        this.blocked.left = this.numTouching.left > 0 ? true : false;
-        }, this);
-
+            });
+            this.scene.matter.world.on('afterupdate', function (event) {
+            this.blocked.right = this.numTouching.right > 0 ? true : false;
+            this.blocked.left = this.numTouching.left > 0 ? true : false;
+            }, this);
         }
     }
 
@@ -261,7 +260,7 @@ class Koopa extends Phaser.GameObjects.Sprite
 
         // Verificar si Mario está cayendo y golpea desde arriba
         // console.log(player.body.velocity.y);
-        if ((player.body.velocity.y > 0.7 || player.getCenter().y > this.sy)) {
+        if (player.body.velocity.y>0.7) {
             // Hacer a Mario invulnerable temporalmente
             player.isInvulnerable = true;
 
@@ -273,7 +272,7 @@ class Koopa extends Phaser.GameObjects.Sprite
             player.setVelocityY(-4.5);
 
             // Quitar invulnerabilidad temporal a Mario
-            this.scene.time.delayedCall(250, () => {
+            this.scene.time.delayedCall(300, () => {
                 player.canEnemyJump=false;
             });
             this.scene.time.delayedCall(150, () => {
@@ -304,6 +303,15 @@ class Koopa extends Phaser.GameObjects.Sprite
             } else {
                 // Colisión lateral
                 let pushDirection = 0; // Determinar dirección del empuje
+
+                // Calcular la dirección de la colisión
+                if (player.x < this.x) {
+                    // Goomba está a la derecha de Mario -> empujar a Mario hacia la izquierda
+                    pushDirection = -1;
+                } else {
+                    // Goomba está a la izquierda de Mario -> empujar a Mario hacia la derecha
+                    pushDirection = 1;
+                }
 
                 player.takeDamage(pushDirection);
             }
@@ -338,9 +346,16 @@ class Koopa extends Phaser.GameObjects.Sprite
             this.safeDestroy();
         });
     }
+        /** Update simple para rebotar en paredes y moverse. */
+    // preUpdate(time, delta) {
+    //     // super.preUpdate(time, delta);
+    //     // console.log(this.blocked.left);
+    //     if (this.blocked.left) this.setVelocityX(Math.abs(this.body.velocity.x));
+    //     else if (this.blocked.right) this.setVelocityX(-Math.abs(this.body.velocity.x));
+    // }
 
     checkForLedges() {
-        if (!this.body || !this.blocked.bottom) return;
+        if (!this.body) return;
 
         const checkDistance = 5;
         const yOffset = 5; // Pequeño margen debajo de los pies
@@ -429,14 +444,6 @@ class Koopa extends Phaser.GameObjects.Sprite
         this.destroy();
     }
     
-    
-    /** Update simple para rebotar en paredes y moverse. */
-    preUpdate(time, delta) {
-        super.preUpdate(time, delta);
-        // console.log(this.blocked.left);
-        if (this.blocked.left) this.setVelocityX(Math.abs(this.body.velocity.x));
-        else if (this.blocked.right) this.setVelocityX(-Math.abs(this.body.velocity.x));
-    }
 
     update(time, delta) {
         // Salir inmediatamente si ya está marcado para destrucción
@@ -457,9 +464,9 @@ class Koopa extends Phaser.GameObjects.Sprite
         }
 
         // Verificar bordes
-        // if (this.isAlive && !this.shouldBeDestroyed && !this.blocked.bottom) {
-        //     this.checkForLedges();
-        // }
+        if (this.isAlive && !this.shouldBeDestroyed) {
+            // this.checkForLedges();
+        }
 
         // Actualizar movimiento solo si está vivo y no está marcado para destrucción
         if (this.isAlive && !this.shouldBeDestroyed) {

@@ -40,13 +40,11 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
     this.blocked= {
       left: false,
       right: false,
-      bottom: false,
       up: false
     },
     this.numTouching= {
       left: 0,
       right: 0,
-      bottom: 0,
       up:0
     };   
 
@@ -58,12 +56,11 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
     const M = Phaser.Physics.Matter.Matter;
     this.playerBody = M.Bodies.rectangle(sx,sy, w, h, { chamfer: { radius: 10 } });
     this.sensors = {
-        bottom: M.Bodies.rectangle(sx, h, sx, 5, { isSensor: true }),
-        left: M.Bodies.rectangle(sx-w, sy, 5, h/2, { isSensor: true }),
-        right: M.Bodies.rectangle(sx+w, sy, 5, h/2, { isSensor: true }),
+        left: M.Bodies.rectangle(sx-w/1.5, sy, 5, h/2, { isSensor: true }),
+        right: M.Bodies.rectangle(sx+w/1.5, sy, 5, h/2, { isSensor: true }),
     };
     const compoundBody = M.Body.create({
-    parts: [this.playerBody,this.sensors.bottom, this.sensors.left, this.sensors.right/*, this.sensors.up*/],
+    parts: [this.playerBody, this.sensors.left, this.sensors.right/*, this.sensors.up*/],
     friction: 0,
     frictionAir: 0,
     restitution: 0.05 // El jugador no se pega a paredes
@@ -97,7 +94,6 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
     this.scene.matter.world.on('beforeupdate', function (event) {
       this.numTouching.left = 0;
       this.numTouching.right = 0;
-      this.numTouching.bottom = 0;
     }, this);
     this.scene.matter.world.on('collisionactive', (event) => {
       for (let i = 0; i < event.pairs.length; i++)            
@@ -116,16 +112,11 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
         {
           this.numTouching.right++;
         }
-        if (bodyA === this.sensors.bottom || bodyB === this.sensors.bottom)
-        {
-          this.numTouching.bottom++;
-        }
       }
     });
     this.scene.matter.world.on('afterupdate', function (event) {
       this.blocked.right = this.numTouching.right > 0 ? true : false;
       this.blocked.left = this.numTouching.left > 0 ? true : false;
-      this.blocked.bottom = this.numTouching.bottom > 0 ? true : false;
     }, this);
   }
 

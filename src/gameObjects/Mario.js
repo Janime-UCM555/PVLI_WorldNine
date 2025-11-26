@@ -61,10 +61,10 @@ class Mario extends Phaser.GameObjects.Sprite
         },
 
         this.numTouching = {
-                left: 0,
-                right: 0,
-                bottom: 0,
-                up:0
+            left: 0,
+            right: 0,
+            bottom: 0,
+            up:0
         };
 
         // MatterBody
@@ -81,9 +81,9 @@ class Mario extends Phaser.GameObjects.Sprite
         const M = Phaser.Physics.Matter.Matter;
         this.playerBody = M.Bodies.rectangle(sx,sy, w * 0.75, h, { chamfer: { radius: 10 } });
         this.sensors = {
-            bottom: M.Bodies.rectangle(sx, h, sx, 2, { isSensor: true }),
-            left: M.Bodies.rectangle(sx - w * 0.77, sy / 1.5, 5, h * 0.6, { isSensor: true }),
-            right: M.Bodies.rectangle(sx + w * 0.77, sy / 1.5, 5, h * 0.6, { isSensor: true }),
+            bottom: M.Bodies.rectangle(sx, h, sx, h*0.1, { isSensor: true }),
+            left: M.Bodies.rectangle(sx - w * 0.5, sy / 1.5, 5, h*0.6, { isSensor: true }),
+            right: M.Bodies.rectangle(sx + w * 0.5, sy / 1.5, 5, h*0.6, { isSensor: true }),
         };
 
         const compoundBody = M.Body.create({
@@ -404,8 +404,8 @@ class Mario extends Phaser.GameObjects.Sprite
         this.hasBufferedJump = false; // Limpiar el buffer al iniciar el salto
         this.wasHoldingJumpWhenBuffered = false;
         this.jumpSound.play();
-        if (this.scene.anims.exists('mario_jump')) {
-            this.play('mario_jump', true);
+        if (this.scene.anims.exists('mario_jump') && !this.isGrounded) {
+            // this.play('mario_jump', true);
         }
 
         // Reanudar movimiento horizontal al saltar
@@ -469,10 +469,10 @@ class Mario extends Phaser.GameObjects.Sprite
             this.setVelocityX(0);
         }
         // Cambiar a animación idle cuando se detiene
-        if (!this.isJumping && this.scene.anims.exists('mario_idle')) {
+        if (this.scene.anims.exists('mario_idle')) {
             this.play('mario_idle', true);
         }
-        else if(!this.blocked.bottom){
+        else if(this.scene.anims.exists('mario_fall') && !this.isGrounded){
             this.play('mario_fall', true);
         }
     }
@@ -544,7 +544,7 @@ class Mario extends Phaser.GameObjects.Sprite
         // Empujar a Mario hacia la izquierda
         const pushSpeed = Phaser.Math.Clamp(15, -40, 40); // Velocidad alta para el empuje
         this.setVelocityX(0);
-        this.setCollidesWith([CATEGORY_TERRAIN, CATEGORY_POWERUP]);
+        this.setCollidesWith([CATEGORY_TERRAIN]);
 
 
         // Parpadeo visual
@@ -777,7 +777,7 @@ class Mario extends Phaser.GameObjects.Sprite
         }
     
         // 3. Cambiar a animación de caída
-        this.play('mario_fall', true);
+        // this.play('mario_fall', true);
     
         // 4. Asegurarse de que no sea superSize
         this.deactivatePowerUp({ keepSize: false });
@@ -968,16 +968,16 @@ class Mario extends Phaser.GameObjects.Sprite
         if (!this.isGrounded) {
             // Saltando (velocidad Y negativa)
             if (this.body.velocity.y < 0) {
-                if (this.anims.currentAnim?.key !== 'mario_jump') {
-                    this.play('mario_jump', true);
+                if (this.anims.currentAnim?.key !== 'mario_jump' && !this.isGrounded) {
+                    // this.play('mario_jump', true);
                 }
                 return; // Salir temprano - no verificar otras animaciones
             }
             // Cayendo (velocidad Y positiva)
             else if (this.body.velocity.y > 0) {
-                if (this.anims.currentAnim?.key !== 'mario_fall') {
-                    this.play('mario_fall', true);
-                }
+                // if (this.anims.currentAnim?.key !== 'mario_fall' && !this.isGrounded) {
+                //     this.play('mario_fall', true);
+                // }
                 return; // Salir temprano - no verificar otras animaciones
             }
         }
@@ -1001,13 +1001,13 @@ class Mario extends Phaser.GameObjects.Sprite
                 this.footstepCooldown = 300;
                 }
             } else {
-                if (this.anims.currentAnim?.key !== 'mario_idle' && this.blocked.bottom) {
+                if (this.anims.currentAnim?.key !== 'mario_idle') {
                     this.play('mario_idle', true);
                 }
-                else if (this.anims.currentAnim?.key !== 'mario_idle')
-                {
-                    this.play('mario_fall', true);
-                }
+                // else if (this.anims.currentAnim?.key !== 'mario_fall' && !this.isGrounded)
+                // {
+                //     this.play('mario_fall', true);
+                // }
             }
         }
     }

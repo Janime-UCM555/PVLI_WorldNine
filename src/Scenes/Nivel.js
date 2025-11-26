@@ -5,6 +5,7 @@ import Goomba from '../gameObjects/Goomba.js';
 import Koopa from '../gameObjects/Koopa.js';
 import PiranhaPlant from '../gameObjects/PiranhaPlant.js';
 import Pokey from '../gameObjects/Pokey.js';
+import TransitionCode from '../gameObjects/Transition.js'
 import { PowerUp, POWERUP_TYPES } from '../gameObjects/PowerUps.js';
 import { DIE_TYPES } from "../gameObjects/Goomba.js";
 class Nivel_T extends Phaser.Scene

@@ -180,7 +180,7 @@ class PreloadScene extends Phaser.Scene {
         // Menu SFX
         this.load.audio('iris-out', 'sonidos/SE/MenuSFX/smw_goal_iris-out.wav');
 
-
+        document.fonts.load('32px aku-kamu').then(() => {});
 
         this.load.on('complete', () => {
             // Se cambia a la escena del menú pricipal medio segundo después de terminar la precarga

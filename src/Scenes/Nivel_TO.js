@@ -124,17 +124,20 @@ class Nivel_TO extends Phaser.Scene
             extra: b => b.hasPlayer = false
         });
         this.impulsos = this.createTiledObjects(impulsosL, {
-            texture: 'Impulsos',
-            sensor: true,
+            // sensor: true,
+            // staticBody: true,
             extra: (block, obj) => {
                 const type = obj.name;
                 block.hasPlayer = false;
-
                 block.setBody({
                     type: 'rectangle',
                     width: obj.width * 2,
-                    height: obj.height * 2
+                    height: obj.height * 2,
+                    // staticBody: true,
+                    // isStatic: true
                 });
+                block.setSensor(true);
+                block.setStatic(true);
 
                 if (type === 'ImpulsoB') { block.play('sunB_move'); block.name = 'impulsoB'; }
                 else if (type === 'ImpulsoM') { block.play('sunM_move'); block.name = 'impulsoM'; }
@@ -169,7 +172,8 @@ class Nivel_TO extends Phaser.Scene
 
                 const sensor = this.matter.add.rectangle(x, y, obj.width, 5, {
                     isSensor: true,
-                    isStatic: true
+                    // staticBody: true,
+                    // isStatic: true
                 });
 
                 sensor.name = "oneway";
@@ -294,6 +298,45 @@ class Nivel_TO extends Phaser.Scene
         this.spawnPowerUp(200, 600, POWERUP_TYPES.HAMMER);
         this.spawnPowerUp(220, 600, POWERUP_TYPES.STAR);
 
+
+        const enemies = this.map.getObjectLayer('Enemigos').objects;
+        this.goombas = this.add.group();
+        this.koopas = this.add.group();
+        for (const enemie of enemies)
+        {
+            if (enemie.name === 'Goomba')
+            {
+                const goomba = new Goomba(
+                    this,
+                    enemie.x,
+                    enemie.y -16, 
+                    'gombrome_walk',
+                    1.0,
+                    true
+                );
+                goomba.direction = 1;
+                this.goombas.add(goomba);
+                goomba.setDepth(2);
+                goomba.setCollisionCategory(CATEGORY_ENEMY);
+                goomba.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN, CATEGORY_ENEMY]);
+            }
+            else if (enemie.name === 'Koopa')
+            {
+                const koopa = new Koopa(
+                    this,
+                    enemie.x,
+                    enemie.y - 32, 
+                    'Koopa_walk_R',
+                    1,
+                    true
+                );
+                koopa.direction = -1;
+                this.koopas.add(koopa);
+                koopa.setDepth(2);
+                koopa.setCollisionCategory(CATEGORY_ENEMY);
+                koopa.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN, CATEGORY_ENEMY]);
+            }
+        }
     }
 
     createTiledObjects(list, config = {}) {
@@ -509,7 +552,7 @@ class Nivel_TO extends Phaser.Scene
                     bodyB.gameObject.setTexture('Pause');
                     this.sound.play('PauseBlq');
                 };
-                if (this.jugador.getCenter().x < bodyB.bounds.max.x-6) {
+                if (this.jugador.getCenter().x < bodyB.bounds.max.x) {
                     this.time.delayedCall(90, activarPausa);
                 } else {
                     activarPausa();
@@ -682,6 +725,35 @@ class Nivel_TO extends Phaser.Scene
                 const aim = this.findSpawnBlockAbovePlayer(this.jugador, 20, 20); // (toleranciaX, toleranciaY)
                 const target = aim || bodyB.gameObject; // prioriza spawn si hay uno “casi”
                 this.blockHit(this.jugador, target);
+            }
+
+                        if(bodyB.gameObject instanceof Goomba && bodyA.gameObject == this.jugador ||
+                bodyA.gameObject instanceof Goomba && bodyB.gameObject == this.jugador )
+            {
+                if (bodyA.gameObject instanceof Goomba)
+                {
+                    bodyA.gameObject.handlePlayerCollision(this.jugador);
+                }
+                else{
+                    bodyB.gameObject.handlePlayerCollision(this.jugador);
+                }
+            }
+            if(bodyB.gameObject instanceof Goomba && bodyA.gameObject instanceof Goomba || 
+                bodyB.gameObject instanceof Koopa && bodyA.gameObject instanceof Goomba ||
+                bodyB.gameObject instanceof Koopa && bodyA.gameObject instanceof Koopa)
+            {
+                bodyA.gameObject.handleEnemyCollision(bodyB.gameObject);
+            }
+            if(bodyB.gameObject instanceof Koopa && bodyA.gameObject == this.jugador ||
+                bodyA.gameObject instanceof Koopa && bodyB.gameObject == this.jugador)
+            {
+                if (bodyA.gameObject instanceof Koopa)
+                {
+                    bodyA.gameObject.handlePlayerCollision(this.jugador);
+                }
+                else{
+                    bodyB.gameObject.handlePlayerCollision(this.jugador);
+                }
             }
         }
         const exitHandle = (event, bodyA, bodyB) => {
@@ -1023,7 +1095,7 @@ class Nivel_TO extends Phaser.Scene
 
     update(time, delta) {
         const dt = delta / 16.666;
-        this.fpsText?.setText( Math.floor(this.game.loop.actualFps));
+        this.fpsText?.setText(Math.floor(this?.game?.loop?.actualFps));
 
         if (!this.endTimer)
         {
@@ -1110,6 +1182,19 @@ class Nivel_TO extends Phaser.Scene
         // Actualizar barra final
         if (this.barraFin) {
             this.barraFin.update(time, delta);
+        }
+                // Actualizar Goombas
+        if (this.goombas) {
+            this.goombas.getChildren().forEach(goomba => {
+                goomba.update(time, delta);
+            });
+        }
+    
+        // Actualizar Koopas
+        if (this.koopas) {
+            this.koopas.getChildren().forEach(koopa => {
+                koopa.update(time, delta);
+            });
         }
     }
 

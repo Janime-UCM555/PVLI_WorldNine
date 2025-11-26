@@ -420,14 +420,6 @@ class Goomba extends Phaser.GameObjects.Sprite
         this.destroy();
     }
 
-    /** Update simple para rebotar en paredes y moverse. */
-    preUpdate(time, delta) {
-        super.preUpdate(time, delta);
-        // console.log(this.blocked.left);
-        if (this.blocked.left) this.setVelocityX(Math.abs(this.body.velocity.x));
-        else if (this.blocked.right) this.setVelocityX(-Math.abs(this.body.velocity.x));
-    }
-
     update(time, delta) {
         // Salir inmediatamente si ya está marcado para destrucción
         if (!this.isAlive || this.shouldBeDestroyed) return;
