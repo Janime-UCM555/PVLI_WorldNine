@@ -150,12 +150,12 @@ class Pokey extends Phaser.GameObjects.Container
             //     category: CATEGORY_ENEMY,
             //     mask: mask
             // }}), // Más largo para detectar bordes
-            left: M.Bodies.rectangle(this.x - totalWidth * 1.05, bodyCenterY, 5, this.totalHeight * 0.5, { isSensor: true,
+            left: M.Bodies.rectangle(this.x - totalWidth * 0.75, bodyCenterY, 5, this.totalHeight * 0.5, { isSensor: true,
             collisionFilter: {
                 category: CATEGORY_ENEMY,
                 mask: mask
             }}),
-            right: M.Bodies.rectangle(this.x + totalWidth * 1.05, bodyCenterY, 5, this.totalHeight * 0.5, { isSensor: true,
+            right: M.Bodies.rectangle(this.x + totalWidth * 0.75, bodyCenterY, 5, this.totalHeight * 0.5, { isSensor: true,
             collisionFilter: {
                 category: CATEGORY_ENEMY,
                 mask: mask
@@ -247,13 +247,14 @@ class Pokey extends Phaser.GameObjects.Container
                     player.Bubble(); // Entra en burbuja sin empuje
                 } else {
                     player.hurt();
+                    player.setStatic(true);
                     if (this.compoundBody)
                     {
                         this.compoundBody.collisionFilter.mask = 0;
                         Phaser.Physics.Matter.Matter.Body.setStatic(this.compoundBody, true);
                     }
-                    this.doubleEndTransition(()=>{this.scene.scene.launch('MainMenu');
-                        this.scene.stop();});
+                    this.scene.doubleEndTransition(()=>{this.scene.scene.launch('MainMenu');
+                        this.scene.scene.stop();});
                     }
             }
 

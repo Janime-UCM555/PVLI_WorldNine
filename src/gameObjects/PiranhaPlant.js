@@ -186,10 +186,11 @@ class PiranhaPlant extends Phaser.GameObjects.Sprite
                     player.Bubble(); // Entra en burbuja sin empuje
                 } else {
                     player.hurt();
+                    player.setStatic(true);
                     this.body.collisionFilter.mask = 0; // Desactivar completamente las colisiones
                     this.setStatic(true);
-                    this.doubleEndTransition(()=>{this.scene.scene.launch('MainMenu');
-                        this.scene.stop();});
+                    this.scene.doubleEndTransition(()=>{this.scene.scene.launch('MainMenu');
+                        this.scene.scene.stop();});
                     }
             }
 

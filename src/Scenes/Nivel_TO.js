@@ -579,6 +579,7 @@ class Nivel_TO extends Phaser.Scene
                         this.doubleEndTransition(()=>{this.scene.launch('MainMenu');
                         this.scene.stop();});
                         player.hurt();
+                        player.setStatic(true);
                     }
                 } else {
                     // Colisión lateral
