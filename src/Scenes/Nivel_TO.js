@@ -15,7 +15,7 @@ class Nivel_TO extends Phaser.Scene
     }
     
     init(){
-
+//
     }
 
     preload(){

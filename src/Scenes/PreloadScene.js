@@ -141,6 +141,8 @@ class PreloadScene extends Phaser.Scene {
         // Tilesets
         this.load.image('mi_tileset', 'GameSprites/Tilesets/base_tileset.png');
         this.load.image('bg_tileset', 'GameSprites/Tilesets/Rome_BG.png');
+        this.load.image('bg_tileset_D', 'GameSprites/Tilesets/Dessert_BG.png');
+        this.load.image('bg_tileset_P', 'GameSprites/Tilesets/Pyramid_BG.png');
         this.load.spritesheet('barra_tileset', 'GameSprites/Items/barraFin.png', {
             frameWidth: 64,
             frameHeight: 32
