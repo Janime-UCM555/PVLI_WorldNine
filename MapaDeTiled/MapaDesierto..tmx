@@ -3322,61 +3322,61 @@
   <object id="44" gid="1073742900" x="9344" y="736" width="32" height="32"/>
  </objectgroup>
  <objectgroup id="9" name="Enemigos">
-  <object id="63" gid="4790" x="896" y="576" width="30" height="30">
+  <object id="63" name="Pokey" gid="4790" x="896" y="576" width="30" height="30">
    <properties>
     <property name="segments" type="int" value="5"/>
     <property name="speed" type="float" value="0"/>
    </properties>
   </object>
-  <object id="64" gid="4790" x="1184" y="544" width="30" height="30">
+  <object id="64" name="Pokey" gid="4790" x="1184" y="544" width="30" height="30">
    <properties>
     <property name="segments" type="int" value="4"/>
     <property name="speed" type="float" value="0"/>
    </properties>
   </object>
-  <object id="65" gid="4790" x="1728" y="672" width="30" height="30">
+  <object id="65" name="Pokey" gid="4790" x="1728" y="672" width="30" height="30">
    <properties>
     <property name="segments" type="int" value="2"/>
     <property name="speed" type="float" value="0"/>
    </properties>
   </object>
-  <object id="66" gid="4790" x="2016" y="576" width="30" height="30">
+  <object id="66" name="Pokey" gid="4790" x="2016" y="576" width="30" height="30">
    <properties>
     <property name="segments" type="int" value="3"/>
     <property name="speed" type="float" value="0"/>
    </properties>
   </object>
-  <object id="67" gid="4790" x="2400" y="672" width="30" height="30">
+  <object id="67" name="Pokey" gid="4790" x="2400" y="672" width="30" height="30">
    <properties>
     <property name="segments" type="int" value="5"/>
     <property name="speed" type="float" value="0.5"/>
    </properties>
   </object>
-  <object id="68" gid="4790" x="9472" y="544" width="30" height="30">
+  <object id="68" name="Pokey" gid="4790" x="9472" y="544" width="30" height="30">
    <properties>
     <property name="segments" type="int" value="3"/>
     <property name="speed" type="float" value="0"/>
    </properties>
   </object>
-  <object id="169" gid="4810" x="2176" y="512" width="30" height="30"/>
-  <object id="170" gid="4813" x="2764" y="581" width="41" height="60"/>
-  <object id="171" gid="4810" x="3552" y="576" width="30" height="30"/>
-  <object id="175" gid="4813" x="4288" y="640" width="41" height="60"/>
-  <object id="176" gid="4813" x="4384" y="640" width="41" height="60"/>
-  <object id="177" gid="4813" x="4480" y="640" width="41" height="60"/>
-  <object id="179" gid="4810" x="4192" y="640" width="30" height="30"/>
-  <object id="180" gid="4810" x="4576" y="640" width="30" height="30"/>
-  <object id="181" gid="4813" x="5248" y="640" width="41" height="60"/>
-  <object id="182" gid="4813" x="5536" y="576" width="41" height="60"/>
-  <object id="183" gid="4813" x="4928" y="640" width="41" height="60"/>
-  <object id="184" gid="4813" x="5856" y="544" width="41" height="60"/>
-  <object id="185" gid="4813" x="6176" y="672" width="41" height="60"/>
-  <object id="186" gid="4810" x="6528" y="608" width="30" height="30"/>
-  <object id="187" gid="4810" x="7456" y="608" width="30" height="30"/>
-  <object id="188" gid="4810" x="7776" y="576" width="30" height="30"/>
-  <object id="189" gid="4813" x="8768" y="544" width="41" height="60"/>
-  <object id="190" gid="4813" x="9056" y="544" width="41" height="60"/>
-  <object id="191" gid="4813" x="9184" y="544" width="41" height="60"/>
+  <object id="169" name="Goomba" gid="4810" x="2176" y="512" width="30" height="30"/>
+  <object id="170" name="Koopa" gid="4813" x="2764" y="581" width="41" height="60"/>
+  <object id="171" name="Goomba" gid="4810" x="3552" y="576" width="30" height="30"/>
+  <object id="175" name="Koopa" gid="4813" x="4288" y="640" width="41" height="60"/>
+  <object id="176" name="Koopa" gid="4813" x="4384" y="640" width="41" height="60"/>
+  <object id="177" name="Koopa" gid="4813" x="4480" y="640" width="41" height="60"/>
+  <object id="179" name="Goomba" gid="4810" x="4192" y="640" width="30" height="30"/>
+  <object id="180" name="Goomba" gid="4810" x="4576" y="640" width="30" height="30"/>
+  <object id="181" name="Koopa" gid="4813" x="5248" y="640" width="41" height="60"/>
+  <object id="182" name="Koopa" gid="4813" x="5536" y="576" width="41" height="60"/>
+  <object id="183" name="Koopa" gid="4813" x="4928" y="640" width="41" height="60"/>
+  <object id="184" name="Koopa" gid="4813" x="5856" y="544" width="41" height="60"/>
+  <object id="185" name="Koopa" gid="4813" x="6176" y="672" width="41" height="60"/>
+  <object id="186" name="Goomba" gid="4810" x="6528" y="608" width="30" height="30"/>
+  <object id="187" name="Goomba" gid="4810" x="7456" y="608" width="30" height="30"/>
+  <object id="188" name="Goomba" gid="4810" x="7776" y="576" width="30" height="30"/>
+  <object id="189" name="Koopa" gid="4813" x="8768" y="544" width="41" height="60"/>
+  <object id="190" name="Koopa" gid="4813" x="9056" y="544" width="41" height="60"/>
+  <object id="191" name="Koopa" gid="4813" x="9184" y="544" width="41" height="60"/>
  </objectgroup>
  <layer id="2" name="CapaSuelo" width="322" height="26">
   <data encoding="csv">

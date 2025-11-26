@@ -1,3 +1,5 @@
+        // const tilesetBGD = this.map.addTilesetImage('bg', 'bg_tileset_D');
+        // const tilesetBGP = this.map.addTilesetImage('Pyramid_BG', 'bg_tileset_P');
 import Button from '../gameObjects/Button.js';
 import Mario from '../gameObjects/Mario.js';
 import Fin from '../gameObjects/BarraFin.js';
@@ -5,6 +7,7 @@ import Goomba from '../gameObjects/Goomba.js';
 import Koopa from '../gameObjects/Koopa.js';
 import PiranhaPlant from '../gameObjects/PiranhaPlant.js';
 import Pokey from '../gameObjects/Pokey.js';
+import TransitionCode from '../gameObjects/Transition.js'
 import { PowerUp, POWERUP_TYPES } from '../gameObjects/PowerUps.js';
 import { DIE_TYPES } from "../gameObjects/Goomba.js";
 class Nivel_D extends Phaser.Scene
@@ -14,7 +17,7 @@ class Nivel_D extends Phaser.Scene
     }
     
     init(){
-
+//
     }
 
     preload(){
@@ -55,20 +58,21 @@ class Nivel_D extends Phaser.Scene
         const CATEGORY_ENEMY   = 0x0002;
         const CATEGORY_POWERUP = 0x0003;
         const CATEGORY_TERRAIN = 0x0004;
+        const CATEGORY_FALLOFF = 0x0005;
 
         
         // Capa de suelo
-        const bgLayerD = this.map.createLayer('CapaFondo', tilesetBGD, 0, 0);
-        const bgLayerB = this.map.getLayer('CapaFondo', tilesetBGP, 0, 0);
-        const decorationsLayer = this.map.createLayer('CapaDecoraciones', tileset, 0, 0);
+        const bgLayer = this.map.createLayer('CapaFondo', [tilesetBGD, tilesetBGP], 0, 0);
+        // const decorationsLayer = this.map.createLayer('CapaDecoraciones', tileset, 0, 0);
         const blocks = this.map.getObjectLayer('Bloques').objects;
         const fallBlocks = this.map.getObjectLayer('FallOffs').objects;
         const spikesL = this.map.getObjectLayer('Pinchos').objects;
         const pausaL = this.map.getObjectLayer('PauseBlocks').objects;
         const impulsosL = this.map.getObjectLayer('Impulsos').objects;
         const coinPathL = this.map.getObjectLayer('CaminoMonedas').objects;
+
         const coins = this.map.getObjectLayer('Monedas').objects;
-        const enemies = this.map.getObjectLayer('Enemigos').objects;
+        // const enemies = this.map.getObjectLayer('Enemigos').objects;
         this.groundLayer = this.map.createLayer('CapaSuelo', tileset, 0, 0);
         this.groundLayer.setDepth(1);
         // this.groundLayer.setCollisionMask(0x0001);
@@ -95,80 +99,98 @@ class Nivel_D extends Phaser.Scene
 
 
         this.jugador = new Mario(this, 25, 625, 'mario_run', 3.5, -3.75, true);
+        this.jugador.setDepth(3);
 
         // Forzar la inicialización de animaciones
         if (this.anims.exists('mario_run')) {
             this.jugador.play('mario_run');
         }
         const frontLayer = this.map.createLayer('CapaFrente', tileset, 0, 0);
-        
-        // Crear bloques a partir de objetos Tiled
-        this.blocks = this.add.group();
-        blocks.forEach(obj => {
-            // Coordenadas de Tiled → Phaser
-            const x = obj.x + obj.width / 2;
-            const y = obj.y - obj.height / 2;
 
-            // Propiedades del objeto en Tiled → convertir a objeto plano
-            const props = {};
-            obj.properties?.forEach(p => props[p.name] = p.value);
-
-            // Si tiene propiedad 'texture', úsalo
-            if(props.Breakable){
-                props.texture = 'block';
+        this.fallBlock = this.createTiledObjects(fallBlocks, {
+            texture: 'fallOffBlock1',
+            name: 'BloqueCae',
+            category: CATEGORY_FALLOFF,
+            extra: (b) => {
+                b.fallActive = false;
+                b.startPosY = b.y;
             }
-            else{
-                props.texture = 'block?';
+        });
+        this.spikes = this.createTiledObjects(spikesL, {
+            texture: 'spikes',
+            name: 'spikes'
+        });
+        this.pausa = this.createTiledObjects(pausaL, {
+            texture: 'Resume',
+            name: 'pausa',
+            extra: b => b.hasPlayer = false
+        });
+        this.impulsos = this.createTiledObjects(impulsosL, {
+            // sensor: true,
+            // staticBody: true,
+            extra: (block, obj) => {
+                const type = obj.name;
+                block.hasPlayer = false;
+                block.setBody({
+                    type: 'rectangle',
+                    width: obj.width * 2,
+                    height: obj.height * 2,
+                    // staticBody: true,
+                    // isStatic: true
+                });
+                block.setSensor(true);
+                block.setStatic(true);
+
+                if (type === 'ImpulsoB') { block.play('sunB_move'); block.name = 'impulsoB'; }
+                else if (type === 'ImpulsoM') { block.play('sunM_move'); block.name = 'impulsoM'; }
+                else { block.play('sunA_move'); block.name = 'impulsoA'; }
             }
+        });
+        this.coinPath = this.createTiledObjects(coinPathL, {
+            sensor: true,
+            staticBody: true,
+            extra: (block, obj) => {
+                let tex = 'CoinPassD';
+                let name = "pathAbD";
 
-            const tex = props.texture || 'bloque'; // si no tiene, usa la por defecto
+                if (obj.name === 'PasoMonedasArDer') name = "pathArD";
+                else if (obj.name === 'PasoMonedasAr') { tex = 'CoinPassS'; name = "pathAr"; }
+                else if (obj.name === 'PasoMonedasDer') { tex = 'CoinPassS'; name = "pathD"; }
 
-            // Crear sprite con esa textura
-            const block = this.matter.add.sprite(x, y, tex);
-            this.add.existing(block, true);
+                block.setTexture(tex);
+                block.name = name;
+                block.setRotation(Phaser.Math.DegToRad(obj.rotation));
+            }
+        });
+        this.blocks = this.createTiledObjects(blocks, {
+            extra: (block, obj) => {
+                const props = {};
+                obj.properties?.forEach(p => props[p.name] = p.value);
 
-            //Ajustar el hitbox al tamaño del objeto
-            block.setSize(obj.width, obj.height);
-            block.setIgnoreGravity(true);
-            block.friction = 0;
-            block.frictionStatic = 0;
-            block.frictionAir = 0;
-            block.restitution = 0;
-            block.setStatic(true);
-            // block.setFixedRotation();
-            //Guardar sus props para blockHit()
-            block._props = props;
-            
-            // Quita la fricción
-            block.friction = 0;
-            block.frictionStatic = 0;
-            block.frictionAir = 0;
-            block.restitution = 0;
+                const tex = props.Breakable ? 'block' : 'block?';
+                block.setTexture(tex);
 
-            block.setCollisionCategory(CATEGORY_TERRAIN);
-            block.setCollidesWith([CATEGORY_ENEMY, CATEGORY_PLAYER]);
-            this.blocks.add(block);
+                block._props = props;
+            }
         });
 
         this.coinsGroup = this.add.group();
-        for (const coinObj of coins)
-        {
-            const coin = this.coinsGroup.create(coinObj.x, coinObj.y, 'coin_tileset');
-            coin.setOrigin(0, 1);
-            // Desactivar cualquier cuerpo físico que pueda haberse creado automáticamente
-            if (coin.body) {
-                coin.destroy();
-                coin.body = null;
-            }
-            const coinType = coinObj.name;
-            if (coinType === 'purple') {
+        coins.forEach(o => {
+            const coin = this.coinsGroup.create(o.x, o.y, 'coin_tileset').setOrigin(0, 1);
+            
+            if (coin.body) coin.body = null;
+
+            if (o.name === 'purple') {
                 coin.play('coin_purple_spin');
                 coin.coinValue = 500;
             } else {
                 coin.play('coin_gold_spin');
                 coin.coinValue = 100;
             }
-        }
+        });
+
+
+
         for (const barraPart of barraFinLayer)
         {
             this.barraFin = new Fin(
@@ -183,10 +205,77 @@ class Nivel_D extends Phaser.Scene
             this.barraFin.setCollisionCategory(CATEGORY_TERRAIN);
             this.barraFin.setCollidesWith([CATEGORY_PLAYER]);
         }
+        
+
+        // Grupo de Goombas - Añadidos manualmente
+        // this.goombas = this.add.group();
+        
+        //Posiciones manuales para los Goombas
+        // const goombaPositions = [
+        //     { x: 450, y: 625 },   // Primer Goomba
+        //     { x: 500, y: 625 },   // Segundo Goomba
+        //     { x: 800, y: 500 },   // Tercer Goomba
+        //     { x: 1200, y: 500 },  // Cuarto Goomba
+        //     { x: 1750, y: 500 }   // Quinto Goomba
+        // ];
+
+        // for (const pos of goombaPositions) {
+        //     const goomba = new Goomba(this, pos.x, pos.y, 'gombrome_walk', .50, true);
+        //     // Iniciar todos los Goombas moviéndose hacia la derecha
+        //     goomba.direction = 1;
+        //     this.goombas.add(goomba);
+        // }
+        this.setupCollisions();
+
+        this.powerups = this.add.group();
+
+
+
+        // Configurar mejor los límites del mundo
+        this.matter.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
+
+        this.ui = this.add.container(this.cameras.main.width/2, this.cameras.main.height/2).setDepth(10);
+        // this.ui.add([this.buttonPrueba]);
+        
+        this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
+
+        // Zoom más cercano (1.65 es 65% más cercano)
+        this.cameras.main.setZoom(1.65);
+
+        // Música de fondo del nivel
+        if (!this.levelMusic || !this.levelMusic.isPlaying) {
+            this.levelMusic = this.sound.add('level_music', { loop: true, volume: 1 });
+            this.levelMusic.play();
+        }
+
+        var openedScene = false;
+        if (!openedScene)
+        {
+            this.jugador.setStatic(true);
+            TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador.getCenter(), 0, 120, ()=>{
+                transition2();
+            });
+            const transition2 = () => {
+                TransitionCode.invoke(this, this.cameras.main, 600,this.jugador.getCenter(), 120, this.cameras.main.width,
+                ()=>{
+                    this.openedScene=true;
+                    this.jugador.setStatic(false);
+                    this.jugador.resume(); // Reanudar movimiento
+                });
+            }
+        }
+        this.irisSound = this.sound.add('iris-out');
+
+        // Quitamos la colisión con los bordes del mapa
+        this.matter.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels, 0, false, false, false, false);
+        this.createText();  
+        this.spawnPowerUp(200, 600, POWERUP_TYPES.HAMMER);
+        this.spawnPowerUp(220, 600, POWERUP_TYPES.STAR);
+
+
+        const enemies = this.map.getObjectLayer('Enemigos').objects;
         this.goombas = this.add.group();
         this.koopas = this.add.group();
-        this.piranhas = this.add.group();
-        this.pokeys = this.add.group();
         for (const enemie of enemies)
         {
             if (enemie.name === 'Goomba')
@@ -221,94 +310,88 @@ class Nivel_D extends Phaser.Scene
                 koopa.setCollisionCategory(CATEGORY_ENEMY);
                 koopa.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN, CATEGORY_ENEMY]);
             }
-            else if (enemie.name === 'Piranha')
-            {
-                // console.log('PIRANYA');
-                const piranha = new PiranhaPlant(
-                    this,
-                    enemie.x + 33,
-                    enemie.y - 35, 
-                    'Piranha_plant',
-                    2000,
-                    2000
-                );
-                this.piranhas.add(piranha);
-                piranha.setCollisionCategory(CATEGORY_ENEMY);
-                piranha.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN, CATEGORY_ENEMY]);
-            }
-            else if (enemie.name === 'Pokey')
-            {
-                const segments = enemie.properties?.find(p => p.name === 'segments')?.value || 5;
-                const pokey = new Pokey(this, enemie.x, enemie.y, segments);
-                this.pokeys.add(pokey);
-                // pokey.setDepth(2);
-                
-            }
-
-            this.hammers = this.add.group();
         }
-
-        // Grupo de Goombas - Añadidos manualmente
-        // this.goombas = this.add.group();
-        
-        //Posiciones manuales para los Goombas
-        // const goombaPositions = [
-        //     { x: 450, y: 625 },   // Primer Goomba
-        //     { x: 500, y: 625 },   // Segundo Goomba
-        //     { x: 800, y: 500 },   // Tercer Goomba
-        //     { x: 1200, y: 500 },  // Cuarto Goomba
-        //     { x: 1750, y: 500 }   // Quinto Goomba
-        // ];
-
-        // for (const pos of goombaPositions) {
-        //     const goomba = new Goomba(this, pos.x, pos.y, 'gombrome_walk', .50, true);
-        //     // Iniciar todos los Goombas moviéndose hacia la derecha
-        //     goomba.direction = 1;
-        //     this.goombas.add(goomba);
-        // }
-        this.setupCollisions();
-
-        this.powerups = this.add.group();
-
-
-
-        // Configurar mejor los límites del mundo
-        this.matter.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
-        // this.buttonPrueba = new Button(this, 0, 0,'Prueba',() =>{
-        //     this.transition('MainMenu'); // Llamar a la transición cuando se acaba el tiempo
-        // });
-
-        this.ui = this.add.container(this.cameras.main.width/2, this.cameras.main.height/2).setDepth(10);
-        // this.ui.add([this.buttonPrueba]);
-        
-        this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
-
-        // Zoom más cercano (1.65 es 65% más cercano)
-        this.cameras.main.setZoom(1.65);
-
-        // Música de fondo del nivel
-        if (!this.levelMusic || !this.levelMusic.isPlaying) {
-            this.levelMusic = this.sound.add('level_music', { loop: true, volume: 1 });
-            this.levelMusic.play();
-        }
-
-        var openedScene = false;
-        if (!openedScene)
-        {
-            this.openSceneTransition();
-        }
-        this.irisSound = this.sound.add('iris-out');
-
-        // Quitamos la colisión con los bordes del mapa
-        this.matter.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels, 0, false, false, false, false);
-        this.createText();  
-        this.spawnPowerUp(200, 600, POWERUP_TYPES.MUSHROOM);
-        // this.spawnPowerUp(200, 600, POWERUP_TYPES.HAMMER);
-        this.spawnPowerUp(220, 600, POWERUP_TYPES.STAR);
-
     }
 
+    createTiledObjects(list, config = {}) {
+
+        //Máscaras de colisión
+        const CATEGORY_PLAYER  = 0x0001;
+        const CATEGORY_ENEMY   = 0x0002;
+        const CATEGORY_POWERUP = 0x0003;
+        const CATEGORY_TERRAIN = 0x0004;
+        const CATEGORY_FALLOFF = 0x0005;    
+        // Parámetros con valores por defecto
+        const {
+            texture = null,
+            name = null,
+            depth = 2,
+            category = CATEGORY_TERRAIN,
+            collidesWith = [CATEGORY_PLAYER, CATEGORY_ENEMY],
+            staticBody = true,
+            sensor = false,
+            extra = () => {}
+        } = config;
+
+        const group = this.add.group();
+
+        list.forEach(obj => {
+
+            const x = obj.x + obj.width / 2;
+            const y = obj.y - obj.height / 2;
+
+            // Crear sprite
+            const sprite = this.matter.add.sprite(x, y, texture);
+            sprite.setDepth(depth);
+
+            if (name) sprite.name = name;
+
+            // Propiedades básicas del cuerpo
+            sprite.setIgnoreGravity(true);
+            sprite.setStatic(staticBody);
+            sprite.setSensor(sensor);
+            sprite.setFixedRotation();
+            sprite.setSize(obj.width, obj.height);
+
+            sprite.friction = 0;
+            sprite.frictionStatic = 0;
+            sprite.frictionAir = 0;
+            sprite.restitution = 0;
+
+            // Colisiones
+            sprite.setCollisionCategory(category);
+            sprite.setCollidesWith(collidesWith);
+
+            // Config extra personalizada para cada tipo de bloque
+            extra(sprite, obj);
+
+            group.add(sprite);
+        });
+
+        return group;
+    }
+
+
     createAnimations() {
+        this.anims.create({
+            key: 'sunB_move',
+            frames: this.anims.generateFrameNumbers('Impulsos', { start: 0, end: 1 }),
+            frameRate: 4,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'sunM_move',
+            frames: this.anims.generateFrameNumbers('Impulsos', { start: 3, end: 4 }),
+            frameRate: 6,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'sunA_move',
+            frames: this.anims.generateFrameNumbers('Impulsos', { start: 6, end: 7 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
         this.anims.create({
             key: 'coin_gold_spin',
             frames: this.anims.generateFrameNumbers('coin_tileset', { start: 0, end: 8 }),
@@ -328,11 +411,11 @@ class Nivel_D extends Phaser.Scene
             frameRate: 8,
             repeat: -1
         });
-        
         this.anims.create({
             key: 'mario_idle',
-            frames: [{ key: 'mario_idle', frame: 0 }],
-            frameRate: 1
+            frames: this.anims.generateFrameNumbers('mario_idle', { start: 0, end: 2 }),
+            frameRate: 1,
+            repeat: -1
         });
         this.anims.create({
             key: 'mario_jump',
@@ -396,6 +479,13 @@ class Nivel_D extends Phaser.Scene
     }
     
     setupCollisions() {
+        //Máscaras de colisión
+        const CATEGORY_PLAYER  = 0x0001;
+        const CATEGORY_ENEMY   = 0x0002;
+        const CATEGORY_POWERUP = 0x0003;
+        const CATEGORY_TERRAIN = 0x0004;
+        const CATEGORY_FALLOFF = 0x0005;
+        const M = Phaser.Physics.Matter.Matter;
         // Colisión con barra final
         const handle = (event, bodyA, bodyB) => {
             // if(!bodyA.gameObject || bodyB.gameObject)
@@ -418,7 +508,202 @@ class Nivel_D extends Phaser.Scene
                     bodyB.gameObject.collect(this.jugador);
                 }                // console.log('🌵 COLISIÓN CON POWERUPPPPPP DETECTADA');
             }
-            if(bodyB.gameObject instanceof Goomba && bodyA.gameObject == this.jugador ||
+            if (bodyA.gameObject == this.jugador && bodyB.gameObject && bodyB.gameObject.name == "BloqueCae")
+            {
+                this.time.delayedCall(150, () => {
+                    bodyB.gameObject.fallActive=true;
+                    bodyB.gameObject.setTexture('fallOffBlock2'); // Cambiar textura a bloque vacío
+                });
+            }
+            if (bodyA.gameObject == this.jugador && bodyB.gameObject && bodyB.gameObject.name == "pausa" && !bodyB.gameObject.hasPlayer)
+            {
+                this.bloquePausaActivo = bodyB.gameObject;
+                const activarPausa = () => {
+                    this.jugador.stop();
+                    this.jugador.setVelocity(0,0);
+                    bodyB.gameObject.hasPlayer = true;
+                    this.enPausa = true;
+                    bodyB.gameObject.setTexture('Pause');
+                    this.sound.play('PauseBlq');
+                };
+                if (this.jugador.getCenter().x < bodyB.bounds.max.x) {
+                    this.time.delayedCall(90, activarPausa);
+                } else {
+                    activarPausa();
+                }
+            }
+            if (bodyA.gameObject == this.jugador && bodyB.gameObject && bodyB.gameObject.name == "spikes"
+                && !this.jugador.isBeingPushed && !this.jugador.isInvulnerable && !this.jugador.isInvincible)
+            {
+                const player = this.jugador;
+                if (!player.isSuperSize && !this.scene.endTimer) 
+                {
+                    this.sound.play('muerte');
+
+                    // Detener cualquier movimiento de Mario antes de la burbuja
+                    player.setVelocity(0, 0);
+                    if (player.body) {
+                        player.body.velocity.x = 0;
+                        player.body.velocity.y = 0;
+                    }
+
+                    if (player.bubblesLeft > 0) {
+                        player.Bubble(); // Entra en burbuja
+                    } else {
+                        this.doubleEndTransition(()=>{this.scene.launch('MainMenu');
+                        this.scene.stop();});
+                        player.hurt();
+                    }
+                } else {
+                    // Colisión lateral
+                    let pushDirection = 0; // Determinar dirección del empuje
+                    player.takeDamage(pushDirection);
+                }
+            }
+            if ((bodyA.gameObject == this.jugador &&bodyB.gameObject?.name=="pathAr") ||
+            (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="pathAr")) 
+            {
+                const coinDistanceX = 10;
+                const coinDistanceY = -40;
+                let blockPass;
+                if (bodyB.gameObject?.name == "pathAr")
+                {
+                    blockPass = bodyB.gameObject;
+                }
+                else{
+                    blockPass = bodyA.gameObject;
+                }
+                this.spawnCoins(coinDistanceX,coinDistanceY,blockPass);
+            }
+            if ((bodyA.gameObject == this.jugador && bodyB.gameObject?.name=="pathAbD") ||
+            (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="pathAbD")) 
+            {
+                // 4 monedas Abajo Diagonal
+                const coinDistanceX = 20;
+                const coinDistanceY = 40;
+                let blockPass;
+                if (bodyB.gameObject?.name == "pathAbD")
+                {
+                    blockPass = bodyB.gameObject;
+                }
+                else{
+                    blockPass = bodyA.gameObject;
+                }
+                this.spawnCoins(coinDistanceX,coinDistanceY,blockPass);
+            }
+            if ((bodyA.gameObject == this.jugador && bodyB.gameObject?.name=="pathArD") ||
+                (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="pathArD")) 
+            {
+                // 4 monedas Arriba Diagonal
+                const coinDistanceX = 20;
+                const coinDistanceY = -40;
+                const scene = this;
+                let blockPass;
+                if (bodyB.gameObject?.name == "pathArD")
+                {
+                    blockPass = bodyB.gameObject;
+                }
+                else{
+                    blockPass = bodyA.gameObject;
+                }
+                this.spawnCoins(coinDistanceX,coinDistanceY,blockPass);
+            }
+            if ((bodyA.gameObject == this.jugador && bodyB.gameObject?.name=="pathD") ||
+                (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="pathD")) 
+            {
+                // 4 monedas Derecha
+                const coinDistanceX = 40;
+                const coinDistanceY = 0;
+                let blockPass;
+                if (bodyB.gameObject?.name == "pathD")
+                {
+                    blockPass = bodyB.gameObject;
+                }
+                else{
+                    blockPass = bodyA.gameObject;
+                }
+                this.spawnCoins(coinDistanceX,coinDistanceY,blockPass);
+            }
+            if ((bodyA.gameObject == this.jugador &&bodyB.gameObject?.name=="impulsoA") ||
+            (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="impulsoA")) 
+            {
+                // console.log(this.jugador.jumpRequested);
+                if (bodyA.gameObject?.name == "impulsoA")
+                {
+                    this.impulsoActivo = bodyA.gameObject;
+                }
+                else{
+                    this.impulsoActivo = bodyB.gameObject;
+                }
+                if (this.jugador.jumpRequested)
+                {
+                    M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -10 });
+                }
+            }
+            if ((bodyA.gameObject == this.jugador && bodyB.gameObject?.name=="impulsoM") ||
+            (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="impulsoM")) 
+            {
+                // console.log(this.jugador.jumpRequested);
+                if (bodyA.gameObject?.name == "impulsoM")
+                {
+                    this.impulsoActivo = bodyA.gameObject;
+                }
+                else{
+                    this.impulsoActivo = bodyB.gameObject;
+                }
+                if (this.jugador.jumpRequested)
+                {
+                    M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -7 });
+                }
+            }
+            if ((bodyA.gameObject == this.jugador && bodyB.gameObject?.name=="impulsoB") ||
+                (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="impulsoB")) 
+            {                
+                // console.log(this.jugador.jumpRequested)
+                if (bodyA.gameObject?.name == "impulsoB")
+                {
+                    this.impulsoActivo = bodyA.gameObject;
+                }
+                else{
+                    this.impulsoActivo = bodyB.gameObject;
+                }
+                if (this.jugador.jumpRequested)
+                {
+                    M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -5 });
+                }
+            }
+            if ((bodyA.name === "oneway" &&  bodyA.isSensor &&bodyB.gameObject === this.jugador) ||
+                (bodyB.name === "oneway"&& bodyB.isSensor && bodyA.gameObject === this.jugador ))
+            {
+                let sensor;
+                if (bodyA.name==="oneway")
+                {
+                    sensor = bodyA;
+                }
+                else
+                {
+                    sensor = bodyB;
+                } 
+                const activarOneWay = () => {
+                    sensor.blockTop.setCollidesWith([CATEGORY_ENEMY, CATEGORY_PLAYER]);
+                };
+                if (this.jugador.getCenter().x < sensor.bounds.max.x-6) {
+                    this.time.delayedCall(90, activarOneWay);
+                } else {
+                    activarOneWay();
+                }
+            }
+            if(bodyA.gameObject == this.jugador && bodyB.gameObject && bodyB.gameObject._props) 
+            {
+                if (!(this.jugador.body.velocity.y < 0 && this.jugador.getCenter().y > bodyB.bounds.max.y)){
+                    return; // Solo al golpear desde abajo
+                } 
+                const aim = this.findSpawnBlockAbovePlayer(this.jugador, 20, 20); // (toleranciaX, toleranciaY)
+                const target = aim || bodyB.gameObject; // prioriza spawn si hay uno “casi”
+                this.blockHit(this.jugador, target);
+            }
+
+                        if(bodyB.gameObject instanceof Goomba && bodyA.gameObject == this.jugador ||
                 bodyA.gameObject instanceof Goomba && bodyB.gameObject == this.jugador )
             {
                 if (bodyA.gameObject instanceof Goomba)
@@ -446,44 +731,50 @@ class Nivel_D extends Phaser.Scene
                     bodyB.gameObject.handlePlayerCollision(this.jugador);
                 }
             }
-            if(bodyB.gameObject instanceof PiranhaPlant && bodyA.gameObject == this.jugador ||
-               bodyA.gameObject instanceof PiranhaPlant && bodyB.gameObject == this.jugador)
+        }
+        const exitHandle = (event, bodyA, bodyB) => {
+            if ((bodyA.name === "oneway" &&  bodyA.isSensor &&bodyB.gameObject === this.jugador) ||
+                (bodyB.name === "oneway"&& bodyB.isSensor && bodyA.gameObject === this.jugador ))
             {
-                 if (bodyA.gameObject instanceof PiranhaPlant)
+                if (bodyA.name==="oneway")
                 {
-                    bodyA.gameObject.handlePlayerCollision(this.jugador);
+                    bodyA.blockTop.setCollidesWith([CATEGORY_ENEMY]);
                 }
-                else{
-                    bodyB.gameObject.handlePlayerCollision(this.jugador);
-                }
-            }
-            if(bodyB.gameObject instanceof Pokey && bodyA.gameObject == this.jugador ||
-               bodyA.gameObject instanceof Pokey && bodyB.gameObject == this.jugador)
-            {
-                if (bodyA.gameObject instanceof Pokey)
+                else
                 {
-                    bodyA.gameObject.handlePlayerCollision(this.jugador);
+                    bodyB.blockTop.setCollidesWith([CATEGORY_ENEMY]);
                 }
-                else{
-                    bodyB.gameObject.handlePlayerCollision(this.jugador);
-                }
-            }
-            // if(bodyA.gameObject instanceof Goomba && bodyB.gameObject == this.groundLayer)
-            // {
-            //     bodyA.gameObject.handleWallCollision(bodyB.gameObject);
-            // }
-            if(bodyA.gameObject == this.jugador && bodyB.gameObject && bodyB.gameObject._props) 
-            {
-                if (!(this.jugador.body.velocity.y < 0 && this.jugador.getCenter().y > bodyB.bounds.max.y)){
-                    return; // Solo al golpear desde abajo
-                } 
-                const aim = this.findSpawnBlockAbovePlayer(this.jugador, 20, 20); // (toleranciaX, toleranciaY)
-                const target = aim || bodyB.gameObject; // prioriza spawn si hay uno “casi”
-                this.blockHit(this.jugador, target);
             }
         }
         this.matter.world.on('collisionstart', handle);
+        this.matter.world.off('collisionexit', exitHandle);
         this.matter.world.on('collisionactive', handle);
+    }
+
+    spawnCoins(distX, distY, blockPass)
+    {
+        blockPass.setTint(Phaser.Display.Color.GetColor(140, 140, 140, 0.5));
+        blockPass.setCollidesWith([]);
+        const center = blockPass.getCenter();
+        const delay = 50;
+        // 4 monedas 
+        for (let i=0; i < 4; ++i)
+        {
+            this.time.delayedCall(delay*i,()=> { this.delayedCoins(center,distX,distY, i)}, [], this);
+        }
+    }
+
+    delayedCoins(center, distX, distY, i)
+    {
+        const coin = this.coinsGroup.create(center.x+i*distX, center.y+i*distY, 'coin_tileset');
+        coin.setOrigin(0.5);
+        // Desactivar cualquier cuerpo físico que pueda haberse creado automáticamente
+        if (coin.body) {
+            coin.destroy();
+            coin.body = null;
+        }
+        coin.play('coin_gold_spin');
+        coin.coinValue = 100;
     }
 
     findSpawnBlockAbovePlayer(player, toleranciaX = 16, toleranciaY = 10) {
@@ -558,33 +849,6 @@ class Nivel_D extends Phaser.Scene
 
         this.moveCameraToBottomRight();
 
-        // Destruir todos los Goombas
-        this.goombas.getChildren().forEach(goomba => {
-            if (goomba.safeDestroy && !goomba.shouldBeDestroyed) {
-                goomba.safeDestroy();
-            }
-        });
-    
-        // Destruir todos los Koopas
-        this.koopas.getChildren().forEach(koopa => {
-            if (koopa.safeDestroy && !koopa.shouldBeDestroyed) {
-                koopa.safeDestroy();
-            }
-        });
-
-        // Destruir todas las plantas piraña
-        this.piranhas.getChildren().forEach(piranha => {
-            if (piranha.safeDestroy && !piranha.shouldBeDestroyed) {
-                piranha.safeDestroy();
-            }
-        });
-
-        this.pokeys.getChildren().forEach(pokey => {
-            if (pokey.safeDestroy && !pokey.shouldBeDestroyed) {
-                pokey.safeDestroy();
-            }
-        });
-
         this.jugador.win();
         barra.destroy();
         this.jugador.play('mario_stop', true);
@@ -599,9 +863,25 @@ class Nivel_D extends Phaser.Scene
         victoryMusic.once('complete', () => {
         this.jugador.play('mario_victory', true);
         setTimeout(() => {
-        this.transition('MainMenu'); // Llamar a la transición cuando se acaba el tiempo
+            this.doubleEndTransition(
+                ()=>{this.scene.launch('MainMenu');
+                this.scene.stop();});
         }, 1000);
         });
+    }
+
+    doubleEndTransition(callback)
+    {
+        TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador.getCenter(), this.cameras.main.width, 120,
+        ()=>{
+            transition2();
+        });
+        const transition2 = () => {
+            TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador.getCenter(), 120, 0,
+            ()=>{
+                callback();
+            });
+        }
     }
 
     moveCameraToBottomRight() {
@@ -641,212 +921,61 @@ class Nivel_D extends Phaser.Scene
         // graphics.setScrollFactor(0);
 
         const fontSize = 29; // 50 / 1.65 ≈ 29
+        document.fonts.load('32px aku-kamu').then(() => {
 
-        this.fpsText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -',{fontFamily: 'aku-kamu'})
-        .setOrigin(-2,5)
-        .setStroke('#000000ff', 6)
-        .setFill('#38b762ff')
-        .setFontSize(fontSize + 'px')
-        .setDepth(10)
-        // .setText("60")
-        .setScrollFactor(0);
+            this.fpsText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -',{fontFamily: 'aku-kamu'})
+            .setOrigin(-2,5)
+            .setStroke('#000000ff', 6)
+            .setFill('#38b762ff')
+            .setFontSize(fontSize + 'px')
+            .setDepth(10)
+            // .setText("60")
+            .setScrollFactor(0);
 
+            this.textTimer = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '00',{fontFamily: 'aku-kamu'})
+            .setOrigin(0.5,5)
+            .setStroke('#000000ff', 6)
+            .setFill('#ffffffff')
+            // .setText("60")
+            .setDepth(10)
+            .setFontSize(fontSize + 'px')
+            .setScrollFactor(0)
 
-        this.textTimer = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -',{fontFamily: 'aku-kamu'})
-        .setOrigin(0.5,5)
-        .setStroke('#000000ff', 6)
-        .setFill('#ffffffff')
-        // .setText("60")
-        .setDepth(10)
-        .setFontSize(fontSize + 'px')
-        .setScrollFactor(0)
+            this.textScore = this.add.text(posUI, this.cameras.main.centerY,"".padStart(10,"0"),{fontFamily: 'aku-kamu'})
+            .setOrigin(1,5)
+            .setStroke('#000000ff', 6)
+            .setFill('#ffffffff')
+            .setDepth(10)
+            .setFontSize(fontSize + 'px')
+            .setScrollFactor(0);
+            // textScore.setShadow(10, 10, 'rgba(0,0,0,0.5)', 10); 
+            // this.textScore.setText("".padStart(10,"0"))
 
+            this.textCoins = this.add.text(posUI, this.cameras.main.centerY, "".padStart(2,"0"),{fontFamily: 'aku-kamu'})
+            .setOrigin(1,4)
+            .setStroke('#000000ff', 6)
+            .setFill('#DBC716')
+            // .setText("".padStart(2,"0"))
+            .setDepth(10)
+            .setFontSize(fontSize + 'px')
+            .setScrollFactor(0);
+            // this.textCoins.setText("".padStart(2,"0"));
 
+            this.textPurpleCoins = this.add.text(posUI, this.cameras.main.centerY,"".padStart(1,"0"),{fontFamily: 'aku-kamu'})
+            .setOrigin(1,3)
+            .setFontSize(fontSize + 'px')
+            .setAlign('center')
+            .setStroke('#000000ff', 6)
+            .setFill('#621C87')
+            .setDepth(10)
+            .setScrollFactor(0);
 
-        this.textScore = this.add.text(posUI, this.cameras.main.centerY,"".padStart(10,"0"),{fontFamily: 'aku-kamu'})
-        .setOrigin(1,5)
-        .setStroke('#000000ff', 6)
-        .setFill('#ffffffff')
-        .setDepth(10)
-        .setFontSize(fontSize + 'px')
-        .setScrollFactor(0);
-        // textScore.setShadow(10, 10, 'rgba(0,0,0,0.5)', 10); 
-        // this.textScore.setText("".padStart(10,"0"))
-
-        this.textCoins = this.add.text(posUI, this.cameras.main.centerY, "".padStart(2,"0"),{fontFamily: 'aku-kamu'})
-        .setOrigin(1,4)
-        .setStroke('#000000ff', 6)
-        .setFill('#DBC716')
-        // .setText("".padStart(2,"0"))
-        .setDepth(10)
-        .setFontSize(fontSize + 'px')
-        .setScrollFactor(0);
-        // this.textCoins.setText("".padStart(2,"0"));
-
-        this.textPurpleCoins = this.add.text(posUI, this.cameras.main.centerY,"".padStart(1,"0"),{fontFamily: 'aku-kamu'})
-        .setOrigin(1,3)
-        .setFontSize(fontSize + 'px')
-        .setAlign('center')
-        .setStroke('#000000ff', 6)
-        .setFill('#621C87')
-        .setDepth(10)
-        .setScrollFactor(0);
+            this.timerMethod();
+        });
 
         // this.textPurpleCoins.setText("".padStart(1,"0"));
 
-        this.timerMethod();
         // this.ui.add([this.fpsText,this.textPurpleCoins,this.textCoins,this.textScore,this.textTimer]);
-    }
-    
-    transition(sceneName)
-    {
-        // Detener música al salir de la escena
-        if (this.levelMusic && this.levelMusic.isPlaying) {
-            this.levelMusic.stop();
-        }
-
-        const cam = this.cameras.main;
-
-        // Fondo negro que cubrirá todo
-        const blackout = this.add.rectangle(0, 0, cam.width, cam.height, 0x000000)
-            .setOrigin(0)
-            .setScrollFactor(0)
-            .setDepth(1000); // Asegura que esté por encima de todo
-
-        // Crear un círculo
-        const circle = this.make.graphics({ x: 0, y: 0, add: false });
-
-        // Recogemos la pos del jugador actualmente
-        var playerWorld = this.jugador.getCenter();
-        // this.jugador.setVelocity(0, 0);
-        // this.jugador.setGravityY(-7);
-        // this.jugador.body=false;
-        this.jugador.setStatic(true);
-        var radius = 1500; // Tamaño al principio
-
-        // Dibujar círculo blanco
-        circle.fillStyle(0xffffff);
-        circle.fillCircle(playerWorld.x,  playerWorld.y, radius);
-
-        // Crear máscara y aplicarla invertida
-        const mask = circle.createGeometryMask();
-        mask.invertAlpha = true; //ESTA LÍNEA invierte la visibilidad
-
-        blackout.setMask(mask);
-        this.tweens.add({
-            targets: { r: radius}, 
-            r: 120,
-            duration: 1000,
-            ease: 'Cubic.easeInOut',
-            onUpdate: (tween, target) => {
-                this.circleMask.clear();
-                this.circleMask.fillStyle(0xffffff);
-                this.circleMask.fillCircle(playerWorld.x, playerWorld.y, target.r);
-            },
-            onComplete:()=>
-            {
-                this.irisSound.play();
-                this.tweens.add({
-                    targets: { r: 120, py:playerWorld.y}, 
-                    r: 0,
-                    py: playerWorld.y+10, // Se dirige a los pies el círculo.
-                    duration: 1500,
-                    ease: 'Cubic.easeInOut',
-                    onUpdate: (tween, target) => {
-                        // if(this.endTimer && playerWorld.x-(this.cameras.main.width / this.cameras.main.zoom/2)>10)
-                        // {
-                        //     this.cameras.main.setPosition(
-                        //         playerWorld.x-(this.cameras.main.width / this.cameras.main.zoom/2), 
-                        //         this.cameras.main.y);
-                        // }
-                        this.circleMask.clear();
-                        this.circleMask.fillStyle(0xffffff);
-                        this.circleMask.fillCircle(playerWorld.x, target.py, target.r);
-                    },
-                    onComplete: () => {
-                        this.scene.launch(sceneName);
-                        this.scene.stop();
-                    }
-                });
-            }
-        });
-        // Guardar referencias para otros métodos
-        this.circleMask = circle;
-        this.blackoutMask = blackout;
-    }
-
-    openSceneTransition()
-    {
-        const cam = this.cameras.main;
-
-        // Recogemos la pos del jugador actualmente
-        this.jugador.setStatic(true);
-        if(this.jugador)
-        {
-            var playerWorld = this.jugador.getCenter();
-        }
-        // Fondo negro que cubrirá todo
-        const blackout = this.add.rectangle(0, 0, cam.width, cam.height, 0x000000)
-            .setOrigin(0)
-            .setScrollFactor(0)
-            .setDepth(1000); // Asegura que esté por encima de todo
-
-        // Crear un círculo
-        const circle = this.make.graphics({ x: 0, y: 0, add: false });
-
-        var radius = 0; // Tamaño al principio
-
-        // Dibujar círculo blanco
-        circle.fillStyle(0xffffff);
-        circle.fillCircle(playerWorld.x,  playerWorld.y, radius);
-
-        // Crear máscara y aplicarla invertida
-        const mask = circle.createGeometryMask();
-        mask.invertAlpha = true; //ESTA LÍNEA invierte la visibilidad
-
-        blackout.setMask(mask);
-        this.tweens.add({
-            targets: { r: radius}, 
-            r: 120,
-            duration: 1000,
-            ease: 'Cubic.easeInOut',
-            onUpdate: (tween, target) => {
-                this.circleMask.clear();
-                this.circleMask.fillStyle(0xffffff);
-                this.circleMask.fillCircle(playerWorld.x, playerWorld.y, target.r);
-                // this.jugador.x = 25;
-                // this.jugador.y = 625;
-                // this.jugador.setVelocity(0, 0);    
-            },
-            onComplete:()=>
-            {
-                this.jugador.setStatic(false);
-                this.tweens.add({
-                    targets: { r: 120, py:playerWorld.y}, 
-                    r: Math.max(cam.width*2,cam.height*2),  
-                    py: playerWorld.y+10, // Se dirige a los pies el círculo.
-                    duration: 1500,
-                    ease: 'Cubic.easeInOut',
-                    onUpdate: (tween, target) => {
-                        this.circleMask.clear();
-                        this.circleMask.fillStyle(0xffffff);
-                        this.circleMask.fillCircle(playerWorld.x, target.py, target.r);
-                    },
-                    onComplete: () => {
-                        this.openedScene=true;
-                        blackout.clearMask(true);
-                        if(blackout)
-                        {
-                            blackout.destroy();
-                        }
-                        this.jugador.resume(); // Reanudar movimiento
-                    }
-                });
-            }
-        });
-        // Guardar referencias para otros métodos
-        this.circleMask = circle;
-        // this.blackoutMask = blackout;
     }
 
     timerMethod ()
@@ -864,10 +993,16 @@ class Nivel_D extends Phaser.Scene
                     this.endTimer=true;
                     this.sound.play('muerte');
                     this.jugador.hurt();
-                    this.transition('MainMenu'); // Llamar a la transición cuando se acaba el tiempo
+                    this.jugador.setStatic(true);
+                    this.doubleEndTransition(()=>{this.scene.launch('MainMenu');
+                this.scene.stop();});
                 }
-                if (!this.jugador.isInBubble) {
+                if (!this.jugador.isInBubble && !this.enPausa) {
+                    this.textTimer.setFill('#ffffffff');
                     timer = (timer - 1 + 60) % 60; // reinicia a 60
+                }
+                else{
+                    this.textTimer.setFill('#cececeff');
                 }
             }
             else{
@@ -935,7 +1070,8 @@ class Nivel_D extends Phaser.Scene
     }
 
     update(time, delta) {
-        this.fpsText.setText( Math.floor(this.game.loop.actualFps));
+        const dt = delta / 16.666;
+        this.fpsText?.setText(Math.floor(this?.game?.loop?.actualFps));
 
         if (!this.endTimer)
         {
@@ -950,6 +1086,61 @@ class Nivel_D extends Phaser.Scene
                     pokey.update(time, delta);
                 });
             }
+
+            if (this.fallBlock)
+            {
+                this.fallBlock.getChildren().forEach(block => {
+                    if (block.fallActive) {
+                        // block.velocityY += 0.05;
+                        block.y += 5*dt;
+                    }
+                    if (block.x < this.cameras.scrollX || block.y > this.map.heightInPixels + 50)
+                    {
+                        block.y = block.startPosY;
+                        block.fallActive = false;
+                        block.setTexture('fallOffBlock1'); // Cambiar textura a bloque inicial
+                    }
+                });
+            }
+            if (this.pausa && this.enPausa && this.bloquePausaActivo) {
+                const block = this.bloquePausaActivo;
+                if (this.jugador.isJumping) {
+                    // Reanudar al jugador
+                    this.jugador.setVelocityY(-6);
+                    this.jugador.resume(); // Si tienes animaciones pausadas
+                    this.enPausa = false;
+
+                    // Restaurar bloque
+                    if (block) {
+                        block.hasPlayer = false;
+                        block.setTexture('Resume'); // Cambiar textura a bloque vacío
+                    }
+
+                    this.bloquePausaActivo = null;
+                } else {
+                    // Mientras está en pausa, mantener al jugador detenido
+                    this.jugador.setVelocity(0, 0);
+                }
+            }
+            if(this.impulsoActivo)
+            {
+                if (this.jugador.isJumping) {
+                    if (this.impulsoActivo.name == "impulsoB")
+                    {
+                        this.jugador.setVelocityY(-5);
+                    }
+                    else if (this.impulsoActivo.name == "impulsoM")
+                    {
+                        this.jugador.setVelocityY(-10);
+                    }
+                    else{
+                        this.jugador.setVelocityY(-15);
+                    }
+                    this.impulsoActivo = null;
+                }
+
+            }
+
 
             // Posicionar bien la cámara respecto al jugador
             this.jugador.centerCameraOnPlayer();
@@ -968,8 +1159,7 @@ class Nivel_D extends Phaser.Scene
         if (this.barraFin) {
             this.barraFin.update(time, delta);
         }
-
-        // Actualizar Goombas
+                // Actualizar Goombas
         if (this.goombas) {
             this.goombas.getChildren().forEach(goomba => {
                 goomba.update(time, delta);
@@ -980,13 +1170,6 @@ class Nivel_D extends Phaser.Scene
         if (this.koopas) {
             this.koopas.getChildren().forEach(koopa => {
                 koopa.update(time, delta);
-            });
-        }
-    
-        // Actualizar plantas piraña
-        if (this.piranhas) {
-            this.piranhas.getChildren().forEach(piranha => {
-                piranha.update(time, delta);
             });
         }
     }
@@ -1000,7 +1183,8 @@ class Nivel_D extends Phaser.Scene
             this.sound.play('muerte');
             this.jugador.y = this.map.heightInPixels + 45;
             this.jugador.hurt();
-            this.transition('MainMenu');
+            this.doubleEndTransition(()=>{this.scene.launch('MainMenu');
+                this.scene.stop();});
         }
     }
 
