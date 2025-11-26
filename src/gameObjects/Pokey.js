@@ -252,8 +252,9 @@ class Pokey extends Phaser.GameObjects.Container
                         this.compoundBody.collisionFilter.mask = 0;
                         Phaser.Physics.Matter.Matter.Body.setStatic(this.compoundBody, true);
                     }
-                    this.scene.transition('MainMenu'); // Volver al menú si no le quedan burbujas al jugador
-                }
+                    this.doubleEndTransition(()=>{this.scene.scene.launch('MainMenu');
+                        this.scene.stop();});
+                    }
             }
 
             this.hitSound.play();

@@ -576,6 +576,8 @@ class Nivel_TO extends Phaser.Scene
                     if (player.bubblesLeft > 0) {
                         player.Bubble(); // Entra en burbuja
                     } else {
+                        this.doubleEndTransition(()=>{this.scene.launch('MainMenu');
+                        this.scene.stop();});
                         player.hurt();
                     }
                 } else {

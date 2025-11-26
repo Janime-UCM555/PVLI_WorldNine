@@ -290,8 +290,9 @@ class Goomba extends Phaser.GameObjects.Sprite
                     player.hurt();
                     this.body.collisionFilter.mask = 0; // Desactivar completamente las colisiones
                     this.setStatic(true);
-                    this.scene.transition('MainMenu'); // Volver al menú si no le quedan burbujas al jugador
-                }
+                    this.doubleEndTransition(()=>{this.scene.scene.launch('MainMenu');
+                        this.scene.stop();});
+                    }
             } else {
                 // Colisión lateral
                 let pushDirection = 0; // Determinar dirección del empuje
