@@ -662,7 +662,7 @@ class Nivel_TO extends Phaser.Scene
                 else{
                     this.impulsoActivo = bodyB.gameObject;
                 }
-                if (this.jugador.jumpRequested)
+                if (this.jugador.jumpRequested || this.jugador.jumpHeld)
                 {
                     M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -10 });
                 }
@@ -678,7 +678,7 @@ class Nivel_TO extends Phaser.Scene
                 else{
                     this.impulsoActivo = bodyB.gameObject;
                 }
-                if (this.jugador.jumpRequested)
+                if (this.jugador.jumpRequested || this.jugador.jumpHeld)
                 {
                     M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -7 });
                 }
@@ -694,7 +694,7 @@ class Nivel_TO extends Phaser.Scene
                 else{
                     this.impulsoActivo = bodyB.gameObject;
                 }
-                if (this.jugador.jumpRequested)
+                if (this.jugador.jumpRequested || this.jugador.jumpHeld)
                 {
                     M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -5 });
                 }

@@ -138,12 +138,13 @@ class Nivel_D extends Phaser.Scene
                     // staticBody: true,
                     // isStatic: true
                 });
+                block.name = obj.name;
                 block.setSensor(true);
                 block.setStatic(true);
 
-                if (type === 'ImpulsoB') { block.play('sunB_move'); block.name = 'impulsoB'; }
-                else if (type === 'ImpulsoM') { block.play('sunM_move'); block.name = 'impulsoM'; }
-                else { block.play('sunA_move'); block.name = 'impulsoA'; }
+                if (type === 'ImpulsoB') { block.play('sunB_move');}
+                else if (type === 'ImpulsoM') { block.play('sunM_move');}
+                else { block.play('sunA_move'); }
             }
         });
         this.coinPath = this.createTiledObjects(coinPathL, {
@@ -624,50 +625,52 @@ class Nivel_D extends Phaser.Scene
                 }
                 this.spawnCoins(coinDistanceX,coinDistanceY,blockPass);
             }
-            if ((bodyA.gameObject == this.jugador &&bodyB.gameObject?.name=="impulsoA") ||
-            (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="impulsoA")) 
+            if ((bodyA.gameObject == this.jugador &&bodyB.gameObject.name=="ImpulsoA") ||
+            (bodyB.gameObject == this.jugador && bodyA.gameObject.name=="ImpulsoA")) 
             {
                 // console.log(this.jugador.jumpRequested);
-                if (bodyA.gameObject?.name == "impulsoA")
+                if (bodyA.gameObject?.name == "ImpulsoA")
                 {
                     this.impulsoActivo = bodyA.gameObject;
                 }
                 else{
                     this.impulsoActivo = bodyB.gameObject;
                 }
-                if (this.jugador.jumpRequested)
+                if (this.jugador.jumpRequested || this.jugador.jumpHeld)
                 {
                     M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -10 });
                 }
             }
-            if ((bodyA.gameObject == this.jugador && bodyB.gameObject?.name=="impulsoM") ||
-            (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="impulsoM")) 
+            if ((bodyA.gameObject == this.jugador && bodyB.gameObject.name=="ImpulsoM") ||
+            (bodyB.gameObject == this.jugador && bodyA.gameObject.name=="ImpulsoM")) 
             {
                 // console.log(this.jugador.jumpRequested);
-                if (bodyA.gameObject?.name == "impulsoM")
+                if (bodyA.gameObject?.name == "ImpulsoM")
                 {
                     this.impulsoActivo = bodyA.gameObject;
                 }
                 else{
                     this.impulsoActivo = bodyB.gameObject;
                 }
-                if (this.jugador.jumpRequested)
+
+                if (this.jugador.jumpRequested || this.jugador.jumpHeld)
                 {
                     M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -7 });
                 }
             }
-            if ((bodyA.gameObject == this.jugador && bodyB.gameObject?.name=="impulsoB") ||
-                (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="impulsoB")) 
+            if ((bodyA.gameObject == this.jugador && bodyB.gameObject.name=="ImpulsoB") ||
+                (bodyB.gameObject == this.jugador && bodyA.gameObject.name=="ImpulsoB")) 
             {                
                 // console.log(this.jugador.jumpRequested)
-                if (bodyA.gameObject?.name == "impulsoB")
+                if (bodyA.gameObject?.name == "ImpulsoB")
                 {
                     this.impulsoActivo = bodyA.gameObject;
                 }
                 else{
                     this.impulsoActivo = bodyB.gameObject;
                 }
-                if (this.jugador.jumpRequested)
+
+                if (this.jugador.jumpRequested || this.jugador.jumpHeld)
                 {
                     M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -5 });
                 }
@@ -1138,7 +1141,6 @@ class Nivel_D extends Phaser.Scene
                     }
                     this.impulsoActivo = null;
                 }
-
             }
 
 
@@ -1172,6 +1174,7 @@ class Nivel_D extends Phaser.Scene
                 koopa.update(time, delta);
             });
         }
+
     }
 
     // Verificar si el jugador se ha caído
