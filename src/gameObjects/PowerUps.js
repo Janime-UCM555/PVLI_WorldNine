@@ -54,16 +54,17 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
     const w = this.width;
     const h = this.height;
     const M = Phaser.Physics.Matter.Matter;
-    this.playerBody = M.Bodies.rectangle(sx,sy, w, h, { chamfer: { radius: 10 } });
+    this.playerBody = M.Bodies.rectangle(sx,sy, w, h, { chamfer: { radius: 10 },label:"PowerUp"});
     this.sensors = {
-        left: M.Bodies.rectangle(sx-w/1.5, sy, 5, h/2, { isSensor: true }),
-        right: M.Bodies.rectangle(sx+w/1.5, sy, 5, h/2, { isSensor: true }),
+        left: M.Bodies.rectangle(sx-w/1.5, sy, 5, h/2, { isSensor: true, label:"PowerUp"}),
+        right: M.Bodies.rectangle(sx+w/1.5, sy, 5, h/2, { isSensor: true, label:"PowerUp" }),
     };
     const compoundBody = M.Body.create({
     parts: [this.playerBody, this.sensors.left, this.sensors.right/*, this.sensors.up*/],
     friction: 0,
     frictionAir: 0,
-    restitution: 0.05 // El jugador no se pega a paredes
+    restitution: 0.05, // El jugador no se pega a paredes
+    label:"PowerUp"
     });
     this.setExistingBody(compoundBody);
     // El cuerpo a la posición inicial
@@ -89,7 +90,7 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
     // Movimiento básico (rebote ligero y desplazamiento)
     this.setBounce(0.1, 0.2);
     this.setVelocityX(POWERUP_SPEED);
-
+    this.SPEED = 5;
     
     this.scene.matter.world.on('beforeupdate', function (event) {
       this.numTouching.left = 0;
@@ -111,6 +112,12 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
         if (bodyA === this.sensors.right || bodyB === this.sensors.right)
         {
           this.numTouching.right++;
+        }
+        if (bodyA.label == "Mario" && bodyB.label=="PowerUp" || bodyA.label=="PowerUp"&&bodyB.label=="Mario")
+        {
+          const player = bodyA.label=="Mario" ? bodyA.gameObject : bodyB.gameObject;
+
+          this.collect(player);
         }
       }
     });
@@ -169,7 +176,7 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
   preUpdate(time, delta) {
     super.preUpdate(time, delta);
     // console.log(this.blocked.left);
-    if (this.blocked.left) this.setVelocityX(Math.abs(this.body.velocity.x));
-    else if (this.blocked.right) this.setVelocityX(-Math.abs(this.body.velocity.x));
+    if (this.blocked.left) this.setVelocityX(Math.abs(this.SPEED));
+    else if (this.blocked.right) this.setVelocityX(-Math.abs(this.SPEED));
   }
 }

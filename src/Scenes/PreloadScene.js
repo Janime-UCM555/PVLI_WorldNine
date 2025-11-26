@@ -172,6 +172,9 @@ class PreloadScene extends Phaser.Scene {
         this.load.audio('BrickBlock', 'sonidos/SE/Items/Bloques/BrickBlock.wav');
         this.load.audio('Bump', 'sonidos/SE/Items/Bloques/Bump.wav');
         this.load.audio('PauseBlq', 'sonidos/SE/Items/Bloques/PauseBlock.wav');
+        this.load.audio('ImpB', 'sonidos/SE/Items/Bloques/ImpulseA.wav');
+        this.load.audio('ImpM', 'sonidos/SE/Items/Bloques/ImpulseB.wav');
+        this.load.audio('ImpA', 'sonidos/SE/Items/Bloques/ImpulseM.wav');
 
         // Música
         this.load.audio('level_music', 'sonidos/BGM/level_theme.mp3');

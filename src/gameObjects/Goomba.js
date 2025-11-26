@@ -42,17 +42,19 @@ class Goomba extends Phaser.GameObjects.Sprite
         const w = this.width;
         const h = this.height;
         const M = Phaser.Physics.Matter.Matter;
-        this.enemyBody = M.Bodies.rectangle(sx,sy, w, h, { chamfer: { radius: 10 } });
+        this.enemyBody = M.Bodies.rectangle(sx,sy, w, h, { chamfer: { radius: 10 }, label:"Goomba" });
         this.sensors = {
-            left: M.Bodies.rectangle(sx-w*0.45, sy, 5, h*0.25, { isSensor: true }),
-            right: M.Bodies.rectangle(sx+w*0.45, sy, 5, h*0.25, { isSensor: true }),
+            left: M.Bodies.rectangle(sx-w*0.45, sy, 5, h*0.25, { isSensor: true, label:"Goomba" }),
+            right: M.Bodies.rectangle(sx+w*0.45, sy, 5, h*0.25, { isSensor: true, label:"Goomba" }),
         };
         const compoundBody = M.Body.create({
         parts: [this.enemyBody,this.sensors.left, this.sensors.right],
         friction: 0,
         frictionAir: 0,
-        restitution: 0.05 // El jugador no se pega a paredes
+        restitution: 0.05, // El jugador no se pega a paredes
+        label:"Goomba"
         });
+        this.body.label="Goomba";
         this.setExistingBody(compoundBody);
         if (this.body) {
             // this.body.setCollideWorldBounds(false); // Desactivar colisión con bordes del mundo

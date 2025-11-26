@@ -79,21 +79,22 @@ class Mario extends Phaser.GameObjects.Sprite
         const w = this.width;
         const h = this.height;
         const M = Phaser.Physics.Matter.Matter;
-        this.playerBody = M.Bodies.rectangle(sx,sy, w * 0.75, h, { chamfer: { radius: 10 } });
+        this.playerBody = M.Bodies.rectangle(sx,sy, w * 0.75, h, { chamfer: { radius: 10 }, label:"Mario" });
         this.sensors = {
-            bottom: M.Bodies.rectangle(sx, h, sx, h*0.1, { isSensor: true }),
-            left: M.Bodies.rectangle(sx - w * 0.5, sy / 1.5, 5, h*0.6, { isSensor: true }),
-            right: M.Bodies.rectangle(sx + w * 0.5, sy / 1.5, 5, h*0.6, { isSensor: true }),
+            bottom: M.Bodies.rectangle(sx, h, sx, h*0.1, { isSensor: true, label:"Mario" }),
+            left: M.Bodies.rectangle(sx - w * 0.5, sy / 1.5, 5, h*0.3, { isSensor: true, label:"Mario" }),
+            right: M.Bodies.rectangle(sx + w * 0.5, sy / 1.5, 5, h*0.3, { isSensor: true, label:"Mario" }),
         };
 
         const compoundBody = M.Body.create({
         parts: [this.playerBody,this.sensors.bottom, this.sensors.left, this.sensors.right/*, this.sensors.up*/],
         friction: 0,
         frictionAir: 0,
-        restitution: 0.05 // El jugador no se pega a paredes
+        restitution: 0.05, // El jugador no se pega a paredes
+        label: "Mario"
         });
 
-        
+        this.body.label="Mario";
         const CATEGORY_PLAYER  = 0x0001;
         const CATEGORY_ENEMY   = 0x0002;
         const CATEGORY_TERRAIN = 0x0004;
@@ -319,7 +320,7 @@ class Mario extends Phaser.GameObjects.Sprite
                     this.exitBubbleState();
                     return;
                 }
-
+                console.log(this.jumpRequested);
                 // Comportamiento normal de salto
                 if (!this.isInBubble) {
                     this.jumpRequested = true;
@@ -350,6 +351,8 @@ class Mario extends Phaser.GameObjects.Sprite
     }
 
     handleJump(time, delta) {
+
+        this.isStopped = false;
 
         const canGroundJump = this.isGrounded || this.canEnemyJump || this.coyoteTimeCounter > 0;
 
@@ -469,10 +472,10 @@ class Mario extends Phaser.GameObjects.Sprite
             this.setVelocityX(0);
         }
         // Cambiar a animación idle cuando se detiene
-        if (this.scene.anims.exists('mario_idle')) {
+        if (this.scene.anims.exists('mario_idle') && this.isGrounded) {
             this.play('mario_idle', true);
         }
-        else if(this.scene.anims.exists('mario_fall') && !this.isGrounded){
+        else if(this.scene.anims.exists('mario_fall')){
             this.play('mario_fall', true);
         }
     }
@@ -583,7 +586,7 @@ class Mario extends Phaser.GameObjects.Sprite
             return;
         }
 
-        this.bubblesLeft -= 1;
+        // this.bubblesLeft -= 1;
 
         this.isInBubble = true;
 
@@ -1246,13 +1249,13 @@ class Mario extends Phaser.GameObjects.Sprite
         this.speed = this.base.speed;
 
         // Parar músicas de estrella y reanudar música de nivel
-        if (this.starman && this.starman.isPlaying) {
-                this.starman.stop();
+        if (this.starman && this.starman.isPlaying||this.scene.endTimer) {
+            this.starman.stop();
         }
         if (this.starEndingSound && this.starEndingSound.isPlaying) {
                 this.starEndingSound.stop();
         }
-        if (this.scene.levelMusic && this.scene.levelMusic.isPaused) {
+        if (this.scene.levelMusic && this.scene.levelMusic.isPaused && !this.scene.endTimer) {
                 this.scene.levelMusic.resume();
         }
 
@@ -1377,7 +1380,7 @@ class Mario extends Phaser.GameObjects.Sprite
         if (this.starEndingSound && this.starEndingSound.isPlaying) {
             this.starEndingSound.stop();
         }
-        if (this.scene.levelMusic && this.scene.levelMusic.isPaused) {
+        if (this.scene.levelMusic && this.scene.levelMusic.isPaused && !this.scene.endTimer) {
             this.scene.levelMusic.resume();
         }
 

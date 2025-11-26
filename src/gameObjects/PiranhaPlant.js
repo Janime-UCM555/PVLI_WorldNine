@@ -32,15 +32,19 @@ class PiranhaPlant extends Phaser.GameObjects.Sprite
         // Cuerpo principal (más pequeño para que sea justo)
         this.plantBody = M.Bodies.rectangle(sx, sy, w * 0.6, h * 0.8, { 
             chamfer: { radius: 5 },
-            isSensor: true // Es un sensor para detectar colisiones sin física
+            isSensor: true, // Es un sensor para detectar colisiones sin física
+            label: "Piranha"
         });
 
         const compoundBody = M.Body.create({
             parts: [this.plantBody],
             friction: 0,
             frictionAir: 0,
-            restitution: 0
+            restitution: 0,
+            label: "Piranha"
         });
+        this.body.label="Piranha";
+
         const CATEGORY_PLAYER  = 0x0001;
         const CATEGORY_TERRAIN = 0x0004;
         this.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN]);

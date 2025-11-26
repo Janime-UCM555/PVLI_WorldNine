@@ -35,17 +35,19 @@ class Koopa extends Phaser.GameObjects.Sprite
 
         const h = this.height/2;
         const M = Phaser.Physics.Matter.Matter;
-        this.enemyBody = M.Bodies.rectangle(sx,sy*1.5, w, h, { chamfer: { radius: 10 } });
+        this.enemyBody = M.Bodies.rectangle(sx,sy*1.5, w, h, { chamfer: { radius: 10 }, label:"Koopa" });
         this.sensors = {
-            left: M.Bodies.rectangle(sx-w*0.7, sy, 5, h, { isSensor: true }),
-            right: M.Bodies.rectangle(sx+w*0.7, sy, 5, h, { isSensor: true }),
+            left: M.Bodies.rectangle(sx-w*0.7, sy, 5, h/2, { isSensor: true, label:"Koopa" }),
+            right: M.Bodies.rectangle(sx+w*0.7, sy, 5, h/2, { isSensor: true, label:"Koopa" }),
         };
         const compoundBody = M.Body.create({
         parts: [this.enemyBody,this.sensors.left, this.sensors.right,],
         friction: 0,
         frictionAir: 0,
-        restitution: 0.05 // El jugador no se pega a paredes
+        restitution: 0.05, // El jugador no se pega a paredes
+        label:"Koopa"
         });
+        this.body.label="Koopa";
         this.setExistingBody(compoundBody);
         this.setFixedRotation();
         if (this.body) {

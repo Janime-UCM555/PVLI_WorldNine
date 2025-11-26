@@ -304,9 +304,9 @@ class Nivel_T extends Phaser.Scene
         // Quitamos la colisión con los bordes del mapa
         this.matter.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels, 0, false, false, false, false);
         this.createText();  
-        this.spawnPowerUp(200, 600, POWERUP_TYPES.MUSHROOM);
+        // this.spawnPowerUp(200, 600, POWERUP_TYPES.MUSHROOM);
         // this.spawnPowerUp(200, 600, POWERUP_TYPES.HAMMER);
-        this.spawnPowerUp(220, 600, POWERUP_TYPES.STAR);
+        // this.spawnPowerUp(220, 600, POWERUP_TYPES.STAR);
 
     }
 
@@ -409,66 +409,45 @@ class Nivel_T extends Phaser.Scene
             {
                 this.ganasPartida(this.jugador, this.barraFin);
             }
-            if ((bodyB.gameObject instanceof PowerUp && bodyA.gameObject == this.jugador) ||
-                (bodyA.gameObject instanceof PowerUp && bodyB.gameObject == this.jugador))// && bodyA.gameObject == this.jugador)
+
+            if(bodyB.label=="Goomba" && bodyA.label=="Mario"  ||
+            bodyA.label=="Goomba" && bodyB.label=="Mario"  )
             {
-                if (bodyA.gameObject instanceof PowerUp)
-                {
-                    bodyA.gameObject.collect(this.jugador);
-                }
-                else{
-                    bodyB.gameObject.collect(this.jugador);
-                }                // console.log('🌵 COLISIÓN CON POWERUPPPPPP DETECTADA');
+                const goomba  = bodyA.label=="Goomba"  ? bodyA.gameObject : bodyB.gameObject;
+                // const player = bodyA.label=="Mario" ? bodyA.gameObject : bodyB.gameObject;
+
+                goomba.handlePlayerCollision(this.jugador);
             }
-            if(bodyB.gameObject instanceof Goomba && bodyA.gameObject == this.jugador ||
-                bodyA.gameObject instanceof Goomba && bodyB.gameObject == this.jugador )
+            if(bodyB.label=="Goomba" && bodyA.label=="Goomba" || 
+                bodyB.label=="Koopa" && bodyA.label=="Goomba" ||
+                bodyB.label=="Koopa" && bodyA.label=="Koopa")
             {
-                if (bodyA.gameObject instanceof Goomba)
-                {
-                    bodyA.gameObject.handlePlayerCollision(this.jugador);
-                }
-                else{
-                    bodyB.gameObject.handlePlayerCollision(this.jugador);
-                }
+                const goomba  = bodyB.label=="Goomba"  ? bodyA.gameObject : bodyB.gameObject;
+                const koopa = bodyA.label=="Koopa" ? bodyA.gameObject : bodyB.gameObject;
+
+                goomba.handleEnemyCollision(koopa);
             }
-            if(bodyB.gameObject instanceof Goomba && bodyA.gameObject instanceof Goomba || 
-                bodyB.gameObject instanceof Koopa && bodyA.gameObject instanceof Goomba ||
-                bodyB.gameObject instanceof Koopa && bodyA.gameObject instanceof Koopa)
+            if(bodyB.label=="Koopa" && bodyA.label=="Mario"  ||
+                bodyA.label=="Koopa"&& bodyB.label=="Mario" )
             {
-                bodyA.gameObject.handleEnemyCollision(bodyB.gameObject);
+                // const player  = bodyB.label=="Mario"  ? bodyA.gameObject : bodyB.gameObject;
+                const koopa = bodyA.label=="Koopa" ? bodyA.gameObject : bodyB.gameObject;
+
+                koopa.handlePlayerCollision(this.jugador);
             }
-            if(bodyB.gameObject instanceof Koopa && bodyA.gameObject == this.jugador ||
-                bodyA.gameObject instanceof Koopa && bodyB.gameObject == this.jugador)
+            if(bodyB.label=="Piranha" && bodyA.label=="Mario" ||
+               bodyA.label=="Piranha" && bodyB.label=="Mario")
             {
-                if (bodyA.gameObject instanceof Koopa)
-                {
-                    bodyA.gameObject.handlePlayerCollision(this.jugador);
-                }
-                else{
-                    bodyB.gameObject.handlePlayerCollision(this.jugador);
-                }
+                const piranha = bodyA.label=="Piranha" ? bodyA.gameObject : bodyB.gameObject;
+
+                piranha.handlePlayerCollision(this.jugador);
             }
-            if(bodyB.gameObject instanceof PiranhaPlant && bodyA.gameObject == this.jugador ||
-               bodyA.gameObject instanceof PiranhaPlant && bodyB.gameObject == this.jugador)
+            if(bodyB.label=="Pokey"  && bodyA.label=="Mario" ||
+               bodyA.label=="Pokey"  && bodyB.label=="Mario")
             {
-                 if (bodyA.gameObject instanceof PiranhaPlant)
-                {
-                    bodyA.gameObject.handlePlayerCollision(this.jugador);
-                }
-                else{
-                    bodyB.gameObject.handlePlayerCollision(this.jugador);
-                }
-            }
-            if(bodyB.gameObject instanceof Pokey && bodyA.gameObject == this.jugador ||
-               bodyA.gameObject instanceof Pokey && bodyB.gameObject == this.jugador)
-            {
-                if (bodyA.gameObject instanceof Pokey)
-                {
-                    bodyA.gameObject.handlePlayerCollision(this.jugador);
-                }
-                else{
-                    bodyB.gameObject.handlePlayerCollision(this.jugador);
-                }
+                const pokey = bodyA.label=="Pokey" ? bodyA.gameObject : bodyB.gameObject;
+
+                pokey.handlePlayerCollision(this.jugador);
             }
             // if(bodyA.gameObject instanceof Goomba && bodyB.gameObject == this.groundLayer)
             // {
@@ -492,6 +471,7 @@ class Nivel_T extends Phaser.Scene
     {
         TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador.getCenter(), this.cameras.main.width, 120,
         ()=>{
+            this.sound.play('iris-out')
             transition2();
         });
         const transition2 = () => {
@@ -956,10 +936,11 @@ class Nivel_T extends Phaser.Scene
     }
 
     update(time, delta) {
-        this.fpsText.setText( Math.floor(this.game.loop.actualFps));
+        if (!this.fpsText || !this.fpsText.scene || this.fpsText._destroyed) return;
 
         if (!this.endTimer)
         {
+            this.fpsText?.setText(Math.floor(this?.game?.loop?.actualFps));
             // Actualizar jugador
             this.jugador.update(time,delta);
 

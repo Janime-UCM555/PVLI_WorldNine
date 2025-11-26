@@ -112,6 +112,27 @@ class Nivel_TO extends Phaser.Scene
             extra: (b) => {
                 b.fallActive = false;
                 b.startPosY = b.y;
+                b.setCollidesWith([CATEGORY_ENEMY]);
+
+                const sensorHeight = 80;
+                const x = b.x;
+                const y = b.y - b.height * 2 + sensorHeight / 2;
+                const sensor = this.matter.add.rectangle(x, y, b.width, 5, {
+                    isSensor: true,
+                    // staticBody: true,
+                    // isStatic: true
+                });
+                sensor.name = "oneway";
+                
+                sensor.blockTop = b;
+                sensor.ignoreGravity = true;
+
+                sensor.collisionFilter = {
+                    category: CATEGORY_TERRAIN,
+                    mask: CATEGORY_PLAYER
+                };
+
+                b.sensor = sensor;
             }
         });
         this.spikes = this.createTiledObjects(spikesL, {
@@ -166,7 +187,7 @@ class Nivel_TO extends Phaser.Scene
             collidesWith: [CATEGORY_ENEMY],
             extra: (block, obj) => {
 
-                const sensorHeight = 10;
+                const sensorHeight = 80;
                 const x = block.x;
                 const y = block.y - block.height * 2 + sensorHeight / 2;
 
@@ -523,19 +544,10 @@ class Nivel_TO extends Phaser.Scene
             {
                 this.ganasPartida(this.jugador, this.barraFin);
             }
-            if ((bodyB.gameObject instanceof PowerUp && bodyA.gameObject == this.jugador) ||
-                (bodyA.gameObject instanceof PowerUp && bodyB.gameObject == this.jugador))// && bodyA.gameObject == this.jugador)
+
+            if (bodyA.gameObject == this.jugador && this.jugador.body.velocity.y > 0&& bodyB.gameObject && bodyB.gameObject.name == "BloqueCae")
             {
-                if (bodyA.gameObject instanceof PowerUp)
-                {
-                    bodyA.gameObject.collect(this.jugador);
-                }
-                else{
-                    bodyB.gameObject.collect(this.jugador);
-                }                // console.log('🌵 COLISIÓN CON POWERUPPPPPP DETECTADA');
-            }
-            if (bodyA.gameObject == this.jugador && bodyB.gameObject && bodyB.gameObject.name == "BloqueCae")
-            {
+                bodyB.gameObject.setCollidesWith([CATEGORY_PLAYER]);
                 this.time.delayedCall(150, () => {
                     bodyB.gameObject.fallActive=true;
                     bodyB.gameObject.setTexture('fallOffBlock2'); // Cambiar textura a bloque vacío
@@ -558,8 +570,9 @@ class Nivel_TO extends Phaser.Scene
                     activarPausa();
                 }
             }
-            if (bodyA.gameObject == this.jugador && bodyB.gameObject && bodyB.gameObject.name == "spikes"
-                && !this.jugador.isBeingPushed && !this.jugador.isInvulnerable && !this.jugador.isInvincible)
+            if (bodyA.gameObject == this.jugador && bodyB.gameObject && bodyB.gameObject.name == "spikes" &&
+                !this.jugador.isInvincible)
+               // && !this.jugador.isBeingPushed && !this.jugador.isInvulnerable && !this.jugador.isInvincible)
             {
                 const player = this.jugador;
                 if (!player.isSuperSize && !this.scene.endTimer) 
@@ -664,6 +677,8 @@ class Nivel_TO extends Phaser.Scene
                 }
                 if (this.jugador.jumpRequested || this.jugador.jumpHeld)
                 {
+                    this.sound.play('ImpA');
+                    this.impulsoActivo = null;
                     M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -10 });
                 }
             }
@@ -680,6 +695,8 @@ class Nivel_TO extends Phaser.Scene
                 }
                 if (this.jugador.jumpRequested || this.jugador.jumpHeld)
                 {
+                    this.sound.play('ImpM');
+                    this.impulsoActivo = null;
                     M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -7 });
                 }
             }
@@ -696,29 +713,21 @@ class Nivel_TO extends Phaser.Scene
                 }
                 if (this.jugador.jumpRequested || this.jugador.jumpHeld)
                 {
+                    this.sound.play('ImpB');
+                    this.impulsoActivo = null;
                     M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -5 });
                 }
             }
             if ((bodyA.name === "oneway" &&  bodyA.isSensor &&bodyB.gameObject === this.jugador) ||
                 (bodyB.name === "oneway"&& bodyB.isSensor && bodyA.gameObject === this.jugador ))
             {
-                let sensor;
-                if (bodyA.name==="oneway")
-                {
-                    sensor = bodyA;
-                }
-                else
-                {
-                    sensor = bodyB;
-                } 
+                const sensor  = bodyA.name=="oneway"  ? bodyA : bodyB;
+
                 const activarOneWay = () => {
                     sensor.blockTop.setCollidesWith([CATEGORY_ENEMY, CATEGORY_PLAYER]);
                 };
-                if (this.jugador.getCenter().x < sensor.bounds.max.x-6) {
-                    this.time.delayedCall(90, activarOneWay);
-                } else {
-                    activarOneWay();
-                }
+                if (/*this.jugador.body.velocity.y > 0 &&*/ this.jugador.body.position.y < sensor.position.y)
+                activarOneWay();
             }
             if(bodyA.gameObject == this.jugador && bodyB.gameObject && bodyB.gameObject._props) 
             {
@@ -729,52 +738,44 @@ class Nivel_TO extends Phaser.Scene
                 const target = aim || bodyB.gameObject; // prioriza spawn si hay uno “casi”
                 this.blockHit(this.jugador, target);
             }
+             if(bodyB.label=="Goomba" && bodyA.label=="Mario"  ||
+            bodyA.label=="Goomba" && bodyB.label=="Mario"  )
+            {
+                const goomba  = bodyA.label=="Goomba"  ? bodyA.gameObject : bodyB.gameObject;
+                // const player = bodyA.label=="Mario" ? bodyA.gameObject : bodyB.gameObject;
 
-                        if(bodyB.gameObject instanceof Goomba && bodyA.gameObject == this.jugador ||
-                bodyA.gameObject instanceof Goomba && bodyB.gameObject == this.jugador )
-            {
-                if (bodyA.gameObject instanceof Goomba)
-                {
-                    bodyA.gameObject.handlePlayerCollision(this.jugador);
-                }
-                else{
-                    bodyB.gameObject.handlePlayerCollision(this.jugador);
-                }
+                goomba.handlePlayerCollision(this.jugador);
             }
-            if(bodyB.gameObject instanceof Goomba && bodyA.gameObject instanceof Goomba || 
-                bodyB.gameObject instanceof Koopa && bodyA.gameObject instanceof Goomba ||
-                bodyB.gameObject instanceof Koopa && bodyA.gameObject instanceof Koopa)
+            if(bodyB.label=="Goomba" && bodyA.label=="Goomba" || 
+                bodyB.label=="Koopa" && bodyA.label=="Goomba" ||
+                bodyB.label=="Koopa" && bodyA.label=="Koopa")
             {
-                bodyA.gameObject.handleEnemyCollision(bodyB.gameObject);
+                const goomba  = bodyB.label=="Goomba"  ? bodyA.gameObject : bodyB.gameObject;
+                const koopa = bodyA.label=="Koopa" ? bodyA.gameObject : bodyB.gameObject;
+
+                goomba.handleEnemyCollision(koopa);
             }
-            if(bodyB.gameObject instanceof Koopa && bodyA.gameObject == this.jugador ||
-                bodyA.gameObject instanceof Koopa && bodyB.gameObject == this.jugador)
+            if(bodyB.label=="Koopa" && bodyA.label=="Mario"  ||
+                bodyA.label=="Koopa"&& bodyB.label=="Mario" )
             {
-                if (bodyA.gameObject instanceof Koopa)
-                {
-                    bodyA.gameObject.handlePlayerCollision(this.jugador);
-                }
-                else{
-                    bodyB.gameObject.handlePlayerCollision(this.jugador);
-                }
+                // const player  = bodyB.label=="Mario"  ? bodyA.gameObject : bodyB.gameObject;
+                const koopa = bodyA.label=="Koopa" ? bodyA.gameObject : bodyB.gameObject;
+
+                koopa.handlePlayerCollision(this.jugador);
             }
         }
         const exitHandle = (event, bodyA, bodyB) => {
             if ((bodyA.name === "oneway" &&  bodyA.isSensor &&bodyB.gameObject === this.jugador) ||
                 (bodyB.name === "oneway"&& bodyB.isSensor && bodyA.gameObject === this.jugador ))
             {
-                if (bodyA.name==="oneway")
-                {
-                    bodyA.blockTop.setCollidesWith([CATEGORY_ENEMY]);
-                }
-                else
-                {
-                    bodyB.blockTop.setCollidesWith([CATEGORY_ENEMY]);
-                }
+                const sensor  = bodyA.name=="oneway"  ? bodyA : bodyB;
+                
+                sensor.blockTop.setCollidesWith([CATEGORY_ENEMY]);
             }
         }
         this.matter.world.on('collisionstart', handle);
-        this.matter.world.off('collisionexit', exitHandle);
+        // this.matter.world.off('collisionexit', exitHandle);
+        this.matter.world.on('collisionend', exitHandle);
         this.matter.world.on('collisionactive', handle);
     }
 
@@ -902,6 +903,7 @@ class Nivel_TO extends Phaser.Scene
         TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador.getCenter(), this.cameras.main.width, 120,
         ()=>{
             transition2();
+            this.sound.play('iris-out')
         });
         const transition2 = () => {
             TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador.getCenter(), 120, 0,
@@ -1098,10 +1100,11 @@ class Nivel_TO extends Phaser.Scene
 
     update(time, delta) {
         const dt = delta / 16.666;
-        this.fpsText?.setText(Math.floor(this?.game?.loop?.actualFps));
+        if (!this.fpsText || !this.fpsText.scene || this.fpsText._destroyed) return;
 
         if (!this.endTimer)
         {
+            this.fpsText?.setText(Math.floor(this?.game?.loop?.actualFps));
             // Actualizar jugador
             this.jugador.update(time,delta);
 
@@ -1151,21 +1154,24 @@ class Nivel_TO extends Phaser.Scene
             }
             if(this.impulsoActivo)
             {
-                if (this.jugador.isJumping) {
+                if (this.jugador.isJumping || this.jugador.jumpHeld || this.jugador.jumpRequested) {
+                    const M = Phaser.Physics.Matter.Matter;
                     if (this.impulsoActivo.name == "impulsoB")
                     {
-                        this.jugador.setVelocityY(-5);
+                        this.sound.play('ImpB');
+                        M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -5 });
                     }
                     else if (this.impulsoActivo.name == "impulsoM")
                     {
-                        this.jugador.setVelocityY(-10);
+                        this.sound.play('ImpM');
+                        M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -10 });
                     }
                     else{
-                        this.jugador.setVelocityY(-15);
+                        this.sound.play('ImpA');
+                        M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -15 });
                     }
                     this.impulsoActivo = null;
                 }
-
             }
 
 

@@ -139,7 +139,8 @@ class Pokey extends Phaser.GameObjects.Container
                 chamfer: { radius: 5 },
                 density: 0.001, // Darle peso
                 category: CATEGORY_ENEMY,
-                mask: mask
+                mask: mask,
+                label: "Pokey"
             }
         );
 
@@ -153,13 +154,13 @@ class Pokey extends Phaser.GameObjects.Container
             left: M.Bodies.rectangle(this.x - totalWidth * 0.75, bodyCenterY, 5, this.totalHeight * 0.5, { isSensor: true,
             collisionFilter: {
                 category: CATEGORY_ENEMY,
-                mask: mask
-            }}),
+                mask: mask,
+            },label:"Pokey"}),
             right: M.Bodies.rectangle(this.x + totalWidth * 0.75, bodyCenterY, 5, this.totalHeight * 0.5, { isSensor: true,
             collisionFilter: {
                 category: CATEGORY_ENEMY,
-                mask: mask
-            }})
+                mask: mask,
+            }, label:"Pokey"})
         };
 
         // Crear un cuerpo compuesto con el cuerpo principal y los sensores
@@ -169,10 +170,12 @@ class Pokey extends Phaser.GameObjects.Container
             frictionAir: 0.01,
             collisionFilter: {
             category: CATEGORY_ENEMY,
-            mask: mask
+            mask: mask,
+            label: "Pokey"
             },
             restitution: 0.05
         });
+        this.body.label="Pokey";
         // Mask categories
 
         // Apply to all parts
