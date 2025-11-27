@@ -63,7 +63,7 @@ class Nivel_D extends Phaser.Scene
         
         // Capa de suelo
         const bgLayer = this.map.createLayer('CapaFondo', [tilesetBGD, tilesetBGP], 0, 0);
-        // const decorationsLayer = this.map.createLayer('CapaDecoraciones', tileset, 0, 0);
+        const decorationsLayer = this.map.createLayer('CapaDecoraciones', tileset, 0, 0);
         const blocks = this.map.getObjectLayer('Bloques').objects;
         const fallBlocks = this.map.getObjectLayer('FallOffs').objects;
         const spikesL = this.map.getObjectLayer('Pinchos').objects;
@@ -277,6 +277,7 @@ class Nivel_D extends Phaser.Scene
         const enemies = this.map.getObjectLayer('Enemigos').objects;
         this.goombas = this.add.group();
         this.koopas = this.add.group();
+        this.pokeys = this.add.group();
         for (const enemie of enemies)
         {
             if (enemie.name === 'Goomba')
@@ -310,6 +311,14 @@ class Nivel_D extends Phaser.Scene
                 koopa.setDepth(2);
                 koopa.setCollisionCategory(CATEGORY_ENEMY);
                 koopa.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN, CATEGORY_ENEMY]);
+            }
+            else if (enemie.name === 'Pokey')
+            {
+                const segments = enemie.properties?.find(p => p.name === 'segments')?.value || 5;
+                const speed = enemie.properties?.find(p => p.name === 'speed')?.value || 0;
+                const pokey = new Pokey(this, enemie.x, enemie.y, segments, speed);
+                this.pokeys.add(pokey);
+                pokey.setDepth(2);
             }
         }
     }
@@ -734,6 +743,13 @@ class Nivel_D extends Phaser.Scene
                 const koopa = bodyA.label=="Koopa" ? bodyA.gameObject : bodyB.gameObject;
 
                 koopa.handlePlayerCollision(this.jugador);
+            }
+            if(bodyB.label=="Pokey" && bodyA.label=="Mario" ||
+            bodyA.label=="Pokey" && bodyB.label=="Mario")
+            {
+                const pokey = bodyA.label=="Pokey" ? bodyA.gameObject : bodyB.gameObject;
+                
+                pokey.handlePlayerCollision(this.jugador);
             }
         }
         const exitHandle = (event, bodyA, bodyB) => {

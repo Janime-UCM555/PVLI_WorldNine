@@ -2,7 +2,7 @@ import { DIE_TYPES } from "./Goomba.js";
 
 class Pokey extends Phaser.GameObjects.Container
 {
-    constructor(scene, x, y, segments = 5, speed = 0.5) {
+    constructor(scene, x, y, segments = 5, speed) {
         super(scene, x, y);
 
         scene.add.existing(this);
@@ -170,12 +170,12 @@ class Pokey extends Phaser.GameObjects.Container
             frictionAir: 0.01,
             collisionFilter: {
             category: CATEGORY_ENEMY,
-            mask: mask,
-            label: "Pokey"
+            mask: mask
             },
-            restitution: 0.05
+            restitution: 0.05,
+            label: "Pokey"
         });
-        this.body.label="Pokey";
+        this.compoundBody.label="Pokey";
         // Mask categories
 
         // Apply to all parts
