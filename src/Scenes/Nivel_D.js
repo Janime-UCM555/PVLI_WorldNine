@@ -1012,7 +1012,7 @@ class Nivel_D extends Phaser.Scene
 
     timerMethod ()
     {
-        let timer =10;
+        let timer =80;
         this.endTimer = false;
         this.timerEvent = this.time.addEvent({
         delay: 1000,
