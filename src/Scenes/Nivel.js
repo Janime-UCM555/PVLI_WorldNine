@@ -469,6 +469,9 @@ class Nivel_T extends Phaser.Scene
 
     doubleEndTransition(callback)
     {
+        if (this.levelMusic && this.levelMusic.isPlaying) {
+            this.levelMusic.stop();
+        }
         TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador.getCenter(), this.cameras.main.width, 120,
         ()=>{
             this.sound.play('iris-out')

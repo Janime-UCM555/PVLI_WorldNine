@@ -244,9 +244,12 @@ class Nivel_D extends Phaser.Scene
         this.cameras.main.setZoom(1.65);
 
         // Música de fondo del nivel
-        if (!this.levelMusic || !this.levelMusic.isPlaying) {
+        if ((!this.levelMusic || !this.levelMusic.isPlaying) && !this.endTimer) {
             this.levelMusic = this.sound.add('level_music', { loop: true, volume: 1 });
             this.levelMusic.play();
+        }
+        else if(this.levelMusic){
+            this.levelMusic.stop();
         }
 
         var openedScene = false;
@@ -897,6 +900,9 @@ class Nivel_D extends Phaser.Scene
 
     doubleEndTransition(callback)
     {
+        if (this.levelMusic && this.levelMusic.isPlaying) {
+            this.levelMusic.stop();
+        }
         TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador.getCenter(), this.cameras.main.width, 120,
         ()=>{
             this.sound.play('iris-out')
@@ -1006,7 +1012,7 @@ class Nivel_D extends Phaser.Scene
 
     timerMethod ()
     {
-        let timer =60;
+        let timer =10;
         this.endTimer = false;
         this.timerEvent = this.time.addEvent({
         delay: 1000,

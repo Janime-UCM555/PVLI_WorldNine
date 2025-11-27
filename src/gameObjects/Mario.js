@@ -509,6 +509,14 @@ class Mario extends Phaser.GameObjects.Sprite
 
         // Cambiar a animación idle cuando se detiene
         this.play('mario_hurt', true);
+        if (this.starman)
+        {
+            this.starman.stop();
+        }
+        if (this.starEndingSound)
+        {
+        this.starEndingSound.stop();
+        }
     }
 
     takeDamage(pushDirection) {
@@ -1219,7 +1227,6 @@ class Mario extends Phaser.GameObjects.Sprite
         if (this.starman) {
             this.starman.play({ loop: true });
         }
-
         // Efecto arcoíris
         const rainbowColors = [
             0xFF0000, // Rojo
