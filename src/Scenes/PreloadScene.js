@@ -193,6 +193,7 @@ class PreloadScene extends Phaser.Scene {
 
         // Música
         this.load.audio('level_music', 'sonidos/BGM/level_theme.mp3');
+        this.load.audio('Desierto', 'sonidos/BGM/Desierto.mp3');
         this.load.audio('menu_music', 'sonidos/BGM/menu_theme.mp3');
         this.load.audio('victory_music', 'sonidos/BGM/Nivel_Completado.wav');
         this.load.audio('starman', 'sonidos/BGM/Starman.wav');
