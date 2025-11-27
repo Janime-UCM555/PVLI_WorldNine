@@ -489,7 +489,7 @@ class Mario extends Phaser.GameObjects.Sprite
         else if(this.scene.anims.exists('mario_fall') && !this.inBoss){
             this.play('mario_fall', true);
         }
-        else if (this.scene.anims.exists('mario_panicfall'))
+        else if (this.scene.anims.exists('mario_panicfall') && this.inBoss)
         {
             this.play('mario_panicfall', true);
         }
@@ -799,7 +799,7 @@ class Mario extends Phaser.GameObjects.Sprite
         {
             this.play('mario_fall', true);
         }
-        else{
+        else if(this.inBoss){
             this.play('mario_panicfall', true);
         }
     
@@ -995,7 +995,7 @@ class Mario extends Phaser.GameObjects.Sprite
                 if (this.anims.currentAnim?.key !== 'mario_jump' && !this.isGrounded && !this.inBoss) {
                     this.play('mario_jump', true);
                 }
-                else if (this.anims.currentAnim?.key !== 'mario_panicjump' && !this.isGrounded)
+                else if (this.anims.currentAnim?.key !== 'mario_panicjump' && !this.isGrounded&&this.inBoss)
                 {
                     this.play('mario_panicjump', true);
                 }
@@ -1006,7 +1006,7 @@ class Mario extends Phaser.GameObjects.Sprite
                 if (this.anims.currentAnim?.key !== 'mario_fall' && !this.isGrounded && !this.inBoss) {
                     this.play('mario_fall', true);
                 }
-                else if (this.anims.currentAnim?.key !== 'mario_panicfall' && !this.isGrounded)
+                else if (this.anims.currentAnim?.key !== 'mario_panicfall' && !this.isGrounded&&this.inBoss)
                 {
                     this.play('mario_panicfall', true);
                 }
@@ -1020,7 +1020,7 @@ class Mario extends Phaser.GameObjects.Sprite
                 if (this.anims.currentAnim?.key !== 'mario_run' && !this.inBoss) {
                     this.play('mario_run', true);
                 }
-                else if(this.anims.currentAnim?.key !== 'mario_panicrun'){
+                else if(this.anims.currentAnim?.key !== 'mario_panicrun'&&this.inBoss){
                     this.play('mario_panicrun', true);
                 }
                 if (this.footstepCooldown <= 0) {
@@ -1043,7 +1043,7 @@ class Mario extends Phaser.GameObjects.Sprite
                 {
                     this.play('mario_fall', true);
                 }
-                else if (this.anims.currentAnim?.key !== 'mario_fall' && !this.isGrounded)
+                else if (this.anims.currentAnim?.key !== 'mario_fall' && !this.isGrounded&&this.inBoss)
                 {
                     this.play('mario_panicfall', true);   
                 }

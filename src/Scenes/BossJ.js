@@ -363,7 +363,7 @@ class BossJ extends Phaser.Scene
         // Crear pilar como un rectángulo de Matter
         this.pilar = this.matter.add.rectangle(-950, 625, 500, this.cameras.main.height*1.5, {
             isStatic: false,    // se puede mover
-            label: "Pilar",
+            label: "Muerte",
             frictionAir: 0.0,   // sin resistencia de aire
             inertia: Infinity,  // evita rotaciones
             friction: 0,
@@ -623,14 +623,10 @@ class BossJ extends Phaser.Scene
                         player.body.velocity.y = 0;
                     }
 
-                    if (player.bubblesLeft > 0) {
-                        player.Bubble(); // Entra en burbuja
-                    } else {
-                        this.doubleEndTransition(()=>{this.scene.launch('MainMenu');
-                        this.scene.stop();});
-                        player.hurt();
-                        player.setStatic(true);
-                    }
+                    this.doubleEndTransition(()=>{
+                    this.scene.restart();});
+                    player.hurt();
+                    player.setStatic(true);
                 } else {
                     // Colisión lateral
                     let pushDirection = 0; // Determinar dirección del empuje
@@ -800,6 +796,14 @@ class BossJ extends Phaser.Scene
 
                 koopa.handlePlayerCollision(this.jugador);
             }
+            if(bodyA.label == "Mario" && bodyB.label=="Muerte"||
+                bodyB.label == "Mario" && bodyA.label=="Muerte" && !this.endTimer)
+            {
+                this.jugador.hurt();
+                this.endTimer=true;
+                this.jugador.setStatic(true);
+                this.doubleEndTransition(()=>{this.scene.restart()});
+            }
         }
         const exitHandle = (event, bodyA, bodyB) => {
             if ((bodyA.name === "oneway" &&  bodyA.isSensor &&bodyB.gameObject === this.jugador) ||
@@ -930,7 +934,7 @@ class BossJ extends Phaser.Scene
         setTimeout(() => {
             this.doubleEndTransition(
                 ()=>{this.scene.launch('MainMenu');
-                this.scene.stop();});
+                        this.scene.stop();});
         }, 1000);
         });
     }
@@ -1060,8 +1064,8 @@ class BossJ extends Phaser.Scene
                     this.sound.play('muerte');
                     this.jugador.hurt();
                     this.jugador.setStatic(true);
-                    this.doubleEndTransition(()=>{this.scene.launch('MainMenu');
-                this.scene.stop();});
+                    this.doubleEndTransition(()=>{
+                this.scene.restart();});
                 }
                 if (!this.jugador.isInBubble && !this.enPausa) {
                     this.textTimer.setFill('#ffffffff');
@@ -1111,28 +1115,6 @@ class BossJ extends Phaser.Scene
                 this.textPurpleCoins.setText(this.purpleCoinScore.toString().padStart(1, '0'));
             }
         }
-    }
-
-
-    restartLevel() {
-        // Reiniciar la escena o reposicionar el jugador
-        this.jugador.x = 25;
-        this.jugador.y = 625;
-        this.jugador.resetStates(); // Resetear estados
-        this.jugador.resume(); // Reanudar movimiento
-        if (this.jugador.body) {
-            // this.jugador.setVelocity(0, 0);
-        }
-        // Resetear estado de daño
-        this.jugador.isHurt = false;
-        // Asegurar animación correcta al reiniciar
-        this.jugador.play('mario_run', true);
-        // Resetear invulnerabilidad
-        this.jugador.isInvulnerable = false;
-        this.jugador.setVisible(true);
-        this.jugador.bubblePhase = 0;
-        this.jugador.isInBubble = false;
-        this.jugador.canDrop = false;
     }
 
     update(time, delta) {
@@ -1227,6 +1209,9 @@ class BossJ extends Phaser.Scene
                 y: this.pilar.velocity.y
             });
         }
+        else{
+            this.pilar.collisionFilter.mask= 0;
+        }
     }
 
     // Actualizar objetos
@@ -1252,15 +1237,13 @@ class BossJ extends Phaser.Scene
 
     // Verificar si el jugador se ha caído
     checkPlayerFell() {
-        if (this.jugador.y > this.map.heightInPixels + 50 && !this.jugador.isInBubble && !this.jugador.canDrop && this.jugador.bubblesLeft > 0) {
-            this.sound.play('muerte');
-            this.jugador.Bubble();
-        } else if (this.jugador.y > this.map.heightInPixels + 50 && this.jugador.bubblesLeft <= 0 && !this.jugador.isInBubble) {
+        if (this.jugador.y > this.map.heightInPixels + 50 && !this.jugador.isInBubble && !this.endTimer) {
+            this.endTimer = true;
             this.sound.play('muerte');
             this.jugador.y = this.map.heightInPixels + 45;
             this.jugador.hurt();
-            this.doubleEndTransition(()=>{this.scene.launch('MainMenu');
-                this.scene.stop();});
+            this.doubleEndTransition(()=>{
+                this.scene.restart();});
         }
     }
 
