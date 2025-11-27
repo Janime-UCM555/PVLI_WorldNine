@@ -30,8 +30,8 @@ class Goomba extends Phaser.GameObjects.Sprite
             right: false,
         };
         this.numTouching= {
-                left: 0,
-                right: 0,
+            left: 0,
+            right: 0,
         }; 
         const CATEGORY_PLAYER  = 0x0001;
         const CATEGORY_TERRAIN = 0x0004;

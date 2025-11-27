@@ -273,7 +273,7 @@ class Nivel_D extends Phaser.Scene
         // Quitamos la colisión con los bordes del mapa
         this.matter.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels, 0, false, false, false, false);
         this.createText();  
-        this.spawnPowerUp(200, 600, POWERUP_TYPES.HAMMER);
+        // this.spawnPowerUp(200, 600, POWERUP_TYPES.HAMMER);
         this.spawnPowerUp(220, 600, POWERUP_TYPES.STAR);
 
 
@@ -318,8 +318,8 @@ class Nivel_D extends Phaser.Scene
             else if (enemie.name === 'Pokey')
             {
                 const segments = enemie.properties?.find(p => p.name === 'segments')?.value || 5;
-                const speed = enemie.properties?.find(p => p.name === 'speed')?.value || 0;
-                const pokey = new Pokey(this, enemie.x, enemie.y, segments, speed);
+                // const speed = enemie.properties?.find(p => p.name === 'speed')?.value || 0;
+                const pokey = new Pokey(this, enemie.x, enemie.y, segments, 0.5);
                 this.pokeys.add(pokey);
                 pokey.setDepth(2);
             }
@@ -1031,7 +1031,7 @@ class Nivel_D extends Phaser.Scene
                 }
                 if (!this.jugador.isInBubble && !this.enPausa) {
                     this.textTimer.setFill('#ffffffff');
-                    timer = (timer - 1 + 60) % 60; // reinicia a 60
+                    timer -=1; //(timer - 1 + 60) % 60; // reinicia a 60
                 }
                 else{
                     this.textTimer.setFill('#cececeff');
@@ -1102,7 +1102,6 @@ class Nivel_D extends Phaser.Scene
     }
 
     update(time, delta) {
-        const dt = delta / 16.666;
         if (!this.fpsText || !this.fpsText.scene || this.fpsText._destroyed) return;
 
         if (!this.endTimer)
@@ -1113,70 +1112,6 @@ class Nivel_D extends Phaser.Scene
 
             // Actualizar objetos
             this.updateObjects(time, delta);
-
-            if (this.pokeys) {
-                this.pokeys.getChildren().forEach(pokey => {
-                    pokey.update(time, delta);
-                });
-            }
-
-            if (this.fallBlock)
-            {
-                this.fallBlock.getChildren().forEach(block => {
-                    if (block.fallActive) {
-                        // block.velocityY += 0.05;
-                        block.y += 5*dt;
-                    }
-                    if (block.x < this.cameras.scrollX || block.y > this.map.heightInPixels + 50)
-                    {
-                        block.y = block.startPosY;
-                        block.fallActive = false;
-                        block.setTexture('fallOffBlock1'); // Cambiar textura a bloque inicial
-                    }
-                });
-            }
-            if (this.pausa && this.enPausa && this.bloquePausaActivo) {
-                const block = this.bloquePausaActivo;
-                if (this.jugador.isJumping) {
-                    // Reanudar al jugador
-                    this.jugador.setVelocityY(-6);
-                    this.jugador.resume(); // Si tienes animaciones pausadas
-                    this.enPausa = false;
-
-                    // Restaurar bloque
-                    if (block) {
-                        block.hasPlayer = false;
-                        block.setTexture('Resume'); // Cambiar textura a bloque vacío
-                    }
-
-                    this.bloquePausaActivo = null;
-                } else {
-                    // Mientras está en pausa, mantener al jugador detenido
-                    this.jugador.setVelocity(0, 0);
-                }
-            }
-            if(this.impulsoActivo!=null)
-            {
-                if (this.jugador.isJumping || this.jugador.jumpHeld || this.jugador.jumpRequested) {
-                    const M = Phaser.Physics.Matter.Matter;
-                    if (this.impulsoActivo.name == "impulsoB")
-                    {
-                        this.sound.play('ImpB');
-                        M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -5 });
-                    }
-                    else if (this.impulsoActivo.name == "impulsoM")
-                    {
-                        this.sound.play('ImpM');
-                        M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -10 });
-                    }
-                    else{
-                        this.sound.play('ImpA');
-                        M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -15 });
-                    }
-                    this.impulsoActivo = null;
-                }
-            }
-
 
             // Posicionar bien la cámara respecto al jugador
             this.jugador.centerCameraOnPlayer();
@@ -1191,6 +1126,7 @@ class Nivel_D extends Phaser.Scene
 
     // Actualizar objetos
     updateObjects(time, delta) {
+        const dt = delta / 16.666;
         // Actualizar barra final
         if (this.barraFin) {
             this.barraFin.update(time, delta);
@@ -1207,6 +1143,69 @@ class Nivel_D extends Phaser.Scene
             this.koopas.getChildren().forEach(koopa => {
                 koopa.update(time, delta);
             });
+        }
+        
+        if (this.pokeys) {
+            this.pokeys.getChildren().forEach(pokey => {
+                pokey.update(time, delta);
+            });
+        }
+
+        if (this.fallBlock)
+        {
+            this.fallBlock.getChildren().forEach(block => {
+                if (block.fallActive) {
+                    // block.velocityY += 0.05;
+                    block.y += 5*dt;
+                }
+                if (block.x < this.cameras.scrollX || block.y > this.map.heightInPixels + 50)
+                {
+                    block.y = block.startPosY;
+                    block.fallActive = false;
+                    block.setTexture('fallOffBlock1'); // Cambiar textura a bloque inicial
+                }
+            });
+        }
+        if (this.pausa && this.enPausa && this.bloquePausaActivo) {
+            const block = this.bloquePausaActivo;
+            if (this.jugador.isJumping) {
+                // Reanudar al jugador
+                this.jugador.setVelocityY(-6);
+                this.jugador.resume(); // Si tienes animaciones pausadas
+                this.enPausa = false;
+
+                // Restaurar bloque
+                if (block) {
+                    block.hasPlayer = false;
+                    block.setTexture('Resume'); // Cambiar textura a bloque vacío
+                }
+
+                this.bloquePausaActivo = null;
+            } else {
+                // Mientras está en pausa, mantener al jugador detenido
+                this.jugador.setVelocity(0, 0);
+            }
+        }
+        if(this.impulsoActivo!=null)
+        {
+            if (this.jugador.isJumping || this.jugador.jumpHeld || this.jugador.jumpRequested) {
+                const M = Phaser.Physics.Matter.Matter;
+                if (this.impulsoActivo.name == "impulsoB")
+                {
+                    this.sound.play('ImpB');
+                    M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -5 });
+                }
+                else if (this.impulsoActivo.name == "impulsoM")
+                {
+                    this.sound.play('ImpM');
+                    M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -10 });
+                }
+                else{
+                    this.sound.play('ImpA');
+                    M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -15 });
+                }
+                this.impulsoActivo = null;
+            }
         }
 
     }

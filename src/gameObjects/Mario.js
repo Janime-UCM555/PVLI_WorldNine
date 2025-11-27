@@ -323,7 +323,6 @@ class Mario extends Phaser.GameObjects.Sprite
                     this.exitBubbleState();
                     return;
                 }
-                console.log(this.jumpRequested);
                 // Comportamiento normal de salto
                 if (!this.isInBubble) {
                     this.jumpRequested = true;
@@ -550,9 +549,9 @@ class Mario extends Phaser.GameObjects.Sprite
         }
         
         // Desactivar el estado de super tamaño si estaba activo
-        if (!this.isSuperSize) {
+        if (!this.isSuperSize && !this.isInBubble) {
             this.hurtSound.play();
-        } else {
+        } else if (!this.isInBubble) {
             // Solo champiñón → lo pierdes y te quedas pequeño
             this.deactivatePowerUp({ keepSize: false });
             this.hurtSound.play();

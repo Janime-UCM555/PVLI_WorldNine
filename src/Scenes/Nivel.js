@@ -59,6 +59,7 @@ class Nivel_T extends Phaser.Scene
         const decorationsLayer = this.map.createLayer('CapaDecoraciones', tileset, 0, 0);
         const blocks = this.map.getObjectLayer('Bloques').objects;
         const coins = this.map.getObjectLayer('Monedas').objects;
+        const pausaL = this.map.getObjectLayer('PauseBlocks').objects;
         const enemies = this.map.getObjectLayer('Enemigos').objects;
         this.groundLayer = this.map.createLayer('CapaSuelo', tileset, 0, 0);
         this.groundLayer.setDepth(1);
@@ -92,74 +93,38 @@ class Nivel_T extends Phaser.Scene
             this.jugador.play('mario_run');
         }
         const frontLayer = this.map.createLayer('CapaFrente', tileset, 0, 0);
-        
-        // Crear bloques a partir de objetos Tiled
-        this.blocks = this.add.group();
-        blocks.forEach(obj => {
-            // Coordenadas de Tiled → Phaser
-            const x = obj.x + obj.width / 2;
-            const y = obj.y - obj.height / 2;
+        this.pausa = this.createTiledObjects(pausaL, {
+            texture: 'Resume',
+            name: 'pausa',
+            extra: b => b.hasPlayer = false
+        });
+        this.blocks = this.createTiledObjects(blocks, {
+            extra: (block, obj) => {
+                const props = {};
+                obj.properties?.forEach(p => props[p.name] = p.value);
 
-            // Propiedades del objeto en Tiled → convertir a objeto plano
-            const props = {};
-            obj.properties?.forEach(p => props[p.name] = p.value);
+                const tex = props.Breakable ? 'block' : 'block?';
+                block.setTexture(tex);
 
-            // Si tiene propiedad 'texture', úsalo
-            if(props.Breakable){
-                props.texture = 'block';
+                block._props = props;
             }
-            else{
-                props.texture = 'block?';
-            }
-
-            const tex = props.texture || 'bloque'; // si no tiene, usa la por defecto
-
-            // Crear sprite con esa textura
-            const block = this.matter.add.sprite(x, y, tex);
-            this.add.existing(block, true);
-
-            //Ajustar el hitbox al tamaño del objeto
-            block.setSize(obj.width, obj.height);
-            block.setIgnoreGravity(true);
-            block.friction = 0;
-            block.frictionStatic = 0;
-            block.frictionAir = 0;
-            block.restitution = 0;
-            block.setStatic(true);
-            // block.setFixedRotation();
-            //Guardar sus props para blockHit()
-            block._props = props;
-            
-            // Quita la fricción
-            block.friction = 0;
-            block.frictionStatic = 0;
-            block.frictionAir = 0;
-            block.restitution = 0;
-
-            block.setCollisionCategory(CATEGORY_TERRAIN);
-            block.setCollidesWith([CATEGORY_ENEMY, CATEGORY_PLAYER]);
-            this.blocks.add(block);
         });
 
         this.coinsGroup = this.add.group();
-        for (const coinObj of coins)
-        {
-            const coin = this.coinsGroup.create(coinObj.x, coinObj.y, 'coin_tileset');
-            coin.setOrigin(0, 1);
-            // Desactivar cualquier cuerpo físico que pueda haberse creado automáticamente
-            if (coin.body) {
-                coin.destroy();
-                coin.body = null;
-            }
-            const coinType = coinObj.name;
-            if (coinType === 'purple') {
+        coins.forEach(o => {
+            const coin = this.coinsGroup.create(o.x, o.y, 'coin_tileset').setOrigin(0, 1);
+            
+            if (coin.body) coin.body = null;
+
+            if (o.name === 'purple') {
                 coin.play('coin_purple_spin');
                 coin.coinValue = 500;
             } else {
                 coin.play('coin_gold_spin');
                 coin.coinValue = 100;
             }
-        }
+        });
+
         for (const barraPart of barraFinLayer)
         {
             this.barraFin = new Fin(
@@ -309,7 +274,63 @@ class Nivel_T extends Phaser.Scene
         // this.spawnPowerUp(220, 600, POWERUP_TYPES.STAR);
 
     }
+    createTiledObjects(list, config = {}) {
 
+        //Máscaras de colisión
+        const CATEGORY_PLAYER  = 0x0001;
+        const CATEGORY_ENEMY   = 0x0002;
+        const CATEGORY_POWERUP = 0x0003;
+        const CATEGORY_TERRAIN = 0x0004;
+        const CATEGORY_FALLOFF = 0x0005;    
+        // Parámetros con valores por defecto
+        const {
+            texture = null,
+            name = null,
+            depth = 2,
+            category = CATEGORY_TERRAIN,
+            collidesWith = [CATEGORY_PLAYER, CATEGORY_ENEMY],
+            staticBody = true,
+            sensor = false,
+            extra = () => {}
+        } = config;
+
+        const group = this.add.group();
+
+        list.forEach(obj => {
+
+            const x = obj.x + obj.width / 2;
+            const y = obj.y - obj.height / 2;
+
+            // Crear sprite
+            const sprite = this.matter.add.sprite(x, y, texture);
+            sprite.setDepth(depth);
+
+            if (name) sprite.name = name;
+
+            // Propiedades básicas del cuerpo
+            sprite.setIgnoreGravity(true);
+            sprite.setStatic(staticBody);
+            sprite.setSensor(sensor);
+            sprite.setFixedRotation();
+            sprite.setSize(obj.width, obj.height);
+
+            sprite.friction = 0;
+            sprite.frictionStatic = 0;
+            sprite.frictionAir = 0;
+            sprite.restitution = 0;
+
+            // Colisiones
+            sprite.setCollisionCategory(category);
+            sprite.setCollidesWith(collidesWith);
+
+            // Config extra personalizada para cada tipo de bloque
+            extra(sprite, obj);
+
+            group.add(sprite);
+        });
+
+        return group;
+    }
     createAnimations() {
         this.anims.create({
             key: 'coin_gold_spin',
@@ -398,6 +419,13 @@ class Nivel_T extends Phaser.Scene
     }
     
     setupCollisions() {
+        //Máscaras de colisión
+        const CATEGORY_PLAYER  = 0x0001;
+        const CATEGORY_ENEMY   = 0x0002;
+        const CATEGORY_POWERUP = 0x0003;
+        const CATEGORY_TERRAIN = 0x0004;
+        const CATEGORY_FALLOFF = 0x0005;
+        const M = Phaser.Physics.Matter.Matter;
         // Colisión con barra final
         const handle = (event, bodyA, bodyB) => {
             // if(!bodyA.gameObject || bodyB.gameObject)
@@ -408,6 +436,217 @@ class Nivel_T extends Phaser.Scene
                 || bodyB.gameObject == this.jugador && bodyA.gameObject == this.barraFin)
             {
                 this.ganasPartida(this.jugador, this.barraFin);
+            }
+            if ((bodyB.label=="PowerUp" && bodyA.label=="Mario") ||
+                (bodyA.label=="PowerUp" && bodyB.label=="Mario"))// && bodyA.gameObject == this.jugador)
+            {
+                const powerUp  = bodyA.label=="PowerUp"  ? bodyA.gameObject : bodyB.gameObject;
+                const player = bodyA.label=="Mario" ? bodyA.gameObject : bodyB.gameObject;
+
+                powerUp.collect(player);
+            }
+            if (bodyA.label=="Mario" && bodyB.gameObject && bodyB.gameObject.name == "BloqueCae")
+            {
+                bodyB.gameObject.setCollidesWith([CATEGORY_PLAYER]);
+                this.time.delayedCall(150, () => {
+                    bodyB.gameObject.fallActive=true;
+                    bodyB.gameObject.setTexture('fallOffBlock2'); // Cambiar textura a bloque vacío
+                });
+            }
+            if (bodyA.gameObject == this.jugador&& bodyB.gameObject && bodyB.gameObject.name == "pausa" && !bodyB.gameObject.hasPlayer)
+            {
+                this.bloquePausaActivo = bodyB.gameObject;
+                const activarPausa = () => {
+                    this.jugador.stop();
+                    this.jugador.setVelocity(0,0);
+                    bodyB.gameObject.hasPlayer = true;
+                    this.enPausa = true;
+                    bodyB.gameObject.setTexture('Pause');
+                    this.sound.play('PauseBlq');
+                };
+                if (this.jugador.getCenter().x < bodyB.bounds.max.x) {
+                    this.time.delayedCall(90, activarPausa);
+                } else {
+                    activarPausa();
+                }
+            }
+            if (bodyA.label=="Mario" && bodyB.gameObject && bodyB.gameObject.name == "spikes"
+                && !this.jugador.isBeingPushed && !this.jugador.isInvulnerable && !this.jugador.isInvincible)
+            {
+                const player = this.jugador;
+                if (!player.isSuperSize && !this.scene.endTimer) 
+                {
+                    this.sound.play('muerte');
+
+                    // Detener cualquier movimiento de Mario antes de la burbuja
+                    player.setVelocity(0, 0);
+                    if (player.body) {
+                        player.body.velocity.x = 0;
+                        player.body.velocity.y = 0;
+                    }
+
+                    if (player.bubblesLeft > 0) {
+                        player.Bubble(); // Entra en burbuja
+                    } else {
+                        this.doubleEndTransition(()=>{this.scene.launch('MainMenu');
+                        this.scene.stop();});
+                        player.hurt();
+                    }
+                } else {
+                    // Colisión lateral
+                    let pushDirection = 0; // Determinar dirección del empuje
+                    player.takeDamage(pushDirection);
+                }
+            }
+            if ((bodyA.label=="Mario" &&bodyB.gameObject?.name=="pathAr") ||
+            (bodyB.label=="Mario" && bodyA.gameObject?.name=="pathAr")) 
+            {
+                const coinDistanceX = 10;
+                const coinDistanceY = -40;
+                let blockPass;
+                if (bodyB.gameObject?.name == "pathAr")
+                {
+                    blockPass = bodyB.gameObject;
+                }
+                else{
+                    blockPass = bodyA.gameObject;
+                }
+                this.spawnCoins(coinDistanceX,coinDistanceY,blockPass);
+            }
+            if ((bodyA.label=="Mario" && bodyB.gameObject?.name=="pathAbD") ||
+            (bodyB.label=="Mario" && bodyA.gameObject?.name=="pathAbD")) 
+            {
+                // 5 monedas Abajo Diagonal
+                const coinDistanceX = 20;
+                const coinDistanceY = 40;
+                let blockPass;
+                if (bodyB.gameObject?.name == "pathAbD")
+                {
+                    blockPass = bodyB.gameObject;
+                }
+                else{
+                    blockPass = bodyA.gameObject;
+                }
+                this.spawnCoins(coinDistanceX,coinDistanceY,blockPass);
+            }
+            if ((bodyA.label=="Mario" && bodyB.gameObject?.name=="pathArD") ||
+                (bodyB.label=="Mario" && bodyA.gameObject?.name=="pathArD")) 
+            {
+                // 5 monedas Arriba Diagonal
+                const coinDistanceX = 20;
+                const coinDistanceY = -40;
+                const scene = this;
+                let blockPass;
+                if (bodyB.gameObject?.name == "pathArD")
+                {
+                    blockPass = bodyB.gameObject;
+                }
+                else{
+                    blockPass = bodyA.gameObject;
+                }
+                this.spawnCoins(coinDistanceX,coinDistanceY,blockPass);
+            }
+            if ((bodyA.label=="Mario" && bodyB.gameObject?.name=="pathD") ||
+                (bodyB.label=="Mario" && bodyA.gameObject?.name=="pathD")) 
+            {
+                // 5 monedas Derecha
+                const coinDistanceX = 40;
+                const coinDistanceY = 0;
+                let blockPass;
+                if (bodyB.gameObject?.name == "pathD")
+                {
+                    blockPass = bodyB.gameObject;
+                }
+                else{
+                    blockPass = bodyA.gameObject;
+                }
+                this.spawnCoins(coinDistanceX,coinDistanceY,blockPass);
+            }
+            if ((bodyA.label=="Mario" &&bodyB.gameObject?.name=="ImpulsoA") ||
+            (bodyB.label=="Mario" && bodyA.gameObject?.name=="ImpulsoA")) 
+            {
+                // console.log(this.jugador.jumpRequested);
+                if (bodyA.gameObject?.name == "ImpulsoA")
+                {
+                    this.impulsoActivo = bodyA.gameObject;
+                }
+                else{
+                    this.impulsoActivo = bodyB.gameObject;
+                }
+                if (this.jugador.jumpRequested || this.jugador.jumpHeld)
+                {
+                    this.sound.play('ImpA');
+                    this.impulsoActivo = null;
+                    M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -10 });
+                }
+            }
+            if ((bodyA.label=="Mario" && bodyB.gameObject?.name=="ImpulsoM") ||
+            (bodyB.label=="Mario" && bodyA.gameObject?.name=="ImpulsoM")) 
+            {
+                // console.log(this.jugador.jumpRequested);
+                if (bodyA.gameObject?.name == "ImpulsoM")
+                {
+                    this.impulsoActivo = bodyA.gameObject;
+                }
+                else{
+                    this.impulsoActivo = bodyB.gameObject;
+                }
+
+                if (this.jugador.jumpRequested || this.jugador.jumpHeld)
+                {
+                    this.sound.play('ImpM');
+                    this.impulsoActivo = null;
+                    M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -7 });
+                }
+            }
+            if ((bodyA.label=="Mario" && bodyB.gameObject?.name=="ImpulsoB") ||
+                (bodyB.label=="Mario" && bodyA.gameObject?.name=="ImpulsoB")) 
+            {                
+                // console.log(this.jugador.jumpRequested)
+                if (bodyA.gameObject?.name == "ImpulsoB")
+                {
+                    this.impulsoActivo = bodyA.gameObject;
+                }
+                else{
+                    this.impulsoActivo = bodyB.gameObject;
+                }
+
+                if (this.jugador.jumpRequested || this.jugador.jumpHeld)
+                {
+                    this.sound.play('ImpB');
+                    this.impulsoActivo = null;
+                    M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -5 });
+                }
+            }
+            if ((bodyA.name === "oneway" &&  bodyA.isSensor &&bodyB.label=="Mario") ||
+                (bodyB.name === "oneway"&& bodyB.isSensor && bodyA.label=="Mario"))
+            {
+                let sensor;
+                if (bodyA.name==="oneway")
+                {
+                    sensor = bodyA;
+                }
+                else
+                {
+                    sensor = bodyB;
+                } 
+                const activarOneWay = () => {
+                    sensor.blockTop.setCollidesWith([CATEGORY_ENEMY, CATEGORY_PLAYER]);
+                };
+                if (this.jugador.getCenter().x < sensor.bounds.max.x-6) {
+                    this.time.delayedCall(90, activarOneWay);
+                } else {
+                    activarOneWay();
+                }
+            }
+            if(bodyA.label=="Mario" && bodyB.gameObject && bodyB.gameObject._props) 
+            {
+                if (!(this.jugador.body.velocity.y < 0 && this.jugador.getCenter().y > bodyB.bounds.max.y)){
+                    return; // Solo al golpear desde abajo
+                } 
+                const aim = this.findSpawnBlockAbovePlayer(this.jugador, 20, 20); // (toleranciaX, toleranciaY)
+                const target = aim || bodyB.gameObject; // prioriza spawn si hay uno “casi”
+                this.blockHit(this.jugador, target);
             }
 
             if(bodyB.label=="Goomba" && bodyA.label=="Mario"  ||
@@ -435,35 +674,41 @@ class Nivel_T extends Phaser.Scene
 
                 koopa.handlePlayerCollision(this.jugador);
             }
-            if(bodyB.label=="Piranha" && bodyA.label=="Mario" ||
-               bodyA.label=="Piranha" && bodyB.label=="Mario")
-            {
-                const piranha = bodyA.label=="Piranha" ? bodyA.gameObject : bodyB.gameObject;
-
-                piranha.handlePlayerCollision(this.jugador);
-            }
-            if(bodyB.label=="Pokey"  && bodyA.label=="Mario" ||
-               bodyA.label=="Pokey"  && bodyB.label=="Mario")
+            if(bodyB.label=="Pokey" && bodyA.label=="Mario" ||
+            bodyA.label=="Pokey" && bodyB.label=="Mario")
             {
                 const pokey = bodyA.label=="Pokey" ? bodyA.gameObject : bodyB.gameObject;
-
+                
                 pokey.handlePlayerCollision(this.jugador);
             }
-            // if(bodyA.gameObject instanceof Goomba && bodyB.gameObject == this.groundLayer)
-            // {
-            //     bodyA.gameObject.handleWallCollision(bodyB.gameObject);
-            // }
-            if(bodyA.gameObject == this.jugador && bodyB.gameObject && bodyB.gameObject._props) 
+            if(bodyB.label=="Piranha" && bodyA.label=="Mario" ||
+            bodyA.label=="Piranha" && bodyB.label=="Mario")
             {
-                if (!(this.jugador.body.velocity.y < 0 && this.jugador.getCenter().y > bodyB.bounds.max.y)){
-                    return; // Solo al golpear desde abajo
-                } 
-                const aim = this.findSpawnBlockAbovePlayer(this.jugador, 20, 20); // (toleranciaX, toleranciaY)
-                const target = aim || bodyB.gameObject; // prioriza spawn si hay uno “casi”
-                this.blockHit(this.jugador, target);
+                const piranha = bodyA.label=="Piranha" ? bodyA.gameObject : bodyB.gameObject;
+                
+                piranha.handlePlayerCollision(this.jugador);
+            }
+        }
+        const exitHandle = (event, bodyA, bodyB) => {
+            if ((bodyA.name === "oneway" &&  bodyA.isSensor &&bodyB.label=="Mario" ) ||
+                (bodyB.name === "oneway"&& bodyB.isSensor && bodyA.label=="Mario" ))
+            {
+                const oneway = bodyA.name=="oneway" ? bodyA.gameObject : bodyB.gameObject;
+
+                oneway.blockTop.setCollidesWith([CATEGORY_ENEMY]);
+            }
+            if ((bodyA.label=="Mario" &&bodyB.gameObject?.name=="ImpulsoA") ||
+            (bodyB.label=="Mario" && bodyA.gameObject?.name=="ImpulsoA") || 
+            (bodyA.label=="Mario" &&bodyB.gameObject?.name=="ImpulsoM") ||
+            (bodyB.label=="Mario" && bodyA.gameObject?.name=="ImpulsoM") || 
+            (bodyA.label=="Mario" &&bodyB.gameObject?.name=="ImpulsoB") ||
+            (bodyB.label=="Mario" && bodyA.gameObject?.name=="ImpulsoB")) 
+            {
+                this.impulsoActivo=null;
             }
         }
         this.matter.world.on('collisionstart', handle);
+        this.matter.world.on('collisionend', exitHandle);
         this.matter.world.on('collisionactive', handle);
     }
 
@@ -950,12 +1195,6 @@ class Nivel_T extends Phaser.Scene
             // Actualizar objetos
             this.updateObjects(time, delta);
 
-            if (this.pokeys) {
-                this.pokeys.getChildren().forEach(pokey => {
-                    pokey.update(time, delta);
-                });
-            }
-
             // Posicionar bien la cámara respecto al jugador
             this.jugador.centerCameraOnPlayer();
 
@@ -993,6 +1232,31 @@ class Nivel_T extends Phaser.Scene
             this.piranhas.getChildren().forEach(piranha => {
                 piranha.update(time, delta);
             });
+        }
+        if (this.pokeys) {
+            this.pokeys.getChildren().forEach(pokey => {
+                pokey.update(time, delta);
+            });
+        }
+        if (this.pausa && this.enPausa && this.bloquePausaActivo) {
+            const block = this.bloquePausaActivo;
+            if (this.jugador.isJumping) {
+                // Reanudar al jugador
+                this.jugador.setVelocityY(-6);
+                this.jugador.resume(); // Si tienes animaciones pausadas
+                this.enPausa = false;
+
+                // Restaurar bloque
+                if (block) {
+                    block.hasPlayer = false;
+                    block.setTexture('Resume'); // Cambiar textura a bloque vacío
+                }
+
+                this.bloquePausaActivo = null;
+            } else {
+                // Mientras está en pausa, mantener al jugador detenido
+                this.jugador.setVelocity(0, 0);
+            }
         }
     }
 
