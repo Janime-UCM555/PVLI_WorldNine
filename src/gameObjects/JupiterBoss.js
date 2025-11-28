@@ -389,7 +389,13 @@ export default class JupiterBoss extends BossBase {
         // Verificar si los bounds de Mario se solapan con los bounds del rayo
         if (Phaser.Geom.Rectangle.Overlaps(playerBounds, lightningBounds)) {
             // El jugador es golpeado por el rayo
-            this.scene.restartLevel(); // Se reinicia el nivel
+            this.scene.time.delayedCall(100, () => {
+                if (!this.scene.jugador.activePowerUp && !this.scene.jugador.isSuperSize) {
+                    this.scene.scene.restart(); // Se reinicia el nivel
+                } else {
+                    this.scene.jugador.deactivatePowerUp(); // Se le quita el PowerUp
+                }
+            });
 
             // Efecto visual cuando golpea al jugador
             this.scene.cameras.main.shake(250, 0.01);
