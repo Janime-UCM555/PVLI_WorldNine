@@ -1,4 +1,4 @@
-import BossBase, { BOSS_STATE } from './BossBase.js';
+import BossBase, { BOSS_STATE } from './BaseBoss.js';
 
 export default class JupiterBoss extends BossBase {
     /**
