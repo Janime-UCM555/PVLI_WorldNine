@@ -844,7 +844,7 @@ class Nivel_T extends Phaser.Scene
         this.jugador.play('mario_victory', true);
         setTimeout(() => {
             this.doubleEndTransition(
-                ()=>{this.scene.launch('MainMenu');
+                ()=>{this.scene.launch('BossJ');
                 this.scene.stop();});        
         }, 1000);
         });
