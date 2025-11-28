@@ -63,6 +63,9 @@ class Nivel_D extends Phaser.Scene
         
         // Capa de suelo
         const bgLayer = this.map.createLayer('CapaFondo', [tilesetBGD, tilesetBGP], 0, 0);
+        this.fakeFloorLayer = this.map.createLayer('CapaFalsoSuelo', tileset, 0, 0);
+        this.fakeFloorLayer.setTint(0x888888);
+        this.fakeFloorLayer.setAlpha(1);
         const decorationsLayer = this.map.createLayer('CapaDecoraciones', tileset, 0, 0);
         const blocks = this.map.getObjectLayer('Bloques').objects;
         const fallBlocks = this.map.getObjectLayer('FallOffs').objects;
@@ -106,6 +109,7 @@ class Nivel_D extends Phaser.Scene
             this.jugador.play('mario_run');
         }
         const frontLayer = this.map.createLayer('CapaFrente', tileset, 0, 0);
+        frontLayer.setDepth(4);
 
         this.fallBlock = this.createTiledObjects(fallBlocks, {
             texture: 'fallOffBlock1',
