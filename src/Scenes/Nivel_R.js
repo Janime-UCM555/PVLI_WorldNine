@@ -4,7 +4,10 @@ import Fin from '../gameObjects/BarraFin.js';
 import Goomba from '../gameObjects/Goomba.js';
 import Koopa from '../gameObjects/Koopa.js';
 import PiranhaPlant from '../gameObjects/PiranhaPlant.js';
+import Pokey from '../gameObjects/Pokey.js';
+import TransitionCode from '../gameObjects/Transition.js'
 import { PowerUp, POWERUP_TYPES } from '../gameObjects/PowerUps.js';
+import { DIE_TYPES } from "../gameObjects/Goomba.js";
 class Nivel_R extends Phaser.Scene
 {
     constructor(){
@@ -16,6 +19,7 @@ class Nivel_R extends Phaser.Scene
     }
 
     preload(){
+        console.log('=== INICIO ===');
         this.load.tilemapTiledJSON('map', 'MapaDeTiled/ElMapa.json');
         this.score=0;
         this.coinScore = 0;
@@ -31,6 +35,9 @@ class Nivel_R extends Phaser.Scene
         //         return error;
         //     });
         // }
+
+        // Crear animaciones
+        this.createAnimations();
     }
 
     create(){
@@ -39,83 +46,85 @@ class Nivel_R extends Phaser.Scene
         this.map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
         const tileset = this.map.addTilesetImage('MapaTiles', 'mi_tileset');
         const tilesetBG = this.map.addTilesetImage('bg', 'bg_tileset');
+
+        //Máscaras de colisión
+        const CATEGORY_PLAYER  = 0x0001;
+        const CATEGORY_ENEMY   = 0x0002;
+        const CATEGORY_POWERUP = 0x0003;
+        const CATEGORY_TERRAIN = 0x0004;
+
         
         // Capa de suelo
         const bgLayer = this.map.createLayer('CapaFondo', tilesetBG, 0, 0);
         const decorationsLayer = this.map.createLayer('CapaDecoraciones', tileset, 0, 0);
-        this.groundLayer = this.map.createLayer('CapaSuelo', tileset, 0, 0);
         const blocks = this.map.getObjectLayer('Bloques').objects;
         const coins = this.map.getObjectLayer('Monedas').objects;
+        const pausaL = this.map.getObjectLayer('PauseBlocks').objects;
         const enemies = this.map.getObjectLayer('Enemigos').objects;
+        this.groundLayer = this.map.createLayer('CapaSuelo', tileset, 0, 0);
+        this.groundLayer.setDepth(1);
+        // this.groundLayer.setCollisionMask(0x0001);
         const barraFinLayer = this.map.getObjectLayer('BarraFin').objects;
 
-        // Crear animaciones
-        this.createAnimations();
-        this.createText();
+            
+        // Ponemos colisión a las tiles
+        this.map.setCollisionByExclusion([ -1, 0 ]);
+        this.matter.world.convertTilemapLayer(this.groundLayer);
+        this.groundLayer.forEachTile(tile => {
+            if (tile.physics.matterBody) {
+                const body = tile.physics.matterBody.body;
+                // Quita la fricción
+                body.friction = 0;
+                body.frictionStatic = 0;
+                body.frictionAir = 0;
+                body.restitution = 0;
+                
+                body.collisionFilter.category = CATEGORY_TERRAIN;
+                body.collisionFilter.mask     = CATEGORY_PLAYER | CATEGORY_ENEMY;
+            }
+        });
 
-        this.jugador = new Mario(this, 25, 625, 'mario_run', 200, -225, true);
+
+
+        this.jugador = new Mario(this, 25, 625, 'mario_run', 3.5, -3.75, true, false);
 
         // Forzar la inicialización de animaciones
         if (this.anims.exists('mario_run')) {
             this.jugador.play('mario_run');
         }
         const frontLayer = this.map.createLayer('CapaFrente', tileset, 0, 0);
+        this.pausa = this.createTiledObjects(pausaL, {
+            texture: 'Resume',
+            name: 'pausa',
+            extra: b => b.hasPlayer = false
+        });
+        this.blocks = this.createTiledObjects(blocks, {
+            extra: (block, obj) => {
+                const props = {};
+                obj.properties?.forEach(p => props[p.name] = p.value);
 
-        // Crear bloques a partir de objetos Tiled
-        this.blocks = this.add.group();
+                const tex = props.Breakable ? 'block' : 'block?';
+                block.setTexture(tex);
 
-        blocks.forEach(obj => {
-            // Coordenadas de Tiled → Phaser
-            const x = obj.x + obj.width / 2;
-            const y = obj.y - obj.height / 2;
-
-            // Propiedades del objeto en Tiled → convertir a objeto plano
-            const props = {};
-            obj.properties?.forEach(p => props[p.name] = p.value);
-
-            // Si tiene propiedad 'texture', úsalo
-            if(props.Breakable){
-                props.texture = 'block';
+                block._props = props;
             }
-            else{
-                props.texture = 'block?';
-            }
-
-            const tex = props.texture || 'bloque'; // si no tiene, usa la por defecto
-
-            // Crear sprite con esa textura
-            const block = this.matter.add.sprite(x, y, tex);
-            // this.physics.add.existing(block, true);
-
-            // Ajustar el hitbox al tamaño del objeto
-            // block.body.setSize(obj.width, obj.height);
-            // block.body.updateFromGameObject();
-
-            // Guardar sus props para blockHit()
-            // block._props = props;
-
-            // this.blocks.add(block);
         });
 
         this.coinsGroup = this.add.group();
-        for (const coinObj of coins)
-        {
-            const coin = this.coinsGroup.create(coinObj.x, coinObj.y, 'coin_tileset');
-            coin.setOrigin(0, 1);
-            // Desactivar cualquier cuerpo físico que pueda haberse creado automáticamente
-            if (coin.body) {
-                coin.body.destroy();
-                coin.body = null;
-            }
-            const coinType = coinObj.name;
-            if (coinType === 'purple') {
+        coins.forEach(o => {
+            const coin = this.coinsGroup.create(o.x, o.y, 'coin_tileset').setOrigin(0, 1);
+            
+            if (coin.body) coin.body = null;
+
+            if (o.name === 'purple') {
                 coin.play('coin_purple_spin');
                 coin.coinValue = 500;
             } else {
                 coin.play('coin_gold_spin');
                 coin.coinValue = 100;
             }
-        }
+        });
+
         for (const barraPart of barraFinLayer)
         {
             this.barraFin = new Fin(
@@ -127,10 +136,13 @@ class Nivel_R extends Phaser.Scene
             600,
             80
             );
+            this.barraFin.setCollisionCategory(CATEGORY_TERRAIN);
+            this.barraFin.setCollidesWith([CATEGORY_PLAYER]);
         }
-        this.goombas = this.physics.add.group();
-        this.koopas = this.physics.add.group();
+        this.goombas = this.add.group();
+        this.koopas = this.add.group();
         this.piranhas = this.add.group();
+        this.pokeys = this.add.group();
         for (const enemie of enemies)
         {
             if (enemie.name === 'Goomba')
@@ -139,46 +151,63 @@ class Nivel_R extends Phaser.Scene
                     this,
                     enemie.x,
                     enemie.y -16, 
-                    'goombarome_walk',
-                    50,
+                    'gombrome_walk',
+                    1.0,
                     true
                 );
                 goomba.direction = 1;
                 this.goombas.add(goomba);
+                goomba.setDepth(2);
+                goomba.setCollisionCategory(CATEGORY_ENEMY);
+                goomba.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN, CATEGORY_ENEMY]);
             }
             else if (enemie.name === 'Koopa')
             {
-                console.log('KOOPA');
                 const koopa = new Koopa(
                     this,
                     enemie.x,
                     enemie.y - 32, 
                     'Koopa_walk_R',
-                    70,
+                    1,
                     true
                 );
                 koopa.direction = -1;
                 this.koopas.add(koopa);
-            }//
+                koopa.setDepth(2);
+                koopa.setCollisionCategory(CATEGORY_ENEMY);
+                koopa.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN, CATEGORY_ENEMY]);
+            }
             else if (enemie.name === 'Piranha')
             {
-                console.log('PIRANYA');
+                // console.log('PIRANYA');
                 const piranha = new PiranhaPlant(
                     this,
-                    enemie.x,
-                    enemie.y - 50, 
+                    enemie.x + 33,
+                    enemie.y - 35, 
                     'Piranha_plant',
                     2000,
                     2000
                 );
                 this.piranhas.add(piranha);
+                piranha.setCollisionCategory(CATEGORY_ENEMY);
+                piranha.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN, CATEGORY_ENEMY]);
             }
+            else if (enemie.name === 'Pokey')
+            {
+                const segments = enemie.properties?.find(p => p.name === 'segments')?.value || 5;
+                const pokey = new Pokey(this, enemie.x, enemie.y, segments);
+                this.pokeys.add(pokey);
+                // pokey.setDepth(2);
+                
+            }
+
+            this.hammers = this.add.group();
         }
 
-        // // Grupo de Goombas - Añadidos manualmente
-        // this.goombas = this.physics.add.group();
+        // Grupo de Goombas - Añadidos manualmente
+        // this.goombas = this.add.group();
         
-        // // Posiciones manuales para los Goombas
+        //Posiciones manuales para los Goombas
         // const goombaPositions = [
         //     { x: 450, y: 625 },   // Primer Goomba
         //     { x: 500, y: 625 },   // Segundo Goomba
@@ -188,68 +217,24 @@ class Nivel_R extends Phaser.Scene
         // ];
 
         // for (const pos of goombaPositions) {
-        //     const goomba = new Goomba(this, pos.x, pos.y, 'goombarome_walk', 50, true);
+        //     const goomba = new Goomba(this, pos.x, pos.y, 'gombrome_walk', .50, true);
         //     // Iniciar todos los Goombas moviéndose hacia la derecha
         //     goomba.direction = 1;
         //     this.goombas.add(goomba);
         // }
-
-        // Configurar las propiedades de física para Goombas
-        this.goombas.getChildren().forEach(goomba => {
-            if (goomba.body) {
-                // Detección de colisiones
-                goomba.body.setCollideWorldBounds(false); // No permitir colisión con bordes
-                goomba.body.onWorldBounds = true; // Detección de límites del mundo para destrucción
-            }
-        });
-        this.koopas.getChildren().forEach(koopa => {
-            if (koopa.body) {
-                // Detección de colisiones
-                koopa.body.setCollideWorldBounds(false); // No permitir colisión con bordes
-                koopa.body.onWorldBounds = true; // Detección de límites del mundo para destrucción
-            }
-        });
-
+        this.setupCollisions();
 
         this.powerups = this.add.group();
 
-        this.spawnPowerUp(200, 600, POWERUP_TYPES.MUSHROOM, 'mushroom');
 
-        this.setupCollisions();
-
-        // Configurar colisiones
-        if (this.groundLayer) {
-            // Establecer las colisiones
-            this.groundLayer.setCollisionByExclusion([-1]);
-        
-            // Colisión jugador con suelo
-            this.physics.add.collider(this.jugador, this.groundLayer);
-            
-            // Colisión Goombas con suelo con callback para cambiar dirección
-            this.physics.add.collider(this.goombas, this.groundLayer, (goomba, wall) => goomba.handleWallCollision(wall), null, this);
-
-            // Colisión Koopas con suelo con callback para cambiar dirección
-            this.physics.add.collider(this.koopas, this.groundLayer, (koopa, wall) => koopa.handleWallCollision(wall), null, this);
-        }
-        if (this.blocks) {
-            // Colisión jugador con bloques
-            this.physics.add.collider(this.jugador, this.blocks);
-            
-            // Colisión Goombas con bloques con callback para cambiar dirección
-            this.physics.add.collider(this.goombas, this.blocks, (goomba, wall) => goomba.handleWallCollision(wall), null, this);
-
-            // Colisión Koopas con bloques con callback para cambiar dirección
-            this.physics.add.collider(this.koopas, this.blocks, (koopa, wall) => koopa.handleWallCollision(wall), null, this);
-        }
 
         // Configurar mejor los límites del mundo
-        this.physics.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
-
+        this.matter.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
         // this.buttonPrueba = new Button(this, 0, 0,'Prueba',() =>{
         //     this.transition('MainMenu'); // Llamar a la transición cuando se acaba el tiempo
         // });
 
-        this.ui = this.add.container(this.cameras.main.width/2, this.cameras.main.height/2);
+        this.ui = this.add.container(this.cameras.main.width/2, this.cameras.main.height/2).setDepth(10);
         // this.ui.add([this.buttonPrueba]);
         
         this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
@@ -266,11 +251,86 @@ class Nivel_R extends Phaser.Scene
         var openedScene = false;
         if (!openedScene)
         {
-            this.openSceneTransition();
+            this.jugador.setStatic(true);
+            TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador.getCenter(), 0, 120, ()=>{
+                transition2();
+            });
+            const transition2 = () => {
+                TransitionCode.invoke(this, this.cameras.main, 600,this.jugador.getCenter(), 120, this.cameras.main.width,
+                ()=>{
+                    this.openedScene=true;
+                    this.jugador.setStatic(false);
+                    this.jugador.resume(); // Reanudar movimiento
+                });
+            }
         }
         this.irisSound = this.sound.add('iris-out');
-    }
 
+        // Quitamos la colisión con los bordes del mapa
+        this.matter.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels, 0, false, false, false, false);
+        this.createText();  
+        // this.spawnPowerUp(200, 600, POWERUP_TYPES.MUSHROOM);
+        // this.spawnPowerUp(200, 600, POWERUP_TYPES.HAMMER);
+        // this.spawnPowerUp(220, 600, POWERUP_TYPES.STAR);
+
+    }
+    createTiledObjects(list, config = {}) {
+
+        //Máscaras de colisión
+        const CATEGORY_PLAYER  = 0x0001;
+        const CATEGORY_ENEMY   = 0x0002;
+        const CATEGORY_POWERUP = 0x0003;
+        const CATEGORY_TERRAIN = 0x0004;
+        const CATEGORY_FALLOFF = 0x0005;    
+        // Parámetros con valores por defecto
+        const {
+            texture = null,
+            name = null,
+            depth = 2,
+            category = CATEGORY_TERRAIN,
+            collidesWith = [CATEGORY_PLAYER, CATEGORY_ENEMY],
+            staticBody = true,
+            sensor = false,
+            extra = () => {}
+        } = config;
+
+        const group = this.add.group();
+
+        list.forEach(obj => {
+
+            const x = obj.x + obj.width / 2;
+            const y = obj.y - obj.height / 2;
+
+            // Crear sprite
+            const sprite = this.matter.add.sprite(x, y, texture);
+            sprite.setDepth(depth);
+
+            if (name) sprite.name = name;
+
+            // Propiedades básicas del cuerpo
+            sprite.setIgnoreGravity(true);
+            sprite.setStatic(staticBody);
+            sprite.setSensor(sensor);
+            sprite.setFixedRotation();
+            sprite.setSize(obj.width, obj.height);
+
+            sprite.friction = 0;
+            sprite.frictionStatic = 0;
+            sprite.frictionAir = 0;
+            sprite.restitution = 0;
+
+            // Colisiones
+            sprite.setCollisionCategory(category);
+            sprite.setCollidesWith(collidesWith);
+
+            // Config extra personalizada para cada tipo de bloque
+            extra(sprite, obj);
+
+            group.add(sprite);
+        });
+
+        return group;
+    }
     createAnimations() {
         this.anims.create({
             key: 'coin_gold_spin',
@@ -291,9 +351,10 @@ class Nivel_R extends Phaser.Scene
             frameRate: 8,
             repeat: -1
         });
+        
         this.anims.create({
             key: 'mario_idle',
-            frames: [{ key: 'mario_run', frame: 0 }],
+            frames: [{ key: 'mario_idle', frame: 0 }],
             frameRate: 1
         });
         this.anims.create({
@@ -337,7 +398,14 @@ class Nivel_R extends Phaser.Scene
         })
 
         this.anims.create({
-            key: 'goombarome_walk',
+            key: 'mario_throw',
+            frames: this.anims.generateFrameNumbers('mario_throw', {start: 0, end: 3}),
+            frameReate: 8,
+            repeat: 0
+        })
+
+        this.anims.create({
+            key: 'gombrome_walk',
             frames: this.anims.generateFrameNumbers('gombrome_walk', { start: 0, end: 3 }),
             frameRate: 8,
             repeat: -1
@@ -348,116 +416,318 @@ class Nivel_R extends Phaser.Scene
             frameRate: 8,
             repeat: -1
         });
-        this.anims.create({
-            key: 'Piranha_plant',
-            frames: this.anims.generateFrameNumbers('Piranha_plant', { start: 0, end: 0 }),
-            frameRate: 8,
-            repeat: -1
-        });
-        // this.anims.create({
-        //     key: 'piranha_bite',
-        //     frames: this.anims.generateFrameNumbers('piranha_plant', { start: 0, end: 1 }),
-        //     frameRate: 4,
-        //     repeat: -1
-        // });
     }
     
     setupCollisions() {
+        //Máscaras de colisión
+        const CATEGORY_PLAYER  = 0x0001;
+        const CATEGORY_ENEMY   = 0x0002;
+        const CATEGORY_POWERUP = 0x0003;
+        const CATEGORY_TERRAIN = 0x0004;
+        const CATEGORY_FALLOFF = 0x0005;
+        const M = Phaser.Physics.Matter.Matter;
         // Colisión con barra final
-        this.physics.add.overlap(
-        this.jugador,
-        this.barraFin,
-        this.ganasPartida,
-        null,
-        this
-        );
+        const handle = (event, bodyA, bodyB) => {
+            // if(!bodyA.gameObject || bodyB.gameObject)
+            // {
+            //     return;
+            // }
+            if (bodyA.gameObject == this.jugador && bodyB.gameObject == this.barraFin
+                || bodyB.gameObject == this.jugador && bodyA.gameObject == this.barraFin)
+            {
+                this.ganasPartida(this.jugador, this.barraFin);
+            }
+            if ((bodyB.label=="PowerUp" && bodyA.label=="Mario") ||
+                (bodyA.label=="PowerUp" && bodyB.label=="Mario"))// && bodyA.gameObject == this.jugador)
+            {
+                const powerUp  = bodyA.label=="PowerUp"  ? bodyA.gameObject : bodyB.gameObject;
+                const player = bodyA.label=="Mario" ? bodyA.gameObject : bodyB.gameObject;
 
-        // Colisión con powerups
-        this.physics.add.overlap(
-            this.jugador,
-            this.powerups,
-            (player, pu) => pu.collect(player),
-            null,
-            this
-        );
-
-        // Colisión con Goombas
-        this.physics.add.overlap(
-            this.jugador,
-            this.goombas,
-            (player, goomba) => goomba.handlePlayerCollision(player),
-            null,
-            this
-        );
-        
-        // Colisión con Koopas
-        this.physics.add.overlap(
-            this.jugador,
-            this.koopas,
-            (player, koopa) => koopa.handlePlayerCollision(player),
-            null,
-            this
-        );
-        // Colisión con plantas piraña
-        this.matter.world.on('collisionstart', (event) => {
-            event.pairs.forEach(pair => {
-                const { bodyA, bodyB } = pair;
-        
-                if (bodyB.gameObject instanceof PiranhaPlant && bodyA.gameObject === this.jugador) {
-                    bodyB.gameObject.handlePlayerCollision(this.jugador);
-                } else if (bodyA.gameObject instanceof PiranhaPlant && bodyB.gameObject === this.jugador) {
-                    bodyA.gameObject.handlePlayerCollision(this.jugador);
+                powerUp.collect(player);
+            }
+            if (bodyA.label=="Mario" && bodyB.gameObject && bodyB.gameObject.name == "BloqueCae")
+            {
+                bodyB.gameObject.setCollidesWith([CATEGORY_PLAYER]);
+                this.time.delayedCall(150, () => {
+                    bodyB.gameObject.fallActive=true;
+                    bodyB.gameObject.setTexture('fallOffBlock2'); // Cambiar textura a bloque vacío
+                });
+            }
+            if (bodyA.gameObject == this.jugador&& bodyB.gameObject && bodyB.gameObject.name == "pausa" && !bodyB.gameObject.hasPlayer)
+            {
+                this.bloquePausaActivo = bodyB.gameObject;
+                const activarPausa = () => {
+                    this.jugador.stop();
+                    this.jugador.setVelocity(0,0);
+                    bodyB.gameObject.hasPlayer = true;
+                    this.enPausa = true;
+                    bodyB.gameObject.setTexture('Pause');
+                    this.sound.play('PauseBlq');
+                };
+                if (this.jugador.getCenter().x < bodyB.bounds.max.x) {
+                    this.time.delayedCall(90, activarPausa);
+                } else {
+                    activarPausa();
                 }
-            });
-        });
+            }
+            if (bodyA.label=="Mario" && bodyB.gameObject && bodyB.gameObject.name == "spikes"
+                && !this.jugador.isBeingPushed && !this.jugador.isInvulnerable && !this.jugador.isInvincible)
+            {
+                const player = this.jugador;
+                if (!player.isSuperSize && !this.scene.endTimer) 
+                {
+                    this.sound.play('muerte');
 
-        // Colisión entre Goombas
-        this.physics.add.collider(
-            this.goombas,
-            this.goombas,
-            (goomba1, goomba2) => goomba1.handleEnemyCollision(goomba2),
-            null,
-            this
-        );
+                    // Detener cualquier movimiento de Mario antes de la burbuja
+                    player.setVelocity(0, 0);
+                    if (player.body) {
+                        player.body.velocity.x = 0;
+                        player.body.velocity.y = 0;
+                    }
 
-        // Colisión entre Koopas
-        this.physics.add.collider(
-            this.koopas,
-            this.koopas,
-            (koopa1, koopa2) => koopa1.handleEnemyCollision(koopa2),
-            null,
-            this
-        );
+                    if (player.bubblesLeft > 0) {
+                        player.Bubble(); // Entra en burbuja
+                    } else {
+                        this.doubleEndTransition(()=>{this.scene.launch('MainMenu');
+                        this.scene.stop();});
+                        player.hurt();
+                    }
+                } else {
+                    // Colisión lateral
+                    let pushDirection = 0; // Determinar dirección del empuje
+                    player.takeDamage(pushDirection);
+                }
+            }
+            if ((bodyA.label=="Mario" &&bodyB.gameObject?.name=="pathAr") ||
+            (bodyB.label=="Mario" && bodyA.gameObject?.name=="pathAr")) 
+            {
+                const coinDistanceX = 10;
+                const coinDistanceY = -40;
+                let blockPass;
+                if (bodyB.gameObject?.name == "pathAr")
+                {
+                    blockPass = bodyB.gameObject;
+                }
+                else{
+                    blockPass = bodyA.gameObject;
+                }
+                this.spawnCoins(coinDistanceX,coinDistanceY,blockPass);
+            }
+            if ((bodyA.label=="Mario" && bodyB.gameObject?.name=="pathAbD") ||
+            (bodyB.label=="Mario" && bodyA.gameObject?.name=="pathAbD")) 
+            {
+                // 5 monedas Abajo Diagonal
+                const coinDistanceX = 20;
+                const coinDistanceY = 40;
+                let blockPass;
+                if (bodyB.gameObject?.name == "pathAbD")
+                {
+                    blockPass = bodyB.gameObject;
+                }
+                else{
+                    blockPass = bodyA.gameObject;
+                }
+                this.spawnCoins(coinDistanceX,coinDistanceY,blockPass);
+            }
+            if ((bodyA.label=="Mario" && bodyB.gameObject?.name=="pathArD") ||
+                (bodyB.label=="Mario" && bodyA.gameObject?.name=="pathArD")) 
+            {
+                // 5 monedas Arriba Diagonal
+                const coinDistanceX = 20;
+                const coinDistanceY = -40;
+                const scene = this;
+                let blockPass;
+                if (bodyB.gameObject?.name == "pathArD")
+                {
+                    blockPass = bodyB.gameObject;
+                }
+                else{
+                    blockPass = bodyA.gameObject;
+                }
+                this.spawnCoins(coinDistanceX,coinDistanceY,blockPass);
+            }
+            if ((bodyA.label=="Mario" && bodyB.gameObject?.name=="pathD") ||
+                (bodyB.label=="Mario" && bodyA.gameObject?.name=="pathD")) 
+            {
+                // 5 monedas Derecha
+                const coinDistanceX = 40;
+                const coinDistanceY = 0;
+                let blockPass;
+                if (bodyB.gameObject?.name == "pathD")
+                {
+                    blockPass = bodyB.gameObject;
+                }
+                else{
+                    blockPass = bodyA.gameObject;
+                }
+                this.spawnCoins(coinDistanceX,coinDistanceY,blockPass);
+            }
+            if ((bodyA.label=="Mario" &&bodyB.gameObject?.name=="ImpulsoA") ||
+            (bodyB.label=="Mario" && bodyA.gameObject?.name=="ImpulsoA")) 
+            {
+                // console.log(this.jugador.jumpRequested);
+                if (bodyA.gameObject?.name == "ImpulsoA")
+                {
+                    this.impulsoActivo = bodyA.gameObject;
+                }
+                else{
+                    this.impulsoActivo = bodyB.gameObject;
+                }
+                if (this.jugador.jumpRequested || this.jugador.jumpHeld)
+                {
+                    this.sound.play('ImpA');
+                    this.impulsoActivo = null;
+                    M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -10 });
+                }
+            }
+            if ((bodyA.label=="Mario" && bodyB.gameObject?.name=="ImpulsoM") ||
+            (bodyB.label=="Mario" && bodyA.gameObject?.name=="ImpulsoM")) 
+            {
+                // console.log(this.jugador.jumpRequested);
+                if (bodyA.gameObject?.name == "ImpulsoM")
+                {
+                    this.impulsoActivo = bodyA.gameObject;
+                }
+                else{
+                    this.impulsoActivo = bodyB.gameObject;
+                }
 
-        // Colisión entre Goombas y Koopas
-        this.physics.add.collider(
-            this.goombas,
-            this.koopas,
-            (goomba, koopa) => goomba.handleEnemyCollision(koopa),
-            null,
-            this
-        );
+                if (this.jugador.jumpRequested || this.jugador.jumpHeld)
+                {
+                    this.sound.play('ImpM');
+                    this.impulsoActivo = null;
+                    M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -7 });
+                }
+            }
+            if ((bodyA.label=="Mario" && bodyB.gameObject?.name=="ImpulsoB") ||
+                (bodyB.label=="Mario" && bodyA.gameObject?.name=="ImpulsoB")) 
+            {                
+                // console.log(this.jugador.jumpRequested)
+                if (bodyA.gameObject?.name == "ImpulsoB")
+                {
+                    this.impulsoActivo = bodyA.gameObject;
+                }
+                else{
+                    this.impulsoActivo = bodyB.gameObject;
+                }
 
-        // Colisiones powerups con suelo y bloques        
-        this.physics.add.collider(this.powerups, this.groundLayer);
-
-        this.physics.add.collider(this.powerups, this.blocks);
-
-        this.physics.add.collider(
-            this.jugador, 
-            this.blocks,
-            (player, block) => {
-                if (!(player.body.velocity.y >= 0 && player.body.center.y > block.body.bottom)){
+                if (this.jugador.jumpRequested || this.jugador.jumpHeld)
+                {
+                    this.sound.play('ImpB');
+                    this.impulsoActivo = null;
+                    M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -5 });
+                }
+            }
+            if ((bodyA.name === "oneway" &&  bodyA.isSensor &&bodyB.label=="Mario") ||
+                (bodyB.name === "oneway"&& bodyB.isSensor && bodyA.label=="Mario"))
+            {
+                let sensor;
+                if (bodyA.name==="oneway")
+                {
+                    sensor = bodyA;
+                }
+                else
+                {
+                    sensor = bodyB;
+                } 
+                const activarOneWay = () => {
+                    sensor.blockTop.setCollidesWith([CATEGORY_ENEMY, CATEGORY_PLAYER]);
+                };
+                if (this.jugador.getCenter().x < sensor.bounds.max.x-6) {
+                    this.time.delayedCall(90, activarOneWay);
+                } else {
+                    activarOneWay();
+                }
+            }
+            if(bodyA.label=="Mario" && bodyB.gameObject && bodyB.gameObject._props) 
+            {
+                if (!(this.jugador.body.velocity.y < 0 && this.jugador.getCenter().y > bodyB.bounds.max.y)){
                     return; // Solo al golpear desde abajo
                 } 
-                const aim = this.findSpawnBlockAbovePlayer(player, 16, 10); // (toleranciaX, toleranciaY)
-                const target = aim || block; // prioriza spawn si hay uno “casi”
-                this.blockHit(player, target);
-            }, 
-            null,
-            this
-        );
+                const aim = this.findSpawnBlockAbovePlayer(this.jugador, 20, 20); // (toleranciaX, toleranciaY)
+                const target = aim || bodyB.gameObject; // prioriza spawn si hay uno “casi”
+                this.blockHit(this.jugador, target);
+            }
 
+            if(bodyB.label=="Goomba" && bodyA.label=="Mario"  ||
+            bodyA.label=="Goomba" && bodyB.label=="Mario"  )
+            {
+                const goomba  = bodyA.label=="Goomba"  ? bodyA.gameObject : bodyB.gameObject;
+                // const player = bodyA.label=="Mario" ? bodyA.gameObject : bodyB.gameObject;
+
+                goomba.handlePlayerCollision(this.jugador);
+            }
+            if(bodyB.label=="Goomba" && bodyA.label=="Goomba" || 
+                bodyB.label=="Koopa" && bodyA.label=="Goomba" ||
+                bodyB.label=="Koopa" && bodyA.label=="Koopa")
+            {
+                const goomba  = bodyB.label=="Goomba"  ? bodyA.gameObject : bodyB.gameObject;
+                const koopa = bodyA.label=="Koopa" ? bodyA.gameObject : bodyB.gameObject;
+
+                goomba.handleEnemyCollision(koopa);
+            }
+            if(bodyB.label=="Koopa" && bodyA.label=="Mario"  ||
+                bodyA.label=="Koopa"&& bodyB.label=="Mario" )
+            {
+                // const player  = bodyB.label=="Mario"  ? bodyA.gameObject : bodyB.gameObject;
+                const koopa = bodyA.label=="Koopa" ? bodyA.gameObject : bodyB.gameObject;
+
+                koopa.handlePlayerCollision(this.jugador);
+            }
+            if(bodyB.label=="Pokey" && bodyA.label=="Mario" ||
+            bodyA.label=="Pokey" && bodyB.label=="Mario")
+            {
+                const pokey = bodyA.label=="Pokey" ? bodyA.gameObject : bodyB.gameObject;
+                
+                pokey.handlePlayerCollision(this.jugador);
+            }
+            if(bodyB.label=="Piranha" && bodyA.label=="Mario" ||
+            bodyA.label=="Piranha" && bodyB.label=="Mario")
+            {
+                const piranha = bodyA.label=="Piranha" ? bodyA.gameObject : bodyB.gameObject;
+                
+                piranha.handlePlayerCollision(this.jugador);
+            }
+        }
+        const exitHandle = (event, bodyA, bodyB) => {
+            if ((bodyA.name === "oneway" &&  bodyA.isSensor &&bodyB.label=="Mario" ) ||
+                (bodyB.name === "oneway"&& bodyB.isSensor && bodyA.label=="Mario" ))
+            {
+                const oneway = bodyA.name=="oneway" ? bodyA.gameObject : bodyB.gameObject;
+
+                oneway.blockTop.setCollidesWith([CATEGORY_ENEMY]);
+            }
+            if ((bodyA.label=="Mario" &&bodyB.gameObject?.name=="ImpulsoA") ||
+            (bodyB.label=="Mario" && bodyA.gameObject?.name=="ImpulsoA") || 
+            (bodyA.label=="Mario" &&bodyB.gameObject?.name=="ImpulsoM") ||
+            (bodyB.label=="Mario" && bodyA.gameObject?.name=="ImpulsoM") || 
+            (bodyA.label=="Mario" &&bodyB.gameObject?.name=="ImpulsoB") ||
+            (bodyB.label=="Mario" && bodyA.gameObject?.name=="ImpulsoB")) 
+            {
+                this.impulsoActivo=null;
+            }
+        }
+        this.matter.world.on('collisionstart', handle);
+        this.matter.world.on('collisionend', exitHandle);
+        this.matter.world.on('collisionactive', handle);
+    }
+
+    doubleEndTransition(callback)
+    {
+        if (this.levelMusic && this.levelMusic.isPlaying) {
+            this.levelMusic.stop();
+        }
+        TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador.getCenter(), this.cameras.main.width, 120,
+        ()=>{
+            this.sound.play('iris-out')
+            transition2();
+        });
+        const transition2 = () => {
+            TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador.getCenter(), 120, 0,
+            ()=>{
+                callback();
+            });
+        }
     }
 
     findSpawnBlockAbovePlayer(player, toleranciaX = 16, toleranciaY = 10) {
@@ -471,7 +741,7 @@ class Nivel_R extends Phaser.Scene
                 const dx = Math.abs(block.x - player.x);
                 const isAbove = player.y > block.y;
                 const closeX = dx <= (block.displayWidth / 2 + toleranciaX);
-                const closeY = (player.body.y <= block.body.bottom + toleranciaY);
+                const closeY = ( this.jugador.getCenter().y <= bodyB.bounds.max.y + toleranciaY);
                 if (isAbove && closeX && closeY) {
                     if (dx < bestDx) { bestDx = dx; best = b; }
                 }
@@ -481,31 +751,34 @@ class Nivel_R extends Phaser.Scene
     blockHit(player, block) {
         // Lógica al golpear un bloque
         const props = block._props;
-        if (props.Breakable && player.isSuperSize) {
-            this.sound.play('BrickBlock');
-            block.destroy();
-            // this.sound.play('block_break');
-            return;
-        }
-        else
+        if (props)
         {
-            this.sound.play('Bump')
-        }
-
-        if (props.Spawn){
-            // Spawn power-up
-            if(player.isSuperSize){
-                this.spawnPowerUp(block.x + block.width / 2, block.y - block.height, props.PowerUp, props.PowerUp);
-                // this.sound.play('powerup_appears');
+            if (props.Breakable && player.isSuperSize) {
+                this.sound.play('BrickBlock');
+                block.destroy();
+                // this.sound.play('block_break');
+                return;
             }
             else
             {
-                this.spawnPowerUp(block.x + block.width / 2, block.y - block.height, POWERUP_TYPES.MUSHROOM, 'mushroom');
+                this.sound.play('Bump')
             }
 
-           block._props.Spawn = false; // Evitar respawn
+            if (props.Spawn){
+                // Spawn power-up
+                if(player.isSuperSize){
+                    this.spawnPowerUp(block.x + block.width / 2, block.y - block.height, props.PowerUp, props.PowerUp);
+                    // this.sound.play('powerup_appears');
+                }
+                else
+                {
+                    this.spawnPowerUp(block.x + block.width / 2, block.y - block.height, POWERUP_TYPES.MUSHROOM, 'mushroom');
+                }
 
-           block.setTexture('blockempty'); // Cambiar textura a bloque vacío
+            block._props.Spawn = false; // Evitar respawn
+
+            block.setTexture('blockempty'); // Cambiar textura a bloque vacío
+            }
         }
     }
 
@@ -524,7 +797,6 @@ class Nivel_R extends Phaser.Scene
     }
 
     ganasPartida(player, barra) {
-        barra.destroy();
         this.increaseScore(Math.round(barra.y * 10), 'score');
         this.endTimer=true;
 
@@ -551,7 +823,14 @@ class Nivel_R extends Phaser.Scene
             }
         });
 
+        this.pokeys.getChildren().forEach(pokey => {
+            if (pokey.safeDestroy && !pokey.shouldBeDestroyed) {
+                pokey.safeDestroy();
+            }
+        });
+
         this.jugador.win();
+        barra.destroy();
         this.jugador.play('mario_stop', true);
 
         // Detener música de nivel al ganar
@@ -564,7 +843,9 @@ class Nivel_R extends Phaser.Scene
         victoryMusic.once('complete', () => {
         this.jugador.play('mario_victory', true);
         setTimeout(() => {
-        this.transition('MainMenu'); // Llamar a la transición cuando se acaba el tiempo
+            this.doubleEndTransition(
+                ()=>{this.scene.launch('MainMenu');
+                this.scene.stop();});        
         }, 1000);
         });
     }
@@ -596,8 +877,6 @@ class Nivel_R extends Phaser.Scene
 
     createText()
     {
-
-
         // Este gráfico representa la línea dónde se alinea la UI por la derecha
 
         // var graphics = this.add.graphics();
@@ -609,14 +888,24 @@ class Nivel_R extends Phaser.Scene
 
         const fontSize = 29; // 50 / 1.65 ≈ 29
 
+        this.fpsText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -',{fontFamily: 'aku-kamu'})
+        .setOrigin(-2,5)
+        .setStroke('#000000ff', 6)
+        .setFill('#38b762ff')
+        .setFontSize(fontSize + 'px')
+        .setDepth(10)
+        // .setText("60")
+        .setScrollFactor(0);
+
+
         this.textTimer = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -',{fontFamily: 'aku-kamu'})
         .setOrigin(0.5,5)
         .setStroke('#000000ff', 6)
         .setFill('#ffffffff')
         // .setText("60")
+        .setDepth(10)
         .setFontSize(fontSize + 'px')
         .setScrollFactor(0)
-        .setShadow(5, 5, 'rgba(0,0,0,0.5)', 5);
 
 
 
@@ -624,6 +913,7 @@ class Nivel_R extends Phaser.Scene
         .setOrigin(1,5)
         .setStroke('#000000ff', 6)
         .setFill('#ffffffff')
+        .setDepth(10)
         .setFontSize(fontSize + 'px')
         .setScrollFactor(0);
         // textScore.setShadow(10, 10, 'rgba(0,0,0,0.5)', 10); 
@@ -634,6 +924,7 @@ class Nivel_R extends Phaser.Scene
         .setStroke('#000000ff', 6)
         .setFill('#DBC716')
         // .setText("".padStart(2,"0"))
+        .setDepth(10)
         .setFontSize(fontSize + 'px')
         .setScrollFactor(0);
         // this.textCoins.setText("".padStart(2,"0"));
@@ -644,11 +935,13 @@ class Nivel_R extends Phaser.Scene
         .setAlign('center')
         .setStroke('#000000ff', 6)
         .setFill('#621C87')
+        .setDepth(10)
         .setScrollFactor(0);
 
         // this.textPurpleCoins.setText("".padStart(1,"0"));
 
         this.timerMethod();
+        // this.ui.add([this.fpsText,this.textPurpleCoins,this.textCoins,this.textScore,this.textTimer]);
     }
     
     transition(sceneName)
@@ -671,9 +964,10 @@ class Nivel_R extends Phaser.Scene
 
         // Recogemos la pos del jugador actualmente
         var playerWorld = this.jugador.getCenter();
-        this.jugador.body.setVelocity(0, 0);
-        this.jugador.body.setGravityY(-700);
-        this.jugador.body=false;
+        // this.jugador.setVelocity(0, 0);
+        // this.jugador.setGravityY(-7);
+        // this.jugador.body=false;
+        this.jugador.setStatic(true);
         var radius = 1500; // Tamaño al principio
 
         // Dibujar círculo blanco
@@ -693,10 +987,6 @@ class Nivel_R extends Phaser.Scene
             onUpdate: (tween, target) => {
                 this.circleMask.clear();
                 this.circleMask.fillStyle(0xffffff);
-                if(this.jugador)
-                {
-                    playerWorld = this.jugador.getCenter();
-                }
                 this.circleMask.fillCircle(playerWorld.x, playerWorld.y, target.r);
             },
             onComplete:()=>
@@ -709,6 +999,12 @@ class Nivel_R extends Phaser.Scene
                     duration: 1500,
                     ease: 'Cubic.easeInOut',
                     onUpdate: (tween, target) => {
+                        // if(this.endTimer && playerWorld.x-(this.cameras.main.width / this.cameras.main.zoom/2)>10)
+                        // {
+                        //     this.cameras.main.setPosition(
+                        //         playerWorld.x-(this.cameras.main.width / this.cameras.main.zoom/2), 
+                        //         this.cameras.main.y);
+                        // }
                         this.circleMask.clear();
                         this.circleMask.fillStyle(0xffffff);
                         this.circleMask.fillCircle(playerWorld.x, target.py, target.r);
@@ -730,6 +1026,7 @@ class Nivel_R extends Phaser.Scene
         const cam = this.cameras.main;
 
         // Recogemos la pos del jugador actualmente
+        this.jugador.setStatic(true);
         if(this.jugador)
         {
             var playerWorld = this.jugador.getCenter();
@@ -763,12 +1060,13 @@ class Nivel_R extends Phaser.Scene
                 this.circleMask.clear();
                 this.circleMask.fillStyle(0xffffff);
                 this.circleMask.fillCircle(playerWorld.x, playerWorld.y, target.r);
-                this.jugador.x = 25;
-                this.jugador.y = 625;
-                this.jugador.body.setVelocity(0, 0);    
+                // this.jugador.x = 25;
+                // this.jugador.y = 625;
+                // this.jugador.setVelocity(0, 0);    
             },
             onComplete:()=>
             {
+                this.jugador.setStatic(false);
                 this.tweens.add({
                     targets: { r: 120, py:playerWorld.y}, 
                     r: Math.max(cam.width*2,cam.height*2),  
@@ -799,7 +1097,7 @@ class Nivel_R extends Phaser.Scene
 
     timerMethod ()
     {
-        let timer = 60;
+        let timer =60;
         this.endTimer = false;
         this.timerEvent = this.time.addEvent({
         delay: 1000,
@@ -812,7 +1110,10 @@ class Nivel_R extends Phaser.Scene
                     this.endTimer=true;
                     this.sound.play('muerte');
                     this.jugador.hurt();
-                    this.transition('MainMenu'); // Llamar a la transición cuando se acaba el tiempo
+                    this.jugador.setStatic(true);
+                    this.doubleEndTransition(
+                    ()=>{this.scene.launch('MainMenu');
+                    this.scene.stop();});
                 }
                 if (!this.jugador.isInBubble) {
                     timer = (timer - 1 + 60) % 60; // reinicia a 60
@@ -860,6 +1161,7 @@ class Nivel_R extends Phaser.Scene
         }
     }
 
+
     restartLevel() {
         // Reiniciar la escena o reposicionar el jugador
         this.jugador.x = 25;
@@ -867,7 +1169,7 @@ class Nivel_R extends Phaser.Scene
         this.jugador.resetStates(); // Resetear estados
         this.jugador.resume(); // Reanudar movimiento
         if (this.jugador.body) {
-            this.jugador.body.setVelocity(0, 0);
+            // this.jugador.setVelocity(0, 0);
         }
         // Resetear estado de daño
         this.jugador.isHurt = false;
@@ -882,8 +1184,11 @@ class Nivel_R extends Phaser.Scene
     }
 
     update(time, delta) {
+        if (!this.fpsText || !this.fpsText.scene || this.fpsText._destroyed) return;
+
         if (!this.endTimer)
         {
+            this.fpsText?.setText(Math.floor(this?.game?.loop?.actualFps));
             // Actualizar jugador
             this.jugador.update(time,delta);
 
@@ -928,6 +1233,31 @@ class Nivel_R extends Phaser.Scene
                 piranha.update(time, delta);
             });
         }
+        if (this.pokeys) {
+            this.pokeys.getChildren().forEach(pokey => {
+                pokey.update(time, delta);
+            });
+        }
+        if (this.pausa && this.enPausa && this.bloquePausaActivo) {
+            const block = this.bloquePausaActivo;
+            if (this.jugador.isJumping) {
+                // Reanudar al jugador
+                this.jugador.setVelocityY(-6);
+                this.jugador.resume(); // Si tienes animaciones pausadas
+                this.enPausa = false;
+
+                // Restaurar bloque
+                if (block) {
+                    block.hasPlayer = false;
+                    block.setTexture('Resume'); // Cambiar textura a bloque vacío
+                }
+
+                this.bloquePausaActivo = null;
+            } else {
+                // Mientras está en pausa, mantener al jugador detenido
+                this.jugador.setVelocity(0, 0);
+            }
+        }
     }
 
     // Verificar si el jugador se ha caído
@@ -939,7 +1269,9 @@ class Nivel_R extends Phaser.Scene
             this.sound.play('muerte');
             this.jugador.y = this.map.heightInPixels + 45;
             this.jugador.hurt();
-            this.transition('MainMenu');
+            this.doubleEndTransition(
+                ()=>{this.scene.launch('MainMenu');
+                this.scene.stop();});
         }
     }
 
@@ -961,11 +1293,102 @@ class Nivel_R extends Phaser.Scene
     }
 
     // Spawner simple (tu PowerUp ya añade físicas y movimiento)
-    spawnPowerUp(x, y, type, textureKey) {
-        let power = new PowerUp(this, x, y, type, textureKey)
-        power.body.setVelocity(power.body.velocity.x * 3,-150); // Salir del bloque hacia arriba
+    spawnPowerUp(x, y, type) {
+        let power = new PowerUp(this, x, y, type, type, 0)
+        power.setVelocityX(power.body.velocity.x * 0.09315); // Salir del bloque hacia arriba
+        power.setVelocityY(-power.body.velocity.x/2);
         this.powerups.add(power);
         return this.powerups;
+    }
+
+requestHammer(player) {
+    let hammer = this.hammers.getChildren().find(h => !h.active);
+
+    if (!hammer) {
+        hammer = this.matter.add.sprite(player.x, player.y, 'hammer');
+        hammer.setCircle(8);
+        hammer.setBounce(0.8);
+        hammer.setIgnoreGravity(false);
+        hammer.setFixedRotation();
+        hammer.isHammer = true;
+        hammer.used = false;
+        hammer.setDepth(6);
+
+        // Config rebotes por primera vez
+        hammer._bounces = 0;
+        hammer._maxBounces = 3;
+
+        // Manejar colisiones
+       hammer.setOnCollide((collision) => {
+            if (hammer.used) return; // si ya no hace daño, ignorar
+
+            const bodyA = collision.bodyA;
+            const bodyB = collision.bodyB;
+            const other = (bodyA === hammer.body) ? bodyB : bodyA;
+
+            const otherGO = other?.gameObject;
+
+            // 🔹 Interface común de enemigos
+            if (otherGO && otherGO.isEnemy && typeof otherGO.die === 'function') {
+                otherGO.die(DIE_TYPES.HAMMER);
+            }
+
+            // Rebote solo contra bloques u objetos estáticos
+            if (other && other.isStatic) {
+                hammer._bounces++;
+
+                if (hammer._bounces >= hammer._maxBounces) {
+                    hammer.used = true;        // ya no hace daño
+                    hammer.setBounce(0);       // sin rebote
+
+                    // Desaparecer después de 0.3s
+                    this.time.delayedCall(300, () => {
+                        this.recycleHammer(hammer);
+                    });
+                }
+            }
+        });
+
+        this.hammers.add(hammer);
+    }
+
+    hammer.used = false;
+    hammer._bounces = 0;
+    hammer.setBounce(0.4);
+    hammer.setIgnoreGravity(false);
+    hammer.setActive(true);
+    hammer.setVisible(true);
+    hammer.setVelocity(0, 0);
+    hammer.setAngularVelocity(0);
+    hammer.setDepth(6);
+
+    return hammer;
+}
+
+
+recycleHammer(hammer) {
+    if (!hammer) return;
+
+    hammer.used = false;
+    hammer._bounces = 0;
+    hammer.setActive(false);
+    hammer.setVisible(false);
+    hammer.setVelocity(0, 0);
+    hammer.setAngularVelocity(0);
+    hammer.setPosition(-1000, -1000);
+}
+
+
+    // Comprueba si un objeto se encuentra en un grupo concreto
+    isBodyInGroup = (body, group) => {
+        // Itera por todos los elementos en el grupo
+        for (let i = 0; i < group.getChildren().length; i++) {
+            // Compara si el cuerpo de un elemento en el grupo es igual al cuerpo que estamos buscando
+            if (group.getChildren()[i].body === body) {
+                return true;  // Si se encuentra, devuelve true
+            }
+        }
+        return false;  // Si no se encuentra, devuelve false
     }
 }
 

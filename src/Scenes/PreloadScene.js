@@ -99,6 +99,48 @@ class PreloadScene extends Phaser.Scene {
             frameWidth: 72,
             frameHeight: 72,
         });
+        this.load.spritesheet('mario_idle', 'GameSprites/Characters/Mario/Mario_idle.png', {
+            frameWidth: 32,
+            frameHeight: 56,
+        });
+        this.load.spritesheet('mario_panicrun', 'GameSprites/Characters/Mario/Mario_panicrun.png', {
+            frameWidth: 44,
+            frameHeight: 56,
+        });
+        this.load.spritesheet('mario_panicjump', 'GameSprites/Characters/Mario/Mario_panicjump.png', {
+            frameWidth: 44,
+            frameHeight: 56,
+        });
+        this.load.spritesheet('mario_panicfall', 'GameSprites/Characters/Mario/Mario_panicfall.png', {
+            frameWidth: 44,
+            frameHeight: 56,
+        });
+
+        // Júpiter
+        this.load.spritesheet('jupiter_neutral', 'GameSprites/Characters/Bosses/Jupiter/Jupiter_Neutral.png', {
+            frameWidth: 39,
+            frameHeight: 52,
+        });
+        this.load.spritesheet('jupiter_attack', 'GameSprites/Characters/Bosses/Jupiter/Jupiter_Attack.png', {
+            frameWidth: 39,
+            frameHeight: 54,
+        });
+        this.load.spritesheet('jupiter_tired', 'GameSprites/Characters/Bosses/Jupiter/Jupiter_Tired.png', {
+            frameWidth: 40,
+            frameHeight: 58,
+        });
+        this.load.spritesheet('jupiter_dead', 'GameSprites/Characters/Bosses/Jupiter/Jupiter_Dead.png', {
+            frameWidth: 39,
+            frameHeight: 56,
+        });
+        this.load.spritesheet('warning_triangle', 'GameSprites/Characters/Bosses/Jupiter/Warning_Triangle.png', {
+            frameWidth: 234,
+            frameHeight: 226,
+        });
+        this.load.spritesheet('lightning', 'GameSprites/Characters/Bosses/Jupiter/Lightning.png', {
+            frameWidth: 1224,
+            frameHeight: 350,
+        });
 
         //PowerUps
         this.load.image('star', 'GameSprites/PowerUps/star.png');
@@ -113,9 +155,32 @@ class PreloadScene extends Phaser.Scene {
         this.load.image('blockempty', 'GameSprites/Items/blockempty.png');
         this.load.image('block', 'GameSprites/Items/blockBreakable.png');
 
+        //FallBlocks
+        this.load.image('fallOffBlock1', 'GameSprites/Items/FallOffBlock.png');
+        this.load.image('fallOffBlock2', 'GameSprites/Items/FallOffBlock2.png');
+        
+        //Bloques Pause y Continue
+        this.load.image('Pause', 'GameSprites/Items/PauseBlock.png');
+        this.load.image('Resume', 'GameSprites/Items/ResumeBlock.png');
+        
+        //Pinchos
+        this.load.image('spikes', 'GameSprites/Items/Spikes.png');
+
+        //CoinPass 2 direcciones
+        this.load.image('CoinPassD', 'GameSprites/Items/CoinPassDiagonal.png');
+        this.load.image('CoinPassS', 'GameSprites/Items/CoinPassStraight.png');
+
+        //Intensidad soles
+        this.load.spritesheet('Impulsos', 'GameSprites/Items/SunIntensity.png', {
+            frameWidth: 32,
+            frameHeight: 32,
+        });
+
         // Tilesets
         this.load.image('mi_tileset', 'GameSprites/Tilesets/base_tileset.png');
         this.load.image('bg_tileset', 'GameSprites/Tilesets/Rome_BG.png');
+        this.load.image('bg_tileset_D', 'GameSprites/Tilesets/Dessert_BG.png');
+        this.load.image('bg_tileset_P', 'GameSprites/Tilesets/Pyramid_BG.png');
         this.load.spritesheet('barra_tileset', 'GameSprites/Items/barraFin.png', {
             frameWidth: 64,
             frameHeight: 32
@@ -123,6 +188,12 @@ class PreloadScene extends Phaser.Scene {
         this.load.spritesheet('coin_tileset', 'GameSprites/Items/Coins.png', {
             frameWidth: 32,
             frameHeight: 32
+        });
+        
+        // PilaresBosses
+        this.load.spritesheet('pilar_fuegoTiles', 'GameSprites/ObjetosBosses/PilarFuego.png', {
+            frameWidth: 128,
+            frameHeight: 126
         });
 
         //Logo
@@ -144,9 +215,18 @@ class PreloadScene extends Phaser.Scene {
         this.load.audio('starEnding', 'sonidos/SE/Items/PowerUps/estrellaSeAcaba.wav');
         this.load.audio('BrickBlock', 'sonidos/SE/Items/Bloques/BrickBlock.wav');
         this.load.audio('Bump', 'sonidos/SE/Items/Bloques/Bump.wav');
+        this.load.audio('PauseBlq', 'sonidos/SE/Items/Bloques/PauseBlock.wav');
+        this.load.audio('ImpB', 'sonidos/SE/Items/Bloques/ImpulseA.wav');
+        this.load.audio('ImpM', 'sonidos/SE/Items/Bloques/ImpulseB.wav');
+        this.load.audio('ImpA', 'sonidos/SE/Items/Bloques/ImpulseM.wav');
+        this.load.audio('bubblePop', 'sonidos/SE/Mario/Acciones/BubblePop.wav');
+        this.load.audio('bubbleCreate', 'sonidos/SE/Mario/Acciones/BubbleCreate.wav');
+        this.load.audio('coinPath', 'sonidos/SE/Items/Bloques/CoinPath.wav');
+        this.load.audio('JupiterLightningSound', 'sonidos/SE/JupiterSFX/JupiterLightning.wav');
 
         // Música
         this.load.audio('level_music', 'sonidos/BGM/level_theme.mp3');
+        this.load.audio('Desierto', 'sonidos/BGM/Desierto.mp3');
         this.load.audio('menu_music', 'sonidos/BGM/menu_theme.mp3');
         this.load.audio('victory_music', 'sonidos/BGM/Nivel_Completado.wav');
         this.load.audio('starman', 'sonidos/BGM/Starman.wav');
@@ -154,7 +234,7 @@ class PreloadScene extends Phaser.Scene {
         // Menu SFX
         this.load.audio('iris-out', 'sonidos/SE/MenuSFX/smw_goal_iris-out.wav');
 
-
+        document.fonts.load('32px aku-kamu').then(() => {});
 
         this.load.on('complete', () => {
             // Se cambia a la escena del menú pricipal medio segundo después de terminar la precarga

@@ -8,7 +8,7 @@ export const POWERUP_TYPES = {
 };
 
 const STAR_DURATION = 8000; // ms
-const POWERUP_SPEED = 70;  // Velocidad horizontal básica de los Power-Ups
+const POWERUP_SPEED = 50;  // Velocidad horizontal básica de los Power-Ups
 
 export class PowerUp extends Phaser.GameObjects.Sprite {
   /**
@@ -28,6 +28,7 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
     scene.add.existing(this);
     scene.matter.add.gameObject(this);
     this.setOrigin(0.5, 0.5);
+
     // this.setActive(true).setVisible(true);
     // this.body.setAllowGravity(true);
     // this.body.setCollideWorldBounds(true);
@@ -39,13 +40,11 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
     this.blocked= {
       left: false,
       right: false,
-      bottom: false,
       up: false
     },
     this.numTouching= {
       left: 0,
       right: 0,
-      bottom: 0,
       up:0
     };   
 
@@ -55,21 +54,34 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
     const w = this.width;
     const h = this.height;
     const M = Phaser.Physics.Matter.Matter;
-    this.playerBody = M.Bodies.rectangle(sx,sy, w, h, { chamfer: { radius: 10 } });
+    this.playerBody = M.Bodies.rectangle(sx,sy, w, h, { chamfer: { radius: 10 },label:"PowerUp"});
     this.sensors = {
-        bottom: M.Bodies.rectangle(sx, h, sx, 5, { isSensor: true }),
-        left: M.Bodies.rectangle(sx-w, sy, 5, h/2, { isSensor: true }),
-        right: M.Bodies.rectangle(sx+w, sy, 5, h/2, { isSensor: true }),
+        left: M.Bodies.rectangle(sx-w/1.5, sy, 5, h/2, { isSensor: true, label:"PowerUp"}),
+        right: M.Bodies.rectangle(sx+w/1.5, sy, 5, h/2, { isSensor: true, label:"PowerUp" }),
     };
     const compoundBody = M.Body.create({
-    parts: [this.playerBody,this.sensors.bottom, this.sensors.left, this.sensors.right/*, this.sensors.up*/],
+    parts: [this.playerBody, this.sensors.left, this.sensors.right/*, this.sensors.up*/],
     friction: 0,
     frictionAir: 0,
-    restitution: 0.05 // El jugador no se pega a paredes
+    restitution: 0.05, // El jugador no se pega a paredes
+    label:"PowerUp"
     });
     this.setExistingBody(compoundBody);
     // El cuerpo a la posición inicial
     M.Body.setPosition(compoundBody, { x, y });
+
+    
+    const CATEGORY_PLAYER  = 0x0001;
+    const CATEGORY_TERRAIN = 0x0004;
+    const CATEGORY_POWERUP = 0x0003;
+    
+    // const mask = CATEGORY_PLAYER | CATEGORY_TERRAIN | CATEGORY_POWERUP;
+
+    // // Apply to all parts
+    // this.enemyBody.collisionFilter.category = CATEGORY_ENEMY;
+    // this.enemyBody.collisionFilter.mask = mask;
+    this.setCollisionCategory(CATEGORY_POWERUP);
+    this.setCollidesWith([CATEGORY_PLAYER, CATEGORY_TERRAIN]);
 
     // Asociamos el cuerpo al sprite
     this.setPosition(x, y); // sincronizar la posición del sprite
@@ -78,12 +90,11 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
     // Movimiento básico (rebote ligero y desplazamiento)
     this.setBounce(0.1, 0.2);
     this.setVelocityX(POWERUP_SPEED);
-
+    this.SPEED = 5;
     
     this.scene.matter.world.on('beforeupdate', function (event) {
       this.numTouching.left = 0;
       this.numTouching.right = 0;
-      this.numTouching.bottom = 0;
     }, this);
     this.scene.matter.world.on('collisionactive', (event) => {
       for (let i = 0; i < event.pairs.length; i++)            
@@ -102,16 +113,17 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
         {
           this.numTouching.right++;
         }
-        if (bodyA === this.sensors.bottom || bodyB === this.sensors.bottom)
+        if (bodyA.label == "Mario" && bodyB.label=="PowerUp" || bodyA.label=="PowerUp"&&bodyB.label=="Mario")
         {
-          this.numTouching.bottom++;
+          const player = bodyA.label=="Mario" ? bodyA.gameObject : bodyB.gameObject;
+
+          this.collect(player);
         }
       }
     });
     this.scene.matter.world.on('afterupdate', function (event) {
       this.blocked.right = this.numTouching.right > 0 ? true : false;
       this.blocked.left = this.numTouching.left > 0 ? true : false;
-      this.blocked.bottom = this.numTouching.bottom > 0 ? true : false;
     }, this);
   }
 
@@ -164,7 +176,7 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
   preUpdate(time, delta) {
     super.preUpdate(time, delta);
     // console.log(this.blocked.left);
-    if (this.blocked.left) this.setVelocityX(Math.abs(this.body.velocity.x));
-    else if (this.blocked.right) this.setVelocityX(-Math.abs(this.body.velocity.x));
+    if (this.blocked.left) this.setVelocityX(Math.abs(this.SPEED));
+    else if (this.blocked.right) this.setVelocityX(-Math.abs(this.SPEED));
   }
 }

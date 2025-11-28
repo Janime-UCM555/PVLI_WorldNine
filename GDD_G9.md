@@ -30,7 +30,7 @@ Canva 1: [[Hito
 
 -   Jaime Nieto Méndez
 
-> Última Actualización: 07/11/2025
+> Última Actualización: 24/11/2025
 
 ## 1.  **Resumen**
 
@@ -574,9 +574,14 @@ monedas]**
 
 <img src="./assets/GDD_Images/Destructible.png" width=70 height=70>**Bloques destructibles**
 
-<img src="./assets/GDD_Images/BossFight.png" width=250 height=270>
+<img src="./assets/GDD_Images/BossFight.png" width=500 height=270><tr>En esta imagen se puede ver:
+<li><strong>Al jefe que atacará de vez en cuando</li>
+<li>A Mario corriendo más rápido que antes</li>
+<li>Al Ataque del jefe que “intentará” golpear a Mario
+(lanzará el ataque para que Mario lo pueda esquivar) </li>
+</tr>
+</strong>
 
-#  
 
 ### 6.1 Experiencia de cada nivel
 

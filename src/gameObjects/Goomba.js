@@ -28,32 +28,33 @@ class Goomba extends Phaser.GameObjects.Sprite
         this.blocked= {
             left: false,
             right: false,
-            bottom: false,
-            up: false
         };
         this.numTouching= {
-                left: 0,
-                right: 0,
-                bottom: 0,
-                up:0
+            left: 0,
+            right: 0,
         }; 
+        const CATEGORY_PLAYER  = 0x0001;
+        const CATEGORY_TERRAIN = 0x0004;
+        this.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN]);
+
         const sx = this.width/2;
         const sy = this.height/2;
         const w = this.width;
         const h = this.height;
         const M = Phaser.Physics.Matter.Matter;
-        this.enemyBody = M.Bodies.rectangle(sx,sy, w, h, { chamfer: { radius: 10 } });
+        this.enemyBody = M.Bodies.rectangle(sx,sy, w, h, { chamfer: { radius: 10 }, label:"Goomba" });
         this.sensors = {
-            bottom: M.Bodies.rectangle(sx, h, sx, 5, { isSensor: true }),
-            left: M.Bodies.rectangle(sx-w*0.45, sy, 5, h*0.25, { isSensor: true }),
-            right: M.Bodies.rectangle(sx+w*0.45, sy, 5, h*0.25, { isSensor: true }),
+            left: M.Bodies.rectangle(sx-w*0.45, sy, 5, h*0.25, { isSensor: true, label:"Goomba" }),
+            right: M.Bodies.rectangle(sx+w*0.45, sy, 5, h*0.25, { isSensor: true, label:"Goomba" }),
         };
         const compoundBody = M.Body.create({
-        parts: [this.enemyBody,this.sensors.bottom, this.sensors.left, this.sensors.right],
+        parts: [this.enemyBody,this.sensors.left, this.sensors.right],
         friction: 0,
         frictionAir: 0,
-        restitution: 0.05 // El jugador no se pega a paredes
+        restitution: 0.05, // El jugador no se pega a paredes
+        label:"Goomba"
         });
+        this.body.label="Goomba";
         this.setExistingBody(compoundBody);
         if (this.body) {
             // this.body.setCollideWorldBounds(false); // Desactivar colisión con bordes del mundo
@@ -79,6 +80,33 @@ class Goomba extends Phaser.GameObjects.Sprite
             this.setFixedRotation();
             
             this.stompSound = scene.sound.add('aplastar');
+            this.scene.matter.world.on('beforeupdate', function (event) {
+            this.numTouching.left = 0;
+            this.numTouching.right = 0;
+            }, this);
+            this.scene.matter.world.on('collisionactive', (event) => {
+            for (let i = 0; i < event.pairs.length; i++)            
+            {
+                const bodyA = event.pairs[i].bodyA;
+                const bodyB = event.pairs[i].bodyB;
+                if (bodyA === this.playerBody || bodyB === this.playerBody)
+                {
+                    continue;
+                }
+                if (bodyA === this.sensors.left || bodyB === this.sensors.left)
+                {
+                this.numTouching.left++;
+                }
+                if (bodyA === this.sensors.right || bodyB === this.sensors.right)
+                {
+                this.numTouching.right++;
+                }
+            }
+            });
+            this.scene.matter.world.on('afterupdate', function (event) {
+            this.blocked.right = this.numTouching.right > 0 ? true : false;
+            this.blocked.left = this.numTouching.left > 0 ? true : false;
+            }, this);
         }
     }
 
@@ -225,22 +253,25 @@ class Goomba extends Phaser.GameObjects.Sprite
         }
 
         // Verificar si Mario está cayendo y golpea desde arriba
-        console.log(player.body.velocity.y);
-        if (player.body.velocity.y>0.7) {
+        // console.log(player.body.velocity.y);
+        if ((player.body.velocity.y > 0.7 || player.getCenter().y > this.sy)) {
             // Hacer a Mario invulnerable temporalmente
             player.isInvulnerable = true;
 
             // Mario aplasta al Goomba
             // player.isGrounded = true;
-            player.canJump = true; 
+            player.canEnemyJump = true; 
             this.stomp()
             // Pequeño rebote para Mario
             player.setVelocityY(-4.5);
 
             // Quitar invulnerabilidad temporal a Mario
+            this.scene.time.delayedCall(250, () => {
+                player.canEnemyJump=false;
+            });
             this.scene.time.delayedCall(150, () => {
                 player.isInvulnerable = false;
-                player.canJump=false;
+                // player.canEnemyJump=false;
             });
         } else if (this.isAlive && !player.isBeingPushed && !player.isInvulnerable) {
             // Colisión lateral
@@ -259,21 +290,15 @@ class Goomba extends Phaser.GameObjects.Sprite
                     player.Bubble(); // Entra en burbuja
                 } else {
                     player.hurt();
-                    this.scene.transition('MainMenu'); // Volver al menú si no le quedan burbujas al jugador
-                }
+                    player.setStatic(true);
+                    this.body.collisionFilter.mask = 0; // Desactivar completamente las colisiones
+                    this.setStatic(true);
+                    this.scene.doubleEndTransition(()=>{this.scene.scene.launch('MainMenu');
+                        this.scene.scene.stop();});
+                    }
             } else {
                 // Colisión lateral
                 let pushDirection = 0; // Determinar dirección del empuje
-
-                // Calcular la dirección de la colisión
-                if (player.x < this.x) {
-                    // Goomba está a la derecha de Mario -> empujar a Mario hacia la izquierda
-                    pushDirection = -1;
-                } else {
-                    // Goomba está a la izquierda de Mario -> empujar a Mario hacia la derecha
-                    pushDirection = 1;
-                }
-
                 player.takeDamage(pushDirection);
             }
         }
@@ -398,32 +423,6 @@ class Goomba extends Phaser.GameObjects.Sprite
         // Destruir el objeto
         this.destroy();
     }
-    
-    resetTouching() {
-        this.numTouching.left = 0;
-        this.numTouching.right = 0;
-        this.numTouching.bottom = 0;
-    }
-
-    handleCollisions(bodyA, bodyB) 
-    {
-        if (bodyA === this.sensors.bottom || bodyB === this.sensors.bottom) {
-            this.numTouching.bottom += 1;
-        }
-        if ((bodyA === this.sensors.left && bodyB.isStatic) || (bodyB === this.sensors.left && bodyA.isStatic)) {
-            this.numTouching.left += 1;
-        }
-        if ((bodyA === this.sensors.right && bodyB.isStatic) || (bodyB === this.sensors.right && bodyA.isStatic)) {
-            this.numTouching.right += 1;
-        }
-    }
-    
-    updateBlocked() 
-    {
-        this.blocked.right = this.numTouching.right > 0;
-        this.blocked.left = this.numTouching.left > 0;
-        this.blocked.bottom = this.numTouching.bottom > 0;
-    }
 
     update(time, delta) {
         // Salir inmediatamente si ya está marcado para destrucción
@@ -443,22 +442,15 @@ class Goomba extends Phaser.GameObjects.Sprite
             return; // Salir inmediatamente después de marcar para destrucción
         }
 
-        if (!this.listenersAdded) {
-            this.scene.matter.world.on('beforeupdate', this.resetTouching, this);
-            this.scene.matter.world.on('collisionactive', this.handleCollisions, this);
-            this.scene.matter.world.on('afterupdate', this.updateBlocked, this);
-            this.listenersAdded = true;
-        }
-
         if(this.blocked.right || this.blocked.left)
         {
             this.handleWallCollision();
         }
 
-        // Verificar bordes
-        if (this.isAlive && !this.shouldBeDestroyed && !this.blocked.bottom) {
-            this.checkForLedges();
-        }
+        // // Verificar bordes
+        // if (this.isAlive && !this.shouldBeDestroyed && !this.blocked.bottom) {
+        //     this.checkForLedges();
+        // }
 
         // Actualizar movimiento solo si está vivo y no está marcado para destrucción
         if (this.isAlive && !this.shouldBeDestroyed) {
