@@ -278,7 +278,7 @@ class Nivel_D extends Phaser.Scene
         this.matter.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels, 0, false, false, false, false);
         this.createText();  
         // this.spawnPowerUp(200, 600, POWERUP_TYPES.HAMMER);
-        this.spawnPowerUp(220, 600, POWERUP_TYPES.STAR);
+        // this.spawnPowerUp(220, 600, POWERUP_TYPES.STAR);
 
 
         const enemies = this.map.getObjectLayer('Enemigos').objects;
