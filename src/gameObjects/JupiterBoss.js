@@ -54,8 +54,6 @@ export default class JupiterBoss extends BossBase {
         this.slowMoveSpeed = -0.0045; // Velocidad lenta durante 2 segundos
         this.fastMoveSpeed = 0.1; // Velocidad rápida para alcanzar la posición
 
-        this.zoneMovementPhase = 'none'; // 'none', 'slow', 'fast'
-
         // Inicializar lanes en el constructor
         // Usar la posición Y del jugador si está disponible
         if (config.player) {
@@ -389,13 +387,21 @@ export default class JupiterBoss extends BossBase {
         // Verificar si los bounds de Mario se solapan con los bounds del rayo
         if (Phaser.Geom.Rectangle.Overlaps(playerBounds, lightningBounds)) {
             // El jugador es golpeado por el rayo
-            this.scene.time.delayedCall(100, () => {
-                if (!this.scene.jugador.activePowerUp && !this.scene.jugador.isSuperSize) {
-                    this.scene.scene.restart(); // Se reinicia el nivel
-                } else {
+            if (!this.scene.jugador.activePowerUp && !this.scene.jugador.isSuperSize) {
+                this.scene.jugador.hurt();
+                this.scene.jugador.setVelocityX(0);
+                this.scene.jugador.setVelocityY(0);
+                this.scene.jugador.body.ignoreGravity = true;
+                this.scene.time.delayedCall(1000, () => {
+                    this.scene.doubleEndTransition(()=>{
+                        this.scene.scene.restart(); // Se reinicia el nivel
+                    });
+                });
+            } else {
+                this.scene.time.delayedCall(100, () => {
                     this.scene.jugador.deactivatePowerUp(); // Se le quita el PowerUp
-                }
-            });
+                });
+            }
 
             // Efecto visual cuando golpea al jugador
             this.scene.cameras.main.shake(250, 0.01);
@@ -444,7 +450,6 @@ export default class JupiterBoss extends BossBase {
         // Resetear también el estado de movimiento de zona
         this.isInZoneMovement = false;
         this.zoneMovementStartTime = 0;
-        this.zoneMovementPhase = 'none';
     
         // Establecer sprite jupiter_neutral
         if (this.state === BOSS_STATE.NEUTRAL) {
@@ -537,35 +542,13 @@ export default class JupiterBoss extends BossBase {
             if (elapsed < this.zoneMovementDuration) {
                 // Fase 1: Movimiento lento durante 2 segundos
                 currentMoveSpeed = this.slowMoveSpeed;
-
-                // Asegurar sprite jupiter_tired durante fase lenta
-                if (this.zoneMovementPhase !== 'slow') {
-                    this.zoneMovementPhase = 'slow';
-                    if (this.state !== BOSS_STATE.ATTACK && this.state !== BOSS_STATE.DEAD) {
-                        this.setTexture('jupiter_tired');
-                    }
-                }
             } else {
                 // Fase 2: Movimiento rápido para alcanzar la posición
                 currentMoveSpeed = this.fastMoveSpeed;
-
-                // Cambiar a sprite jupiter_neutral durante fase rápida
-                if (this.zoneMovementPhase !== 'fast') {
-                    this.zoneMovementPhase = 'fast';
-                    if (this.state !== BOSS_STATE.ATTACK && this.state !== BOSS_STATE.DEAD) {
-                        this.setTexture('jupiter_neutral');
-                    }
-                }
             
                 if (elapsed > this.zoneMovementDuration + 500) {
                     // Ha alcanzado la posición, terminar el movimiento especial
                     this.isInZoneMovement = false;
-
-                    // Asegurar que esté en NEUTRAL
-                    this.zoneMovementPhase = 'none';
-                    if (this.state === BOSS_STATE.NEUTRAL) {
-                        this.setTexture('jupiter_neutral');
-                    }
                 }
             }
         

@@ -366,6 +366,7 @@ class BossJ extends Phaser.Scene
             }
         }
 
+        /*
         // Crear pilar como un rectángulo de Matter
         this.pilar = this.matter.add.rectangle(-950, 625, 500, this.cameras.main.height*1.5, {
             isStatic: false,    // se puede mover
@@ -389,6 +390,7 @@ class BossJ extends Phaser.Scene
 
         // Velocidad hacia la derecha
         this.velocidadPilar = 4.5;
+        */
 
         this.time.delayedCall(2000, () => {
             this.jupiterBoss.startBattle();
@@ -582,12 +584,14 @@ class BossJ extends Phaser.Scene
             frameRate: 8,
             repeat: -1
         });
+        /*
         this.anims.create({
             key: 'pilar_fuego',
             frames: this.anims.generateFrameNumbers('pilar_fuegoTiles', { start: 0, end: 10 }),
             frameRate: 20,
             repeat: -1
         });
+        */
     }
     
     setupCollisions() {
@@ -652,7 +656,8 @@ class BossJ extends Phaser.Scene
                     }
 
                     this.doubleEndTransition(()=>{
-                    this.scene.restart();});
+                        this.scene.restart();
+                    });
                     player.hurt();
                     player.setStatic(true);
                 } else {
@@ -830,7 +835,9 @@ class BossJ extends Phaser.Scene
                 this.jugador.hurt();
                 this.endTimer=true;
                 this.jugador.setStatic(true);
-                this.doubleEndTransition(()=>{this.scene.restart()});
+                this.doubleEndTransition(()=>{
+                    this.scene.restart();
+                });
             }
         }
         const exitHandle = (event, bodyA, bodyB) => {
@@ -1097,7 +1104,8 @@ class BossJ extends Phaser.Scene
                     this.jugador.hurt();
                     this.jugador.setStatic(true);
                     this.doubleEndTransition(()=>{
-                this.scene.restart();});
+                        this.scene.restart();
+                    });
                 }
                 if (!this.jugador.isInBubble && !this.enPausa) {
                     this.textTimer.setFill('#ffffffff');
@@ -1258,15 +1266,19 @@ class BossJ extends Phaser.Scene
             // Comprobar si el jugador se ha caído
             this.checkPlayerFell();
 
-                // Movimiento continuo hacia la derecha
+            /*
+            // Movimiento continuo hacia la derecha
             Phaser.Physics.Matter.Matter.Body.setVelocity(this.pilar, {
                 x: this.velocidadPilar,
                 y: this.pilar.velocity.y
             });
+            */
         }
+        /*
         else{
             this.pilar.collisionFilter.mask= 0;
         }
+        */
     }
 
     // Actualizar objetos
@@ -1275,7 +1287,8 @@ class BossJ extends Phaser.Scene
         if (this.barraFin) {
             this.barraFin.update(time, delta);
         }
-                // Actualizar Goombas
+        
+        // Actualizar Goombas
         if (this.goombas) {
             this.goombas.getChildren().forEach(goomba => {
                 goomba.update(time, delta);
@@ -1305,12 +1318,14 @@ class BossJ extends Phaser.Scene
     // Verificar si el jugador se ha caído
     checkPlayerFell() {
         if (this.jugador.y > this.map.heightInPixels + 50 && !this.jugador.isInBubble && !this.endTimer) {
+            this.jupiterBoss.setTexture('jupiter_neutral');
             this.endTimer = true;
             this.sound.play('muerte');
             this.jugador.y = this.map.heightInPixels + 45;
             this.jugador.hurt();
             this.doubleEndTransition(()=>{
-                this.scene.restart();});
+                this.scene.restart();
+            });
         }
     }
 
