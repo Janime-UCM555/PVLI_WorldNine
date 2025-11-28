@@ -6,6 +6,7 @@ import Koopa from '../gameObjects/Koopa.js';
 import PiranhaPlant from '../gameObjects/PiranhaPlant.js';
 import Pokey from '../gameObjects/Pokey.js';
 import TransitionCode from '../gameObjects/Transition.js'
+import JupiterBoss from '../gameObjects/JupiterBoss.js';
 import { PowerUp, POWERUP_TYPES } from '../gameObjects/PowerUps.js';
 import { DIE_TYPES } from "../gameObjects/Goomba.js";
 class BossJ extends Phaser.Scene
@@ -104,6 +105,11 @@ class BossJ extends Phaser.Scene
         if (this.anims.exists('mario_panicrun')) {
             this.jugador.play('mario_panicrun');
         }
+
+        this.jupiterBoss = new JupiterBoss(this, 550, 575, {
+            player: this.jugador
+        });
+
         const frontLayer = this.map.createLayer('CapaFrente', tileset, 0, 0);
 
         this.fallBlock = this.createTiledObjects(fallBlocks, {
@@ -383,6 +389,16 @@ class BossJ extends Phaser.Scene
 
         // Velocidad hacia la derecha
         this.velocidadPilar = 4.5;
+
+        this.time.delayedCall(2000, () => {
+            this.jupiterBoss.startBattle();
+        });
+
+        this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+            if (this.jupiterBoss) {
+                this.jupiterBoss.destroy();
+            }
+        });
     }
 
     createTiledObjects(list, config = {}) {
@@ -930,6 +946,10 @@ class BossJ extends Phaser.Scene
 
         this.moveCameraToBottomRight();
 
+        if (this.jupiterBoss) {
+            this.jupiterBoss.defeat();
+        }
+
         this.jugador.win();
         barra.destroy();
         this.jugador.play('mario_stop', true);
@@ -974,7 +994,7 @@ class BossJ extends Phaser.Scene
         const cameraViewHeight = camera.height / camera.zoom;
     
         // Calcular la posición objetivo (esquina inferior derecha)
-        const targetX = this.map.widthInPixels - cameraViewWidth;
+        const targetX = 2953;
         const targetY = this.map.heightInPixels - cameraViewHeight;
     
         // Asegurarse de no salirse de los límites del mapa
@@ -1129,6 +1149,35 @@ class BossJ extends Phaser.Scene
         }
     }
 
+
+    restartLevel() {
+        // Reiniciar la escena o reposicionar el jugador
+        this.jugador.x = 25;
+        this.jugador.y = 625;
+        this.jugador.resetStates(); // Resetear estados
+        this.jugador.resume(); // Reanudar movimiento
+        if (this.jugador.body) {
+            // this.jugador.setVelocity(0, 0);
+        }
+        // Resetear estado de daño
+        this.jugador.isHurt = false;
+        // Asegurar animación correcta al reiniciar
+        this.jugador.play('mario_run', true);
+        // Resetear invulnerabilidad
+        this.jugador.isInvulnerable = false;
+        this.jugador.setVisible(true);
+        this.jugador.bubblePhase = 0;
+        this.jugador.isInBubble = false;
+        this.jugador.canDrop = false;
+
+        // Resetear el estado de ataque de JupiterBoss
+        if (this.jupiterBoss) {
+            this.jupiterBoss.resetAttackState();
+            // Asegurar que el movimiento de zona se cancele
+            this.jupiterBoss.isInZoneMovement = false;
+        }
+    }
+
     update(time, delta) {
         const dt = delta / 16.666;
         if (!this.fpsText || !this.fpsText.scene || this.fpsText._destroyed) return;
@@ -1141,12 +1190,6 @@ class BossJ extends Phaser.Scene
 
             // Actualizar objetos
             this.updateObjects(time, delta);
-
-            if (this.pokeys) {
-                this.pokeys.getChildren().forEach(pokey => {
-                    pokey.update(time, delta);
-                });
-            }
 
             if (this.fallBlock)
             {
@@ -1207,7 +1250,7 @@ class BossJ extends Phaser.Scene
 
 
             // Posicionar bien la cámara respecto al jugador
-            this.jugador.centerCameraOnPlayer();
+            this.centerCameraOnPlayer();
 
             // Detección manual de monedas
             this.checkCoinCollection();
@@ -1245,6 +1288,18 @@ class BossJ extends Phaser.Scene
                 koopa.update(time, delta);
             });
         }
+
+        // Actualizar Pokeys
+        if (this.pokeys) {
+            this.pokeys.getChildren().forEach(pokey => {
+                pokey.update(time, delta);
+            });
+        }
+
+        // Actualizar JupiterBoss
+        if (this.jupiterBoss) {
+            this.jupiterBoss.update(time, delta);
+        }
     }
 
     // Verificar si el jugador se ha caído
@@ -1257,6 +1312,53 @@ class BossJ extends Phaser.Scene
             this.doubleEndTransition(()=>{
                 this.scene.restart();});
         }
+    }
+
+    centerCameraOnPlayer() {
+        // Obtener las dimensiones reales de la vista de la cámara considerando el zoom
+        const camera = this.cameras.main;
+        const cameraViewWidth = camera.width / camera.zoom;
+        const cameraViewHeight = camera.height / camera.zoom;
+
+        // Seguimiento horizontal
+        let targetX;
+
+        // Establecer el objetivo de la cámara horizontalmente
+        if (this.jugador.x < cameraViewWidth *0.45) {
+            targetX = -200;
+        }
+        else if(Math.abs(this.jugador.body.velocity.x) < 1) {
+            targetX = this.jugador.x - cameraViewWidth *0.9;
+        }
+        else {
+            targetX = this.jugador.x - cameraViewWidth * 0.8;
+        }
+
+        // Seguimiento vertical
+        let targetY;
+    
+        if (this.jugador.isInBubble) {
+            // Cuando está en la burbuja, posicionar más alto en la pantalla
+            targetY = this.jugador.y - cameraViewHeight * 0.4;
+        } else {
+            // Calcular la posición vertical ideal
+            const baseTargetY = this.jugador.y - cameraViewHeight * 0.65;
+
+            if (!this.jugador.isGrounded) {
+                // Cuando salta, mantener la cámara un poco más alta
+                targetY = this.jugador.y - cameraViewHeight * 0.7;
+            } else {
+                // Cuando está en el suelo, mantenerlo en la posición vertical ideal
+                targetY = baseTargetY
+            }
+        }
+
+        // Suavizado tipo "spring" con LERP para el movimiento suave
+        const smoothFactorX = 0.1;  // Ajustar la suavidad horizontal
+        const smoothFactorY = 0.05; // Ajustar la suavidad vertical
+
+        camera.scrollX += (targetX-camera.scrollX)*smoothFactorX;
+        camera.scrollY += (targetY-camera.scrollY)*smoothFactorY;
     }
 
     // Detección manual de recolección de monedas
@@ -1285,82 +1387,82 @@ class BossJ extends Phaser.Scene
         return this.powerups;
     }
 
-requestHammer(player) {
-    let hammer = this.hammers.getChildren().find(h => !h.active);
+    requestHammer(player) {
+        let hammer = this.hammers.getChildren().find(h => !h.active);
 
-    if (!hammer) {
-        hammer = this.matter.add.sprite(player.x, player.y, 'hammer');
-        hammer.setCircle(8);
-        hammer.setBounce(0.8);
-        hammer.setIgnoreGravity(false);
-        hammer.setFixedRotation();
-        hammer.isHammer = true;
+        if (!hammer) {
+            hammer = this.matter.add.sprite(player.x, player.y, 'hammer');
+            hammer.setCircle(8);
+            hammer.setBounce(0.8);
+            hammer.setIgnoreGravity(false);
+            hammer.setFixedRotation();
+            hammer.isHammer = true;
+            hammer.used = false;
+            hammer.setDepth(6);
+
+            // Config rebotes por primera vez
+            hammer._bounces = 0;
+            hammer._maxBounces = 3;
+
+            // Manejar colisiones
+            hammer.setOnCollide((collision) => {
+                if (hammer.used) return; // si ya no hace daño, ignorar
+
+                const bodyA = collision.bodyA;
+                const bodyB = collision.bodyB;
+                const other = (bodyA === hammer.body) ? bodyB : bodyA;
+
+                const otherGO = other?.gameObject;
+
+                // 🔹 Interface común de enemigos
+                if (otherGO && otherGO.isEnemy && typeof otherGO.die === 'function') {
+                    otherGO.die(DIE_TYPES.HAMMER);
+                }
+
+                // Rebote solo contra bloques u objetos estáticos
+                if (other && other.isStatic) {
+                    hammer._bounces++;
+
+                    if (hammer._bounces >= hammer._maxBounces) {
+                        hammer.used = true;        // ya no hace daño
+                        hammer.setBounce(0);       // sin rebote
+
+                        // Desaparecer después de 0.3s
+                        this.time.delayedCall(300, () => {
+                            this.recycleHammer(hammer);
+                        });
+                    }
+                }
+            });
+
+            this.hammers.add(hammer);
+        }
+
         hammer.used = false;
+        hammer._bounces = 0;
+        hammer.setBounce(0.4);
+        hammer.setIgnoreGravity(false);
+        hammer.setActive(true);
+        hammer.setVisible(true);
+        hammer.setVelocity(0, 0);
+        hammer.setAngularVelocity(0);
         hammer.setDepth(6);
 
-        // Config rebotes por primera vez
-        hammer._bounces = 0;
-        hammer._maxBounces = 3;
-
-        // Manejar colisiones
-       hammer.setOnCollide((collision) => {
-            if (hammer.used) return; // si ya no hace daño, ignorar
-
-            const bodyA = collision.bodyA;
-            const bodyB = collision.bodyB;
-            const other = (bodyA === hammer.body) ? bodyB : bodyA;
-
-            const otherGO = other?.gameObject;
-
-            // 🔹 Interface común de enemigos
-            if (otherGO && otherGO.isEnemy && typeof otherGO.die === 'function') {
-                otherGO.die(DIE_TYPES.HAMMER);
-            }
-
-            // Rebote solo contra bloques u objetos estáticos
-            if (other && other.isStatic) {
-                hammer._bounces++;
-
-                if (hammer._bounces >= hammer._maxBounces) {
-                    hammer.used = true;        // ya no hace daño
-                    hammer.setBounce(0);       // sin rebote
-
-                    // Desaparecer después de 0.3s
-                    this.time.delayedCall(300, () => {
-                        this.recycleHammer(hammer);
-                    });
-                }
-            }
-        });
-
-        this.hammers.add(hammer);
+        return hammer;
     }
 
-    hammer.used = false;
-    hammer._bounces = 0;
-    hammer.setBounce(0.4);
-    hammer.setIgnoreGravity(false);
-    hammer.setActive(true);
-    hammer.setVisible(true);
-    hammer.setVelocity(0, 0);
-    hammer.setAngularVelocity(0);
-    hammer.setDepth(6);
 
-    return hammer;
-}
+    recycleHammer(hammer) {
+        if (!hammer) return;
 
-
-recycleHammer(hammer) {
-    if (!hammer) return;
-
-    hammer.used = false;
-    hammer._bounces = 0;
-    hammer.setActive(false);
-    hammer.setVisible(false);
-    hammer.setVelocity(0, 0);
-    hammer.setAngularVelocity(0);
-    hammer.setPosition(-1000, -1000);
-}
+        hammer.used = false;
+        hammer._bounces = 0;
+        hammer.setActive(false);
+        hammer.setVisible(false);
+        hammer.setVelocity(0, 0);
+        hammer.setAngularVelocity(0);
+        hammer.setPosition(-1000, -1000);
+    }
 
 
     // Comprueba si un objeto se encuentra en un grupo concreto

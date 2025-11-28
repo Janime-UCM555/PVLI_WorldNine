@@ -1,5 +1,3 @@
-// BossBase.js
-
 export const BOSS_STATE = {
     INTRO:   'INTRO',    // Animación / inicio de batalla
     NEUTRAL: 'NEUTRAL',  // Idle / perseguir
@@ -142,7 +140,7 @@ export default class BossBase extends Phaser.GameObjects.Sprite {
             alpha: 1,
             duration: this.introDuration,
         });
-        // Aquí podrías disparar una animación tipo 'boss_intro'
+        // Aquí se podría disparar una animación tipo 'boss_intro'
         // this.play('boss_intro');
     }
 
@@ -159,22 +157,11 @@ export default class BossBase extends Phaser.GameObjects.Sprite {
 
     onEnterNeutral() {
         this._timeSinceAttack = 0;
-        // this.play('boss_idle'); // si tienes idle
+        // this.play('boss_idle'); // si existiera idle
     }
 
     updateNeutral(time, delta) {
         this._timeSinceAttack += delta;
-
-        // Movimiento tipo persecución si tiene player y velocidad > 0
-        if (this.player && this.neutralMoveSpeed !== 0) {
-            const dir = Math.sign(this.player.x - this.x); // -1 izq, +1 der
-            this.x += dir * this.neutralMoveSpeed * (delta / 1000);
-
-            if (dir !== 0) {
-                this.flipX = dir < 0; // mirar hacia el player
-            }
-        }
-        // Si neutralMoveSpeed == 0 → se queda quieto (idle)
 
         // Cuando se cumpla el cooldown → entra en ATTACK
         if (this._timeSinceAttack >= this.attackCooldown) {
@@ -187,18 +174,18 @@ export default class BossBase extends Phaser.GameObjects.Sprite {
     // ---------- ATTACK (ataque/patrón) ----------
 
     onEnterAttack() {
-        // Por defecto, llamamos a performAttack() una vez
+        // Por defecto, se llama a performAttack() una vez
         this.performAttack();
     }
 
     updateAttack(time, delta) {
         // Si un boss necesita lógica frame a frame durante el ataque,
-        // puede sobrescribir este método en la subclase.
+        // se puede sobrescribir este método en la subclase.
     }
 
     onExitAttack() { /* vacío por defecto */ }
 
-    // Lógica genérica de ataque: al terminar, volvemos a NEUTRAL
+    // Lógica genérica de ataque: al terminar, vuelve a NEUTRAL
     finishAttack() {
         this._timeSinceAttack = 0;
         if (this.state === BOSS_STATE.ATTACK) {
@@ -208,8 +195,8 @@ export default class BossBase extends Phaser.GameObjects.Sprite {
 
     /**
      * Método pensado para ser SOBREESCRITO por cada boss.
-     * Aquí defines qué hace el ataque (rayos, columnas, minions, etc).
-     * Cuando acabes el ataque, llama a this.finishAttack().
+     * Aquí se define qué hace el ataque (rayos, columnas, minions, etc).
+     * Cuando acabe el ataque, hay que llamar a this.finishAttack().
      */
     performAttack() {
         // Por defecto: pequeño parpadeo y terminar
@@ -229,7 +216,7 @@ export default class BossBase extends Phaser.GameObjects.Sprite {
     // ---------- DEAD (derrota) ----------
 
     onEnterDead() {
-        this.isBattleActive = false; // ya no actualizamos lógica de pelea
+        this.isBattleActive = false; // ya no se actualiza lógica de pelea
         this.playDeathAnimation();
     }
 
@@ -239,22 +226,43 @@ export default class BossBase extends Phaser.GameObjects.Sprite {
 
     onExitDead() { /* normalmente nunca sale de DEAD */ }
 
-    playDeathAnimation() {
-        // Si tienes anim 'boss_die', úsala; si no, fade-out
-        const hasDeathAnim = !!(this.anims && this.anims.animationManager && this.anims.animationManager.get('boss_die'));
+    playDeathAnimation(animationKey = 'default') {
+        // Limpiar cualquier ataque en curso si existe
+        if (this.finishAttack) {
+            this.finishAttack();
+        }
 
-        if (hasDeathAnim) {
-            this.play('boss_die');
-            this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-                this.handleBossDefeated();
-            });
-        } else {
+        if (animationKey === 'default') {
+            // Si existe anim 'boss_die', se usa; si no, fade-out
+            const hasDeathAnim = !!(this.anims && this.anims.animationManager && this.anims.animationManager.get('boss_die'));
+            if (hasDeathAnim) {
+                this.play('boss_die');
+                this.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+                    this.handleBossDefeated();
+                });
+            }
+        } else if (animationKey === 'jupiter_death') {
+            // Calcular posición objetivo
+            const targetX = this.player.x + 150;
+            const targetY = 375;
+
+            // Configurar la animación de movimiento hacia arriba + fade-out
             this.scene.tweens.add({
                 targets: this,
+                x: targetX,
+                y: targetY,
                 alpha: 0,
-                y: this.y + 20,
-                duration: 600,
-                onComplete: () => this.handleBossDefeated()
+                scaleX: 0.3,
+                scaleY: 0.3,
+                duration: 1500, // 1.5 segundos para la animación completa
+                ease: 'Cubic.Out',
+                onUpdate: () => {
+                    // Rotación gradual durante el movimiento
+                    this.rotation += 0.035;
+                },
+                onComplete: () => {
+                    this.handleBossDefeated();
+                }
             });
         }
     }

@@ -116,6 +116,32 @@ class PreloadScene extends Phaser.Scene {
             frameHeight: 56,
         });
 
+        // Júpiter
+        this.load.spritesheet('jupiter_neutral', 'GameSprites/Characters/Bosses/Jupiter/Jupiter_Neutral.png', {
+            frameWidth: 39,
+            frameHeight: 52,
+        });
+        this.load.spritesheet('jupiter_attack', 'GameSprites/Characters/Bosses/Jupiter/Jupiter_Attack.png', {
+            frameWidth: 39,
+            frameHeight: 54,
+        });
+        this.load.spritesheet('jupiter_tired', 'GameSprites/Characters/Bosses/Jupiter/Jupiter_Tired.png', {
+            frameWidth: 40,
+            frameHeight: 58,
+        });
+        this.load.spritesheet('jupiter_dead', 'GameSprites/Characters/Bosses/Jupiter/Jupiter_Dead.png', {
+            frameWidth: 39,
+            frameHeight: 56,
+        });
+        this.load.spritesheet('warning_triangle', 'GameSprites/Characters/Bosses/Jupiter/Warning_Triangle.png', {
+            frameWidth: 234,
+            frameHeight: 226,
+        });
+        this.load.spritesheet('lightning', 'GameSprites/Characters/Bosses/Jupiter/Lightning.png', {
+            frameWidth: 1224,
+            frameHeight: 350,
+        });
+
         //PowerUps
         this.load.image('star', 'GameSprites/PowerUps/star.png');
         this.load.image('hammer', 'GameSprites/PowerUps/hammer.png');
@@ -196,6 +222,7 @@ class PreloadScene extends Phaser.Scene {
         this.load.audio('bubblePop', 'sonidos/SE/Mario/Acciones/BubblePop.wav');
         this.load.audio('bubbleCreate', 'sonidos/SE/Mario/Acciones/BubbleCreate.wav');
         this.load.audio('coinPath', 'sonidos/SE/Items/Bloques/CoinPath.wav');
+        this.load.audio('JupiterLightningSound', 'sonidos/SE/JupiterSFX/JupiterLightning.wav');
 
         // Música
         this.load.audio('level_music', 'sonidos/BGM/level_theme.mp3');
