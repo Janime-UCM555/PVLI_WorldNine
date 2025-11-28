@@ -33,7 +33,7 @@ export default class BossBase extends Phaser.GameObjects.Sprite {
         this.onBattleEnd       = config.onBattleEnd || null;
 
         // --- Estado interno ---
-        this.state             = BOSS_STATE.INTRO;
+        this.state             = null;
         this._stateTime        = 0;           // ms en el estado actual
         this._timeSinceAttack  = 0;           // ms desde último ataque
         this.isBattleActive    = false;

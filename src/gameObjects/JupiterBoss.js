@@ -11,7 +11,7 @@ export default class JupiterBoss extends BossBase {
         super(scene, x, y, 'jupiter_neutral', {
             ...config,
             // Valores por defecto específicos de Júpiter:
-            introDuration: 2000,   // duración de la animación de entrada
+            introDuration: 750,   // duración de la animación de entrada
             neutralMoveSpeed: 0.075,   // Velocidad de Júpiter
         });
 
@@ -51,7 +51,7 @@ export default class JupiterBoss extends BossBase {
         this.isInZoneMovement = false;
         this.zoneMovementStartTime = 0;
         this.zoneMovementDuration = 2000; // 2 segundos de movimiento lento
-        this.slowMoveSpeed = 0.01; // Velocidad lenta durante 2 segundos
+        this.slowMoveSpeed = -0.0045; // Velocidad lenta durante 2 segundos
         this.fastMoveSpeed = 0.1; // Velocidad rápida para alcanzar la posición
 
         this.zoneMovementPhase = 'none'; // 'none', 'slow', 'fast'
@@ -68,6 +68,7 @@ export default class JupiterBoss extends BossBase {
         // Se puede ajustar escala, depth, etc.
         this.setDepth(20);
         this.setScale(4);
+        this.setAlpha(0);
     }
 
     // Verificar si Mario está en una zona de ataque
