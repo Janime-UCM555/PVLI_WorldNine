@@ -163,6 +163,12 @@ class PreloadScene extends Phaser.Scene {
             frameWidth: 32,
             frameHeight: 32
         });
+        
+        // PilaresBosses
+        this.load.spritesheet('pilar_fuegoTiles', 'GameSprites/ObjetosBosses/PilarFuego.png', {
+            frameWidth: 128,
+            frameHeight: 126
+        });
 
         //Logo
         this.load.image('TitleName', 'web/TituloPNG.png');

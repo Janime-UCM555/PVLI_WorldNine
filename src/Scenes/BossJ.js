@@ -369,10 +369,16 @@ class BossJ extends Phaser.Scene
             friction: 0,
             restitution: 0,
             ignoreGravity:true,
-            isSensor:true
+            isSensor:true,
+            depth: 3
         });
         // Convertirlo en un sprite visible (opcional)
-        this.pilarSprite = this.add.rectangle(200, 300, 40, 120, 0x5555ff);
+        if (this.anims.exists('pilar_fuego'))
+        {
+            this.pilarSprite = this.add.sprite(200, 300, 'pilar_fuego').play('pilar_fuego');// 500, this.cameras.main.height*1.5, );
+            this.pilarSprite.setDisplaySize(800, this.cameras.main.height*1.5);
+        }// this.pilarSprite.play("pilar_fuego");
+        this.pilarSprite.setDepth(5);
         this.matter.add.gameObject(this.pilarSprite, this.pilar);
 
         // Velocidad hacia la derecha
@@ -558,6 +564,12 @@ class BossJ extends Phaser.Scene
             key: 'Koopa_walk_R',
             frames: this.anims.generateFrameNumbers('Koopa_walk_R', { start: 0, end: 3 }),
             frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'pilar_fuego',
+            frames: this.anims.generateFrameNumbers('pilar_fuegoTiles', { start: 0, end: 10 }),
+            frameRate: 20,
             repeat: -1
         });
     }
