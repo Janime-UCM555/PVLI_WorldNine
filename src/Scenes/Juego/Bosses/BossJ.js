@@ -1,20 +1,20 @@
-        // const tilesetBGD = this.map.addTilesetImage('bg', 'bg_tileset_D');
-        // const tilesetBGP = this.map.addTilesetImage('Pyramid_BG', 'bg_tileset_P');
-import Button from '../gameObjects/Button.js';
+import Button from '../gameObjects/UI/Button.js';
 import Mario from '../gameObjects/Mario.js';
-import Fin from '../gameObjects/BarraFin.js';
-import Goomba from '../gameObjects/Goomba.js';
+import Fin from '../gameObjects/SceneObjects/BarraFin.js';
+import Goomba from '../gameObjects/Enemies/Goomba.js';
 import Koopa from '../gameObjects/Koopa.js';
 import PiranhaPlant from '../gameObjects/PiranhaPlant.js';
-import Pokey from '../gameObjects/Pokey.js';
-import TransitionCode from '../gameObjects/Transition.js'
-import { PowerUp, POWERUP_TYPES } from '../gameObjects/PowerUps.js';
-import { DIE_TYPES } from "../gameObjects/Goomba.js";
-class Nivel_D extends Phaser.Scene
+import Pokey from '../gameObjects/Enemies/Pokey.js';
+import TransitionCode from '../gameObjects/UI/Transition.js'
+import JupiterBoss from '../gameObjects/Bosses/JupiterBoss.js';
+import { PowerUp, POWERUP_TYPES } from '../gameObjects/PowerUps/PowerUps.js';
+import { DIE_TYPES } from "../gameObjects/Enemies/Goomba.js";
+class BossJ extends Phaser.Scene
 {
     constructor(){
-        super({key:'Nivel_D'});
+        super({key:'BossJ'});
     }
+    
     
     init(){
 //
@@ -22,7 +22,7 @@ class Nivel_D extends Phaser.Scene
 
     preload(){
         console.log('=== INICIO ===');
-        this.load.tilemapTiledJSON('map', 'MapaDeTiled/MapaDesierto.json');
+        this.load.tilemapTiledJSON('map', 'MapaDeTiled/BossJupiter.json');
         this.score=0;
         this.coinScore = 0;
         this.purpleCoinScore = 0;
@@ -50,8 +50,7 @@ class Nivel_D extends Phaser.Scene
         // Crear mapa desde Tiled
         this.map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
         const tileset = this.map.addTilesetImage('MapaTiles', 'mi_tileset');
-        const tilesetBGD = this.map.addTilesetImage('bg', 'bg_tileset_D');
-        const tilesetBGP = this.map.addTilesetImage('Pyramid_BG', 'bg_tileset_P');
+        const tilesetBG = this.map.addTilesetImage('bg', 'bg_tileset');
 
         //Máscaras de colisión
         const CATEGORY_PLAYER  = 0x0001;
@@ -62,15 +61,13 @@ class Nivel_D extends Phaser.Scene
 
         
         // Capa de suelo
-        const bgLayer = this.map.createLayer('CapaFondo', [tilesetBGD, tilesetBGP], 0, 0);
-        this.fakeFloorLayer = this.map.createLayer('CapaFalsoSuelo', tileset, 0, 0);
-        this.fakeFloorLayer.setTint(0x888888);
-        this.fakeFloorLayer.setAlpha(1);
-        const decorationsLayer = this.map.createLayer('CapaDecoraciones', tileset, 0, 0);
+        const bgLayer = this.map.createLayer('CapaFondo', tilesetBG, 0, 0);
+        // const decorationsLayer = this.map.createLayer('CapaDecoraciones', tileset, 0, 0);
         const blocks = this.map.getObjectLayer('Bloques').objects;
         const fallBlocks = this.map.getObjectLayer('FallOffs').objects;
         const spikesL = this.map.getObjectLayer('Pinchos').objects;
         const pausaL = this.map.getObjectLayer('PauseBlocks').objects;
+        const OneWayL = this.map.getObjectLayer('OneWays').objects;
         const impulsosL = this.map.getObjectLayer('Impulsos').objects;
         const coinPathL = this.map.getObjectLayer('CaminoMonedas').objects;
 
@@ -101,15 +98,19 @@ class Nivel_D extends Phaser.Scene
 
 
 
-        this.jugador = new Mario(this, 25, 625, 'mario_run', 3.5, -3.75, true, false);
+        this.jugador = new Mario(this, 25, 625, 'mario_run', 5, -3.75, true, true);
         this.jugador.setDepth(3);
 
         // Forzar la inicialización de animaciones
-        if (this.anims.exists('mario_run')) {
-            this.jugador.play('mario_run');
+        if (this.anims.exists('mario_panicrun')) {
+            this.jugador.play('mario_panicrun');
         }
+
+        this.jupiterBoss = new JupiterBoss(this, 550, 575, {
+            player: this.jugador
+        });
+
         const frontLayer = this.map.createLayer('CapaFrente', tileset, 0, 0);
-        frontLayer.setDepth(4);
 
         this.fallBlock = this.createTiledObjects(fallBlocks, {
             texture: 'fallOffBlock1',
@@ -118,6 +119,27 @@ class Nivel_D extends Phaser.Scene
             extra: (b) => {
                 b.fallActive = false;
                 b.startPosY = b.y;
+                b.setCollidesWith([CATEGORY_ENEMY]);
+
+                const sensorHeight = 80;
+                const x = b.x;
+                const y = b.y - b.height * 2 + sensorHeight / 2;
+                const sensor = this.matter.add.rectangle(x, y, b.width, 5, {
+                    isSensor: true,
+                    // staticBody: true,
+                    // isStatic: true
+                });
+                sensor.name = "oneway";
+                
+                sensor.blockTop = b;
+                sensor.ignoreGravity = true;
+
+                sensor.collisionFilter = {
+                    category: CATEGORY_TERRAIN,
+                    mask: CATEGORY_PLAYER
+                };
+
+                b.sensor = sensor;
             }
         });
         this.spikes = this.createTiledObjects(spikesL, {
@@ -137,18 +159,17 @@ class Nivel_D extends Phaser.Scene
                 block.hasPlayer = false;
                 block.setBody({
                     type: 'rectangle',
-                    width: obj.width * 3,
-                    height: obj.height * 3,
+                    width: obj.width * 2,
+                    height: obj.height * 2,
                     // staticBody: true,
                     // isStatic: true
                 });
-                block.name = obj.name;
                 block.setSensor(true);
                 block.setStatic(true);
 
-                if (type === 'ImpulsoB') { block.play('sunB_move');}
-                else if (type === 'ImpulsoM') { block.play('sunM_move');}
-                else { block.play('sunA_move'); }
+                if (type === 'ImpulsoB') { block.play('sunB_move'); block.name = 'impulsoB'; }
+                else if (type === 'ImpulsoM') { block.play('sunM_move'); block.name = 'impulsoM'; }
+                else { block.play('sunA_move'); block.name = 'impulsoA'; }
             }
         });
         this.coinPath = this.createTiledObjects(coinPathL, {
@@ -165,6 +186,34 @@ class Nivel_D extends Phaser.Scene
                 block.setTexture(tex);
                 block.name = name;
                 block.setRotation(Phaser.Math.DegToRad(obj.rotation));
+            }
+        });
+
+        this.oneway = this.createTiledObjects(OneWayL, {
+            texture: 'Resume',
+            collidesWith: [CATEGORY_ENEMY],
+            extra: (block, obj) => {
+
+                const sensorHeight = 80;
+                const x = block.x;
+                const y = block.y - block.height * 2 + sensorHeight / 2;
+
+                const sensor = this.matter.add.rectangle(x, y, obj.width, 5, {
+                    isSensor: true,
+                    // staticBody: true,
+                    // isStatic: true
+                });
+
+                sensor.name = "oneway";
+                sensor.blockTop = block;
+                sensor.ignoreGravity = true;
+
+                sensor.collisionFilter = {
+                    category: CATEGORY_TERRAIN,
+                    mask: CATEGORY_PLAYER
+                };
+
+                block.sensor = sensor;
             }
         });
         this.blocks = this.createTiledObjects(blocks, {
@@ -248,12 +297,9 @@ class Nivel_D extends Phaser.Scene
         this.cameras.main.setZoom(1.65);
 
         // Música de fondo del nivel
-        if ((!this.levelMusic || !this.levelMusic.isPlaying) && !this.endTimer) {
-            this.levelMusic = this.sound.add('Desierto', { loop: true, volume: 1 });
+        if (!this.levelMusic || !this.levelMusic.isPlaying) {
+            this.levelMusic = this.sound.add('level_music', { loop: true, volume: 1 });
             this.levelMusic.play();
-        }
-        else if(this.levelMusic){
-            this.levelMusic.stop();
         }
 
         var openedScene = false;
@@ -278,13 +324,12 @@ class Nivel_D extends Phaser.Scene
         this.matter.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels, 0, false, false, false, false);
         this.createText();  
         // this.spawnPowerUp(200, 600, POWERUP_TYPES.HAMMER);
-        this.spawnPowerUp(220, 600, POWERUP_TYPES.STAR);
+        // this.spawnPowerUp(220, 600, POWERUP_TYPES.STAR);
 
 
         const enemies = this.map.getObjectLayer('Enemigos').objects;
         this.goombas = this.add.group();
         this.koopas = this.add.group();
-        this.pokeys = this.add.group();
         for (const enemie of enemies)
         {
             if (enemie.name === 'Goomba')
@@ -319,15 +364,43 @@ class Nivel_D extends Phaser.Scene
                 koopa.setCollisionCategory(CATEGORY_ENEMY);
                 koopa.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN, CATEGORY_ENEMY]);
             }
-            else if (enemie.name === 'Pokey')
-            {
-                const segments = enemie.properties?.find(p => p.name === 'segments')?.value || 5;
-                // const speed = enemie.properties?.find(p => p.name === 'speed')?.value || 0;
-                const pokey = new Pokey(this, enemie.x, enemie.y, segments, 0.5);
-                this.pokeys.add(pokey);
-                pokey.setDepth(2);
-            }
         }
+
+        /*
+        // Crear pilar como un rectángulo de Matter
+        this.pilar = this.matter.add.rectangle(-950, 625, 500, this.cameras.main.height*1.5, {
+            isStatic: false,    // se puede mover
+            label: "Muerte",
+            frictionAir: 0.0,   // sin resistencia de aire
+            inertia: Infinity,  // evita rotaciones
+            friction: 0,
+            restitution: 0,
+            ignoreGravity:true,
+            isSensor:true,
+            depth: 3
+        });
+        // Convertirlo en un sprite visible (opcional)
+        if (this.anims.exists('pilar_fuego'))
+        {
+            this.pilarSprite = this.add.sprite(200, 300, 'pilar_fuego').play('pilar_fuego');// 500, this.cameras.main.height*1.5, );
+            this.pilarSprite.setDisplaySize(800, this.cameras.main.height*1.5);
+        }// this.pilarSprite.play("pilar_fuego");
+        this.pilarSprite.setDepth(5);
+        this.matter.add.gameObject(this.pilarSprite, this.pilar);
+
+        // Velocidad hacia la derecha
+        this.velocidadPilar = 4.5;
+        */
+
+        this.time.delayedCall(2000, () => {
+            this.jupiterBoss.startBattle();
+        });
+
+        this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+            if (this.jupiterBoss) {
+                this.jupiterBoss.destroy();
+            }
+        });
     }
 
     createTiledObjects(list, config = {}) {
@@ -429,6 +502,12 @@ class Nivel_D extends Phaser.Scene
             repeat: -1
         });
         this.anims.create({
+            key: 'mario_panicrun',
+            frames: this.anims.generateFrameNumbers('mario_panicrun', { start: 0, end: 3 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
             key: 'mario_idle',
             frames: this.anims.generateFrameNumbers('mario_idle', { start: 0, end: 2 }),
             frameRate: 1,
@@ -441,8 +520,20 @@ class Nivel_D extends Phaser.Scene
             repeat: -1
         });
         this.anims.create({
+            key: 'mario_panicjump',
+            frames: this.anims.generateFrameNumbers('mario_panicjump', { start: 0, end: 1 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
             key: 'mario_fall',
             frames: this.anims.generateFrameNumbers('mario_fall', { start: 0, end: 1 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mario_panicfall',
+            frames: this.anims.generateFrameNumbers('mario_panicfall', { start: 0, end: 1 }),
             frameRate: 8,
             repeat: -1
         });
@@ -493,6 +584,14 @@ class Nivel_D extends Phaser.Scene
             frameRate: 8,
             repeat: -1
         });
+        /*
+        this.anims.create({
+            key: 'pilar_fuego',
+            frames: this.anims.generateFrameNumbers('pilar_fuegoTiles', { start: 0, end: 10 }),
+            frameRate: 20,
+            repeat: -1
+        });
+        */
     }
     
     setupCollisions() {
@@ -514,15 +613,8 @@ class Nivel_D extends Phaser.Scene
             {
                 this.ganasPartida(this.jugador, this.barraFin);
             }
-            if ((bodyB.label=="PowerUp" && bodyA.label=="Mario") ||
-                (bodyA.label=="PowerUp" && bodyB.label=="Mario"))// && bodyA.gameObject == this.jugador)
-            {
-                const powerUp  = bodyA.label=="PowerUp"  ? bodyA.gameObject : bodyB.gameObject;
-                const player = bodyA.label=="Mario" ? bodyA.gameObject : bodyB.gameObject;
 
-                powerUp.collect(player);
-            }
-            if (bodyA.label=="Mario" && bodyB.gameObject && bodyB.gameObject.name == "BloqueCae")
+            if (bodyA.gameObject == this.jugador && this.jugador.body.velocity.y > 0&& bodyB.gameObject && bodyB.gameObject.name == "BloqueCae")
             {
                 bodyB.gameObject.setCollidesWith([CATEGORY_PLAYER]);
                 this.time.delayedCall(150, () => {
@@ -530,7 +622,7 @@ class Nivel_D extends Phaser.Scene
                     bodyB.gameObject.setTexture('fallOffBlock2'); // Cambiar textura a bloque vacío
                 });
             }
-            if (bodyA.gameObject == this.jugador&& bodyB.gameObject && bodyB.gameObject.name == "pausa" && !bodyB.gameObject.hasPlayer)
+            if (bodyA.gameObject == this.jugador && bodyB.gameObject && bodyB.gameObject.name == "pausa" && !bodyB.gameObject.hasPlayer)
             {
                 this.bloquePausaActivo = bodyB.gameObject;
                 const activarPausa = () => {
@@ -547,8 +639,9 @@ class Nivel_D extends Phaser.Scene
                     activarPausa();
                 }
             }
-            if (bodyA.label=="Mario" && bodyB.gameObject && bodyB.gameObject.name == "spikes"
-                && !this.jugador.isBeingPushed && !this.jugador.isInvulnerable && !this.jugador.isInvincible)
+            if (bodyA.gameObject == this.jugador && bodyB.gameObject && bodyB.gameObject.name == "spikes" &&
+                !this.jugador.isInvincible)
+               // && !this.jugador.isBeingPushed && !this.jugador.isInvulnerable && !this.jugador.isInvincible)
             {
                 const player = this.jugador;
                 if (!player.isSuperSize && !this.scene.endTimer) 
@@ -562,21 +655,19 @@ class Nivel_D extends Phaser.Scene
                         player.body.velocity.y = 0;
                     }
 
-                    if (player.bubblesLeft > 0) {
-                        player.Bubble(); // Entra en burbuja
-                    } else {
-                        this.doubleEndTransition(()=>{this.scene.launch('MainMenu');
-                        this.scene.stop();});
-                        player.hurt();
-                    }
+                    this.doubleEndTransition(()=>{
+                        this.scene.restart();
+                    });
+                    player.hurt();
+                    player.setStatic(true);
                 } else {
                     // Colisión lateral
                     let pushDirection = 0; // Determinar dirección del empuje
                     player.takeDamage(pushDirection);
                 }
             }
-            if ((bodyA.label=="Mario" &&bodyB.gameObject?.name=="pathAr") ||
-            (bodyB.label=="Mario" && bodyA.gameObject?.name=="pathAr")) 
+            if ((bodyA.gameObject == this.jugador &&bodyB.gameObject?.name=="pathAr") ||
+            (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="pathAr")) 
             {
                 const coinDistanceX = 10;
                 const coinDistanceY = -40;
@@ -590,10 +681,10 @@ class Nivel_D extends Phaser.Scene
                 }
                 this.spawnCoins(coinDistanceX,coinDistanceY,blockPass);
             }
-            if ((bodyA.label=="Mario" && bodyB.gameObject?.name=="pathAbD") ||
-            (bodyB.label=="Mario" && bodyA.gameObject?.name=="pathAbD")) 
+            if ((bodyA.gameObject == this.jugador && bodyB.gameObject?.name=="pathAbD") ||
+            (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="pathAbD")) 
             {
-                // 5 monedas Abajo Diagonal
+                // 4 monedas Abajo Diagonal
                 const coinDistanceX = 20;
                 const coinDistanceY = 40;
                 let blockPass;
@@ -606,10 +697,10 @@ class Nivel_D extends Phaser.Scene
                 }
                 this.spawnCoins(coinDistanceX,coinDistanceY,blockPass);
             }
-            if ((bodyA.label=="Mario" && bodyB.gameObject?.name=="pathArD") ||
-                (bodyB.label=="Mario" && bodyA.gameObject?.name=="pathArD")) 
+            if ((bodyA.gameObject == this.jugador && bodyB.gameObject?.name=="pathArD") ||
+                (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="pathArD")) 
             {
-                // 5 monedas Arriba Diagonal
+                // 4 monedas Arriba Diagonal
                 const coinDistanceX = 20;
                 const coinDistanceY = -40;
                 const scene = this;
@@ -623,10 +714,10 @@ class Nivel_D extends Phaser.Scene
                 }
                 this.spawnCoins(coinDistanceX,coinDistanceY,blockPass);
             }
-            if ((bodyA.label=="Mario" && bodyB.gameObject?.name=="pathD") ||
-                (bodyB.label=="Mario" && bodyA.gameObject?.name=="pathD")) 
+            if ((bodyA.gameObject == this.jugador && bodyB.gameObject?.name=="pathD") ||
+                (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="pathD")) 
             {
-                // 5 monedas Derecha
+                // 4 monedas Derecha
                 const coinDistanceX = 40;
                 const coinDistanceY = 0;
                 let blockPass;
@@ -639,11 +730,11 @@ class Nivel_D extends Phaser.Scene
                 }
                 this.spawnCoins(coinDistanceX,coinDistanceY,blockPass);
             }
-            if ((bodyA.label=="Mario" &&bodyB.gameObject?.name=="ImpulsoA") ||
-            (bodyB.label=="Mario" && bodyA.gameObject?.name=="ImpulsoA")) 
+            if ((bodyA.gameObject == this.jugador &&bodyB.gameObject?.name=="impulsoA") ||
+            (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="impulsoA")) 
             {
                 // console.log(this.jugador.jumpRequested);
-                if (bodyA.gameObject?.name == "ImpulsoA")
+                if (bodyA.gameObject?.name == "impulsoA")
                 {
                     this.impulsoActivo = bodyA.gameObject;
                 }
@@ -657,18 +748,17 @@ class Nivel_D extends Phaser.Scene
                     M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -10 });
                 }
             }
-            if ((bodyA.label=="Mario" && bodyB.gameObject?.name=="ImpulsoM") ||
-            (bodyB.label=="Mario" && bodyA.gameObject?.name=="ImpulsoM")) 
+            if ((bodyA.gameObject == this.jugador && bodyB.gameObject?.name=="impulsoM") ||
+            (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="impulsoM")) 
             {
                 // console.log(this.jugador.jumpRequested);
-                if (bodyA.gameObject?.name == "ImpulsoM")
+                if (bodyA.gameObject?.name == "impulsoM")
                 {
                     this.impulsoActivo = bodyA.gameObject;
                 }
                 else{
                     this.impulsoActivo = bodyB.gameObject;
                 }
-
                 if (this.jugador.jumpRequested || this.jugador.jumpHeld)
                 {
                     this.sound.play('ImpM');
@@ -676,18 +766,17 @@ class Nivel_D extends Phaser.Scene
                     M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -7 });
                 }
             }
-            if ((bodyA.label=="Mario" && bodyB.gameObject?.name=="ImpulsoB") ||
-                (bodyB.label=="Mario" && bodyA.gameObject?.name=="ImpulsoB")) 
+            if ((bodyA.gameObject == this.jugador && bodyB.gameObject?.name=="impulsoB") ||
+                (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="impulsoB")) 
             {                
                 // console.log(this.jugador.jumpRequested)
-                if (bodyA.gameObject?.name == "ImpulsoB")
+                if (bodyA.gameObject?.name == "impulsoB")
                 {
                     this.impulsoActivo = bodyA.gameObject;
                 }
                 else{
                     this.impulsoActivo = bodyB.gameObject;
                 }
-
                 if (this.jugador.jumpRequested || this.jugador.jumpHeld)
                 {
                     this.sound.play('ImpB');
@@ -695,28 +784,18 @@ class Nivel_D extends Phaser.Scene
                     M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -5 });
                 }
             }
-            if ((bodyA.name === "oneway" &&  bodyA.isSensor &&bodyB.label=="Mario") ||
-                (bodyB.name === "oneway"&& bodyB.isSensor && bodyA.label=="Mario"))
+            if ((bodyA.name === "oneway" &&  bodyA.isSensor &&bodyB.gameObject === this.jugador) ||
+                (bodyB.name === "oneway"&& bodyB.isSensor && bodyA.gameObject === this.jugador ))
             {
-                let sensor;
-                if (bodyA.name==="oneway")
-                {
-                    sensor = bodyA;
-                }
-                else
-                {
-                    sensor = bodyB;
-                } 
+                const sensor  = bodyA.name=="oneway"  ? bodyA : bodyB;
+
                 const activarOneWay = () => {
                     sensor.blockTop.setCollidesWith([CATEGORY_ENEMY, CATEGORY_PLAYER]);
                 };
-                if (this.jugador.getCenter().x < sensor.bounds.max.x-6) {
-                    this.time.delayedCall(90, activarOneWay);
-                } else {
-                    activarOneWay();
-                }
+                if (/*this.jugador.body.velocity.y > 0 &&*/ this.jugador.body.position.y < sensor.position.y)
+                activarOneWay();
             }
-            if(bodyA.label=="Mario" && bodyB.gameObject && bodyB.gameObject._props) 
+            if(bodyA.gameObject == this.jugador && bodyB.gameObject && bodyB.gameObject._props) 
             {
                 if (!(this.jugador.body.velocity.y < 0 && this.jugador.getCenter().y > bodyB.bounds.max.y)){
                     return; // Solo al golpear desde abajo
@@ -725,8 +804,7 @@ class Nivel_D extends Phaser.Scene
                 const target = aim || bodyB.gameObject; // prioriza spawn si hay uno “casi”
                 this.blockHit(this.jugador, target);
             }
-
-            if(bodyB.label=="Goomba" && bodyA.label=="Mario"  ||
+             if(bodyB.label=="Goomba" && bodyA.label=="Mario"  ||
             bodyA.label=="Goomba" && bodyB.label=="Mario"  )
             {
                 const goomba  = bodyA.label=="Goomba"  ? bodyA.gameObject : bodyB.gameObject;
@@ -751,46 +829,40 @@ class Nivel_D extends Phaser.Scene
 
                 koopa.handlePlayerCollision(this.jugador);
             }
-            if(bodyB.label=="Pokey" && bodyA.label=="Mario" ||
-            bodyA.label=="Pokey" && bodyB.label=="Mario")
+            if(bodyA.label == "Mario" && bodyB.label=="Muerte"||
+                bodyB.label == "Mario" && bodyA.label=="Muerte" && !this.endTimer)
             {
-                const pokey = bodyA.label=="Pokey" ? bodyA.gameObject : bodyB.gameObject;
-                
-                pokey.handlePlayerCollision(this.jugador);
+                this.jugador.hurt();
+                this.endTimer=true;
+                this.jugador.setStatic(true);
+                this.doubleEndTransition(()=>{
+                    this.scene.restart();
+                });
             }
         }
         const exitHandle = (event, bodyA, bodyB) => {
-            if ((bodyA.name === "oneway" &&  bodyA.isSensor &&bodyB.label=="Mario" ) ||
-                (bodyB.name === "oneway"&& bodyB.isSensor && bodyA.label=="Mario" ))
+            if ((bodyA.name === "oneway" &&  bodyA.isSensor &&bodyB.gameObject === this.jugador) ||
+                (bodyB.name === "oneway"&& bodyB.isSensor && bodyA.gameObject === this.jugador ))
             {
-                const oneway = bodyA.name=="oneway" ? bodyA.gameObject : bodyB.gameObject;
-
-                oneway.blockTop.setCollidesWith([CATEGORY_ENEMY]);
-            }
-            if ((bodyA.label=="Mario" &&bodyB.gameObject?.name=="ImpulsoA") ||
-            (bodyB.label=="Mario" && bodyA.gameObject?.name=="ImpulsoA") || 
-            (bodyA.label=="Mario" &&bodyB.gameObject?.name=="ImpulsoM") ||
-            (bodyB.label=="Mario" && bodyA.gameObject?.name=="ImpulsoM") || 
-            (bodyA.label=="Mario" &&bodyB.gameObject?.name=="ImpulsoB") ||
-            (bodyB.label=="Mario" && bodyA.gameObject?.name=="ImpulsoB")) 
-            {
-                this.impulsoActivo=null;
+                const sensor  = bodyA.name=="oneway"  ? bodyA : bodyB;
+                
+                sensor.blockTop.setCollidesWith([CATEGORY_ENEMY]);
             }
         }
         this.matter.world.on('collisionstart', handle);
+        // this.matter.world.off('collisionexit', exitHandle);
         this.matter.world.on('collisionend', exitHandle);
         this.matter.world.on('collisionactive', handle);
     }
 
     spawnCoins(distX, distY, blockPass)
     {
-        this.sound.play('coinPath');
         blockPass.setTint(Phaser.Display.Color.GetColor(140, 140, 140, 0.5));
         blockPass.setCollidesWith([]);
         const center = blockPass.getCenter();
         const delay = 50;
         // 4 monedas 
-        for (let i=0; i < 5; ++i)
+        for (let i=0; i < 4; ++i)
         {
             this.time.delayedCall(delay*i,()=> { this.delayedCoins(center,distX,distY, i)}, [], this);
         }
@@ -881,6 +953,10 @@ class Nivel_D extends Phaser.Scene
 
         this.moveCameraToBottomRight();
 
+        if (this.jupiterBoss) {
+            this.jupiterBoss.defeat();
+        }
+
         this.jugador.win();
         barra.destroy();
         this.jugador.play('mario_stop', true);
@@ -897,20 +973,17 @@ class Nivel_D extends Phaser.Scene
         setTimeout(() => {
             this.doubleEndTransition(
                 ()=>{this.scene.launch('MainMenu');
-                this.scene.stop();});
+                        this.scene.stop();});
         }, 1000);
         });
     }
 
     doubleEndTransition(callback)
     {
-        if (this.levelMusic && this.levelMusic.isPlaying) {
-            this.levelMusic.stop();
-        }
         TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador.getCenter(), this.cameras.main.width, 120,
         ()=>{
-            this.sound.play('iris-out')
             transition2();
+            this.sound.play('iris-out')
         });
         const transition2 = () => {
             TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador.getCenter(), 120, 0,
@@ -928,7 +1001,7 @@ class Nivel_D extends Phaser.Scene
         const cameraViewHeight = camera.height / camera.zoom;
     
         // Calcular la posición objetivo (esquina inferior derecha)
-        const targetX = this.map.widthInPixels - cameraViewWidth;
+        const targetX = 2953;
         const targetY = this.map.heightInPixels - cameraViewHeight;
     
         // Asegurarse de no salirse de los límites del mapa
@@ -1016,7 +1089,7 @@ class Nivel_D extends Phaser.Scene
 
     timerMethod ()
     {
-        let timer =80;
+        let timer =60;
         this.endTimer = false;
         this.timerEvent = this.time.addEvent({
         delay: 1000,
@@ -1030,12 +1103,13 @@ class Nivel_D extends Phaser.Scene
                     this.sound.play('muerte');
                     this.jugador.hurt();
                     this.jugador.setStatic(true);
-                    this.doubleEndTransition(()=>{this.scene.launch('MainMenu');
-                this.scene.stop();});
+                    this.doubleEndTransition(()=>{
+                        this.scene.restart();
+                    });
                 }
                 if (!this.jugador.isInBubble && !this.enPausa) {
                     this.textTimer.setFill('#ffffffff');
-                    timer -=1; //(timer - 1 + 60) % 60; // reinicia a 60
+                    timer = (timer - 1 + 60) % 60; // reinicia a 60
                 }
                 else{
                     this.textTimer.setFill('#cececeff');
@@ -1103,39 +1177,118 @@ class Nivel_D extends Phaser.Scene
         this.jugador.bubblePhase = 0;
         this.jugador.isInBubble = false;
         this.jugador.canDrop = false;
+
+        // Resetear el estado de ataque de JupiterBoss
+        if (this.jupiterBoss) {
+            this.jupiterBoss.resetAttackState();
+            // Asegurar que el movimiento de zona se cancele
+            this.jupiterBoss.isInZoneMovement = false;
+        }
     }
 
     update(time, delta) {
+        const dt = delta / 16.666;
         if (!this.fpsText || !this.fpsText.scene || this.fpsText._destroyed) return;
 
         if (!this.endTimer)
         {
-            this.fpsText.setText(Math.floor(this.game.loop.actualFps));
+            this.fpsText?.setText(Math.floor(this?.game?.loop?.actualFps));
             // Actualizar jugador
             this.jugador.update(time,delta);
 
             // Actualizar objetos
             this.updateObjects(time, delta);
 
+            if (this.fallBlock)
+            {
+                this.fallBlock.getChildren().forEach(block => {
+                    if (block.fallActive) {
+                        // block.velocityY += 0.05;
+                        block.y += 5*dt;
+                    }
+                    if (block.x < this.cameras.scrollX || block.y > this.map.heightInPixels + 50)
+                    {
+                        block.y = block.startPosY;
+                        block.fallActive = false;
+                        block.setTexture('fallOffBlock1'); // Cambiar textura a bloque inicial
+                    }
+                });
+            }
+            if (this.pausa && this.enPausa && this.bloquePausaActivo) {
+                const block = this.bloquePausaActivo;
+                if (this.jugador.isJumping) {
+                    // Reanudar al jugador
+                    this.jugador.setVelocityY(-6);
+                    this.jugador.resume(); // Si tienes animaciones pausadas
+                    this.enPausa = false;
+
+                    // Restaurar bloque
+                    if (block) {
+                        block.hasPlayer = false;
+                        block.setTexture('Resume'); // Cambiar textura a bloque vacío
+                    }
+
+                    this.bloquePausaActivo = null;
+                } else {
+                    // Mientras está en pausa, mantener al jugador detenido
+                    this.jugador.setVelocity(0, 0);
+                }
+            }
+            if(this.impulsoActivo)
+            {
+                if (this.jugador.isJumping || this.jugador.jumpHeld || this.jugador.jumpRequested) {
+                    const M = Phaser.Physics.Matter.Matter;
+                    if (this.impulsoActivo.name == "impulsoB")
+                    {
+                        this.sound.play('ImpB');
+                        M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -5 });
+                    }
+                    else if (this.impulsoActivo.name == "impulsoM")
+                    {
+                        this.sound.play('ImpM');
+                        M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -10 });
+                    }
+                    else{
+                        this.sound.play('ImpA');
+                        M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -15 });
+                    }
+                    this.impulsoActivo = null;
+                }
+            }
+
+
             // Posicionar bien la cámara respecto al jugador
-            this.jugador.centerCameraOnPlayer();
+            this.centerCameraOnPlayer();
 
             // Detección manual de monedas
             this.checkCoinCollection();
 
             // Comprobar si el jugador se ha caído
             this.checkPlayerFell();
+
+            /*
+            // Movimiento continuo hacia la derecha
+            Phaser.Physics.Matter.Matter.Body.setVelocity(this.pilar, {
+                x: this.velocidadPilar,
+                y: this.pilar.velocity.y
+            });
+            */
         }
+        /*
+        else{
+            this.pilar.collisionFilter.mask= 0;
+        }
+        */
     }
 
     // Actualizar objetos
     updateObjects(time, delta) {
-        const dt = delta / 16.666;
         // Actualizar barra final
         if (this.barraFin) {
             this.barraFin.update(time, delta);
         }
-                // Actualizar Goombas
+        
+        // Actualizar Goombas
         if (this.goombas) {
             this.goombas.getChildren().forEach(goomba => {
                 goomba.update(time, delta);
@@ -1148,86 +1301,79 @@ class Nivel_D extends Phaser.Scene
                 koopa.update(time, delta);
             });
         }
-        
+
+        // Actualizar Pokeys
         if (this.pokeys) {
             this.pokeys.getChildren().forEach(pokey => {
                 pokey.update(time, delta);
             });
         }
 
-        if (this.fallBlock)
-        {
-            this.fallBlock.getChildren().forEach(block => {
-                if (block.fallActive) {
-                    // block.velocityY += 0.05;
-                    block.y += 5*dt;
-                }
-                if (block.x < this.cameras.scrollX || block.y > this.map.heightInPixels + 50)
-                {
-                    block.y = block.startPosY;
-                    block.fallActive = false;
-                    block.setTexture('fallOffBlock1'); // Cambiar textura a bloque inicial
-                }
-            });
+        // Actualizar JupiterBoss
+        if (this.jupiterBoss) {
+            this.jupiterBoss.update(time, delta);
         }
-        if (this.pausa && this.enPausa && this.bloquePausaActivo) {
-            const block = this.bloquePausaActivo;
-            if (this.jugador.isJumping) {
-                // Reanudar al jugador
-                this.jugador.setVelocityY(-6);
-                this.jugador.resume(); // Si tienes animaciones pausadas
-                this.enPausa = false;
-
-                // Restaurar bloque
-                if (block) {
-                    block.hasPlayer = false;
-                    block.setTexture('Resume'); // Cambiar textura a bloque vacío
-                }
-
-                this.bloquePausaActivo = null;
-            } else {
-                // Mientras está en pausa, mantener al jugador detenido
-                this.jugador.setVelocity(0, 0);
-            }
-        }
-        if(this.impulsoActivo!=null)
-        {
-            if (this.jugador.isJumping || this.jugador.jumpHeld || this.jugador.jumpRequested) {
-                const M = Phaser.Physics.Matter.Matter;
-                if (this.impulsoActivo.name == "impulsoB")
-                {
-                    this.sound.play('ImpB');
-                    M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -5 });
-                }
-                else if (this.impulsoActivo.name == "impulsoM")
-                {
-                    this.sound.play('ImpM');
-                    M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -10 });
-                }
-                else{
-                    this.sound.play('ImpA');
-                    M.Body.setVelocity(this.jugador.body, { x: this.jugador.body.velocity.x, y: -15 });
-                }
-                this.impulsoActivo = null;
-            }
-        }
-
     }
 
     // Verificar si el jugador se ha caído
     checkPlayerFell() {
-        if (this.jugador.y > this.map.heightInPixels + 50 && !this.jugador.isInBubble && !this.jugador.canDrop && this.jugador.bubblesLeft > 0) {
+        if (this.jugador.y > this.map.heightInPixels + 50 && !this.jugador.isInBubble && !this.endTimer) {
+            this.jupiterBoss.setTexture('jupiter_neutral');
+            this.endTimer = true;
             this.sound.play('muerte');
-            this.jugador.Bubble();
-        } else if (this.jugador.y > this.map.heightInPixels + 50 && this.jugador.bubblesLeft <= 0 && !this.jugador.isInBubble && !this.endTimer) {
-            this.sound.play('muerte');
-            this.endTimer=true;
             this.jugador.y = this.map.heightInPixels + 45;
             this.jugador.hurt();
-            this.jugador.setStatic(true);
-            this.doubleEndTransition(()=>{this.scene.launch('MainMenu');
-                this.scene.stop();});
+            this.doubleEndTransition(()=>{
+                this.scene.restart();
+            });
         }
+    }
+
+    centerCameraOnPlayer() {
+        // Obtener las dimensiones reales de la vista de la cámara considerando el zoom
+        const camera = this.cameras.main;
+        const cameraViewWidth = camera.width / camera.zoom;
+        const cameraViewHeight = camera.height / camera.zoom;
+
+        // Seguimiento horizontal
+        let targetX;
+
+        // Establecer el objetivo de la cámara horizontalmente
+        if (this.jugador.x < cameraViewWidth *0.45) {
+            targetX = -200;
+        }
+        else if(Math.abs(this.jugador.body.velocity.x) < 1) {
+            targetX = this.jugador.x - cameraViewWidth *0.9;
+        }
+        else {
+            targetX = this.jugador.x - cameraViewWidth * 0.8;
+        }
+
+        // Seguimiento vertical
+        let targetY;
+    
+        if (this.jugador.isInBubble) {
+            // Cuando está en la burbuja, posicionar más alto en la pantalla
+            targetY = this.jugador.y - cameraViewHeight * 0.4;
+        } else {
+            // Calcular la posición vertical ideal
+            const baseTargetY = this.jugador.y - cameraViewHeight * 0.65;
+
+            if (!this.jugador.isGrounded) {
+                // Cuando salta, mantener la cámara un poco más alta
+                targetY = this.jugador.y - cameraViewHeight * 0.7;
+            } else {
+                // Cuando está en el suelo, mantenerlo en la posición vertical ideal
+                targetY = baseTargetY
+            }
+        }
+
+        // Suavizado tipo "spring" con LERP para el movimiento suave
+        const smoothFactorX = 0.1;  // Ajustar la suavidad horizontal
+        const smoothFactorY = 0.05; // Ajustar la suavidad vertical
+
+        camera.scrollX += (targetX-camera.scrollX)*smoothFactorX;
+        camera.scrollY += (targetY-camera.scrollY)*smoothFactorY;
     }
 
     // Detección manual de recolección de monedas
@@ -1256,82 +1402,82 @@ class Nivel_D extends Phaser.Scene
         return this.powerups;
     }
 
-requestHammer(player) {
-    let hammer = this.hammers.getChildren().find(h => !h.active);
+    requestHammer(player) {
+        let hammer = this.hammers.getChildren().find(h => !h.active);
 
-    if (!hammer) {
-        hammer = this.matter.add.sprite(player.x, player.y, 'hammer');
-        hammer.setCircle(8);
-        hammer.setBounce(0.8);
-        hammer.setIgnoreGravity(false);
-        hammer.setFixedRotation();
-        hammer.isHammer = true;
+        if (!hammer) {
+            hammer = this.matter.add.sprite(player.x, player.y, 'hammer');
+            hammer.setCircle(8);
+            hammer.setBounce(0.8);
+            hammer.setIgnoreGravity(false);
+            hammer.setFixedRotation();
+            hammer.isHammer = true;
+            hammer.used = false;
+            hammer.setDepth(6);
+
+            // Config rebotes por primera vez
+            hammer._bounces = 0;
+            hammer._maxBounces = 3;
+
+            // Manejar colisiones
+            hammer.setOnCollide((collision) => {
+                if (hammer.used) return; // si ya no hace daño, ignorar
+
+                const bodyA = collision.bodyA;
+                const bodyB = collision.bodyB;
+                const other = (bodyA === hammer.body) ? bodyB : bodyA;
+
+                const otherGO = other?.gameObject;
+
+                // 🔹 Interface común de enemigos
+                if (otherGO && otherGO.isEnemy && typeof otherGO.die === 'function') {
+                    otherGO.die(DIE_TYPES.HAMMER);
+                }
+
+                // Rebote solo contra bloques u objetos estáticos
+                if (other && other.isStatic) {
+                    hammer._bounces++;
+
+                    if (hammer._bounces >= hammer._maxBounces) {
+                        hammer.used = true;        // ya no hace daño
+                        hammer.setBounce(0);       // sin rebote
+
+                        // Desaparecer después de 0.3s
+                        this.time.delayedCall(300, () => {
+                            this.recycleHammer(hammer);
+                        });
+                    }
+                }
+            });
+
+            this.hammers.add(hammer);
+        }
+
         hammer.used = false;
+        hammer._bounces = 0;
+        hammer.setBounce(0.4);
+        hammer.setIgnoreGravity(false);
+        hammer.setActive(true);
+        hammer.setVisible(true);
+        hammer.setVelocity(0, 0);
+        hammer.setAngularVelocity(0);
         hammer.setDepth(6);
 
-        // Config rebotes por primera vez
-        hammer._bounces = 0;
-        hammer._maxBounces = 3;
-
-        // Manejar colisiones
-       hammer.setOnCollide((collision) => {
-            if (hammer.used) return; // si ya no hace daño, ignorar
-
-            const bodyA = collision.bodyA;
-            const bodyB = collision.bodyB;
-            const other = (bodyA === hammer.body) ? bodyB : bodyA;
-
-            const otherGO = other?.gameObject;
-
-            // 🔹 Interface común de enemigos
-            if (otherGO && otherGO.isEnemy && typeof otherGO.die === 'function') {
-                otherGO.die(DIE_TYPES.HAMMER);
-            }
-
-            // Rebote solo contra bloques u objetos estáticos
-            if (other && other.isStatic) {
-                hammer._bounces++;
-
-                if (hammer._bounces >= hammer._maxBounces) {
-                    hammer.used = true;        // ya no hace daño
-                    hammer.setBounce(0);       // sin rebote
-
-                    // Desaparecer después de 0.3s
-                    this.time.delayedCall(300, () => {
-                        this.recycleHammer(hammer);
-                    });
-                }
-            }
-        });
-
-        this.hammers.add(hammer);
+        return hammer;
     }
 
-    hammer.used = false;
-    hammer._bounces = 0;
-    hammer.setBounce(0.4);
-    hammer.setIgnoreGravity(false);
-    hammer.setActive(true);
-    hammer.setVisible(true);
-    hammer.setVelocity(0, 0);
-    hammer.setAngularVelocity(0);
-    hammer.setDepth(6);
 
-    return hammer;
-}
+    recycleHammer(hammer) {
+        if (!hammer) return;
 
-
-recycleHammer(hammer) {
-    if (!hammer) return;
-
-    hammer.used = false;
-    hammer._bounces = 0;
-    hammer.setActive(false);
-    hammer.setVisible(false);
-    hammer.setVelocity(0, 0);
-    hammer.setAngularVelocity(0);
-    hammer.setPosition(-1000, -1000);
-}
+        hammer.used = false;
+        hammer._bounces = 0;
+        hammer.setActive(false);
+        hammer.setVisible(false);
+        hammer.setVelocity(0, 0);
+        hammer.setAngularVelocity(0);
+        hammer.setPosition(-1000, -1000);
+    }
 
 
     // Comprueba si un objeto se encuentra en un grupo concreto
@@ -1347,4 +1493,4 @@ recycleHammer(hammer) {
     }
 }
 
-export default Nivel_D;
+export default BossJ;

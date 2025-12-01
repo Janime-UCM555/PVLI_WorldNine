@@ -1,4 +1,4 @@
-import { DIE_TYPES } from "./Goomba.js";
+import { DIE_TYPES } from "./Enemies/Goomba.js";
 
 class PiranhaPlant extends Phaser.GameObjects.Sprite
 {

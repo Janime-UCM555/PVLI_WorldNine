@@ -1,4 +1,4 @@
-import { POWERUP_TYPES } from "./PowerUps.js";
+import { POWERUP_TYPES } from "./PowerUps/PowerUps.js";
 
 class Mario extends Phaser.GameObjects.Sprite
 {
