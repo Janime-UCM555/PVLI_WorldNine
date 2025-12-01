@@ -1,4 +1,4 @@
-import { DIE_TYPES } from "./Enemies/Goomba.js";
+import { DIE_TYPES } from "./Goomba.js";
 
 class Koopa extends Phaser.GameObjects.Sprite
 {

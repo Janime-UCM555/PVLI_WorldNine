@@ -1,6 +1,6 @@
-import Button from '../gameObjects/Button.js';
-import Mario from '../gameObjects/Mario.js';
-import { PowerUp, POWERUP_TYPES } from '../gameObjects/PowerUps.js';
+import Button from '../../gameObjects/UI/Button.js';
+import Mario from '../../gameObjects/Player/Mario.js';
+import { PowerUp, POWERUP_TYPES } from '../../gameObjects/PowerUps/PowerUps.js';
 
 const B_SPACING = 100;
 

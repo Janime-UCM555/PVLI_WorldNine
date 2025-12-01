@@ -1,11 +1,11 @@
-import PreloadScene from './Scenes/PreloadScene.js';
-import MainMenu from './Scenes/MainMenu.js';
-import MapScene from './Scenes/Map.js';
-import Nivel_R from './Scenes/Nivel_R.js';
-import Nivel_TO from './Scenes/Nivel_TO.js';
-import Nivel_D from './Scenes/Nivel_D.js';
-import BossJ from './Scenes/BossJ.js';
-import BossHTest from './Scenes/BossHTest.js';
+import PreloadScene from './Scenes/Titulo/PreloadScene.js';
+import MainMenu from './Scenes/Titulo/MainMenu.js';
+import MapScene from './Scenes/Titulo/Map.js';
+import Nivel_R from './Scenes/Juego/Niveles/Nivel_R.js';
+import Nivel_TO from './Scenes/Juego/Niveles/Nivel_TO.js';
+import Nivel_D from './Scenes/Juego/Niveles/Nivel_D.js';
+import BossJ from './Scenes/Juego/BossesLevels/BossJ.js';
+import BossHTest from './Scenes/Juego/BossesLevels/BossHTest.js';
 
 /**
  * Inicio del juego en Phaser. Creamos el archivo de configuración del juego y creamos

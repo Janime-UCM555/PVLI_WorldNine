@@ -1,15 +1,15 @@
         // const tilesetBGD = this.map.addTilesetImage('bg', 'bg_tileset_D');
         // const tilesetBGP = this.map.addTilesetImage('Pyramid_BG', 'bg_tileset_P');
-import Button from '../gameObjects/UI/Button.js';
-import Mario from '../gameObjects/Mario.js';
-import Fin from '../gameObjects/SceneObjects/BarraFin.js';
-import Goomba from '../gameObjects/Enemies/Goomba.js';
-import Koopa from '../gameObjects/Koopa.js';
-import PiranhaPlant from '../gameObjects/PiranhaPlant.js';
-import Pokey from '../gameObjects/Enemies/Pokey.js';
-import TransitionCode from '../gameObjects/UI/Transition.js'
-import { PowerUp, POWERUP_TYPES } from '../gameObjects/PowerUps/PowerUps.js';
-import { DIE_TYPES } from "../gameObjects/Enemies/Goomba.js";
+import Button from '../../../gameObjects/UI/Button.js';
+import Mario from '../../../gameObjects/Player/Mario.js';
+import Fin from '../../../gameObjects/LevelBlockObjects/BarraFin.js';
+import Goomba from '../../../gameObjects/Enemies/Goomba.js';
+import Koopa from '../../../gameObjects/Enemies/Koopa.js';
+import PiranhaPlant from '../../../gameObjects/Enemies/PiranhaPlant.js';
+import Pokey from '../../../gameObjects/Enemies/Pokey.js';
+import TransitionCode from '../../../gameObjects/UI/Transition.js'
+import { PowerUp, POWERUP_TYPES } from '../../../gameObjects/PowerUps/PowerUps.js';
+import { DIE_TYPES } from '../../../gameObjects/Enemies/Goomba.js';
 class Nivel_D extends Phaser.Scene
 {
     constructor(){

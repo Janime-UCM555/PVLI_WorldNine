@@ -1,7 +1,7 @@
 // BossH_Test.js
-import Mario from "../gameObjects/Mario.js";
-import HorusBoss from "../gameObjects/HorusBoss.js";
-import Fin from "../gameObjects/BarraFin.js";
+import Mario from '../../../gameObjects/Player/Mario.js';
+import HorusBoss from "../../../gameObjects/BossesObjects/HorusBoss.js";
+import Fin from '../../../gameObjects/LevelBlockObjects/BarraFin.js';
 
 export default class BossH_Test extends Phaser.Scene {
 

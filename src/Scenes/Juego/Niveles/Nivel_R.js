@@ -1,13 +1,13 @@
-import Button from '../gameObjects/Button.js';
-import Mario from '../gameObjects/Mario.js';
-import Fin from '../gameObjects/BarraFin.js';
-import Goomba from '../gameObjects/Goomba.js';
-import Koopa from '../gameObjects/Koopa.js';
-import PiranhaPlant from '../gameObjects/PiranhaPlant.js';
-import Pokey from '../gameObjects/Pokey.js';
-import TransitionCode from '../gameObjects/Transition.js'
-import { PowerUp, POWERUP_TYPES } from '../gameObjects/PowerUps.js';
-import { DIE_TYPES } from "../gameObjects/Goomba.js";
+import Button from '../../../gameObjects/UI/Button.js';
+import Mario from '../../../gameObjects/Player/Mario.js';
+import Fin from '../../../gameObjects/LevelBlockObjects/BarraFin.js';
+import Goomba from '../../../gameObjects/Enemies/Goomba.js';
+import Koopa from '../../../gameObjects/Enemies/Koopa.js';
+import PiranhaPlant from '../../../gameObjects/Enemies/PiranhaPlant.js';
+import Pokey from '../../../gameObjects/Enemies/Pokey.js';
+import TransitionCode from '../../../gameObjects/UI/Transition.js'
+import { PowerUp, POWERUP_TYPES } from '../../../gameObjects/PowerUps/PowerUps.js';
+import { DIE_TYPES } from '../../../gameObjects/Enemies/Goomba.js';
 class Nivel_R extends Phaser.Scene
 {
     constructor(){

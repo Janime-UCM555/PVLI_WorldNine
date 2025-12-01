@@ -2,7 +2,7 @@
 // Boss Horus basado en viento y columnas, usando BossBase y siguiendo a Mario.
 
 import BossBase, { BOSS_STATE } from "./BaseBoss.js";
-import Koopa from "../Koopa.js";
+import Koopa from "../Enemies/Koopa.js";
 import Pokey from "../Enemies/Pokey.js";
 import HorusColumn from "./ColumnasHorus.js";
 
