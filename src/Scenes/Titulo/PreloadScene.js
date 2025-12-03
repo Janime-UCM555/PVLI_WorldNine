@@ -54,8 +54,11 @@ class PreloadScene extends Phaser.Scene {
             frameWidth: 41,
             frameHeight: 50
         });
-
         this.load.image('Piranha_plant', 'GameSprites/Characters/Enemigos/PiranhaPlant/PiranhaPlant_Idle.png');
+        this.load.spritesheet('piranha_movement', 'GameSprites/Characters/Enemigos/PiranhaPlant/PiranhaPlant_movement.png', {
+            frameWidth: 46,
+            frameHeight: 51
+        });
 
         this.load.spritesheet('pokey', 'GameSprites/Characters/Enemigos/Pokey/Pokey.png', {
             frameWidth: 30,

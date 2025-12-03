@@ -118,8 +118,8 @@ class PiranhaPlant extends Phaser.GameObjects.Sprite
         });
 
         // Reproducir animación de morder si existe
-        if (this.scene.anims.exists('piranha_bite')) {
-            this.play('piranha_bite');
+        if (this.scene.anims.exists('piranha_movement')) {
+            this.play('piranha_movement');
         }
     }
 

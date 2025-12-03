@@ -549,6 +549,12 @@ class Nivel_TO extends Phaser.Scene
             frameRate: 8,
             repeat: -1
         });
+        this.anims.create({
+            key: 'piranha_movement',
+            frames: this.anims.generateFrameNumbers('piranha_movement', { start: 0, end: 3 }),
+            frameRate: 8,
+            repeat: -1
+        });
     }
     
     setupCollisions() {
