@@ -133,27 +133,27 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
 
     player.activePowerUp = this.type;
 
-    // switch (this.type) {
-    //   case POWERUP_TYPES.STAR:
-    //     player.setInvincible?.(STAR_DURATION);
-    //     // se desactiva automáticamente tras STAR_DURATION
-    //     break;
-    //   case POWERUP_TYPES.HAMMER:
-    //     player.enableHammer?.();
-    //     break;
-    //   case POWERUP_TYPES.DOUBLE_JUMP:
-    //     player.enableDoubleJump?.();
-    //     break;
-    //   case POWERUP_TYPES.DASH:
-    //     player.enableDash?.();
-    //     break;
-    //   case POWERUP_TYPES.JUMP_BOOTS:
-    //     player.enableHighJump?.();
-    //     break;
-    //     case POWERUP_TYPES.MUSHROOM:
-    //     player.enableSuperSize?.();
-    //     break;
-    // }
+    switch (this.type) {
+      case POWERUP_TYPES.STAR:
+        player.setInvincible?.(STAR_DURATION);
+        // se desactiva automáticamente tras STAR_DURATION
+        break;
+      case POWERUP_TYPES.HAMMER:
+        player.enableHammer?.();
+        break;
+      case POWERUP_TYPES.DOUBLE_JUMP:
+        player.enableDoubleJump?.();
+        break;
+      case POWERUP_TYPES.DASH:
+        player.enableDash?.();
+        break;
+      case POWERUP_TYPES.JUMP_BOOTS:
+        player.enableHighJump?.();
+        break;
+        case POWERUP_TYPES.MUSHROOM:
+        player.enableSuperSize?.();
+        break;
+    }
 
     // Por si queremos añadir efectos de sonido
     // if (this.scene.sound && this.scene.sound.play) {

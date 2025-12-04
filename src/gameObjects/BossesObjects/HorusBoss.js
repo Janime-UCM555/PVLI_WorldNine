@@ -306,9 +306,9 @@ export default class HorusBoss extends BossBase {
                     this.groundLayer,
                     spawnX,
                     laneY,
-                    Phaser.Math.Clamp(Math.floor(Math.random() * 10), 3, 7),
-                    0,
-                    2
+                    Phaser.Math.Clamp(Math.floor(Math.random() * 10), 3, 6),
+                    Math.random() < 0.5? 0 : 3,
+                    Math.random() < 0.5? 0 : 3
                 );
                 this.columns.push(col);
 
@@ -395,7 +395,7 @@ export default class HorusBoss extends BossBase {
                 const windZone = new HorusWindZone(
                     scene,
                     spawnX,
-                    laneY,
+                    this.player.y,
                     width,
                     height,
                     this.columnSpeed,

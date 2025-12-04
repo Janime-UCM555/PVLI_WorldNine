@@ -2,6 +2,7 @@
 import Mario from '../../../gameObjects/Player/Mario.js';
 import HorusBoss from "../../../gameObjects/BossesObjects/HorusBoss.js";
 import Fin from '../../../gameObjects/LevelBlockObjects/BarraFin.js';
+import {PowerUp, POWERUP_TYPES } from '../../../gameObjects/PowerUps/PowerUps.js';
 
 const CATEGORY_PLAYER  = 0x0001;
 const CATEGORY_ENEMY   = 0x0002;
@@ -132,14 +133,13 @@ export default class BossH_Test extends Phaser.Scene {
         // ✨ LANES desde el TILEMAP
         // ---------------------------------------------------------
         // Selecciona las filas del tilemap donde quieres que aparezcan las columnas
-        const laneRows = [16, 17];   // <-- AJUSTA ESTO según tu mapa
+        const laneRows = [17];   // <-- AJUSTA ESTO según tu mapa
 
         // Convierte cada fila de tiles en coordenada mundo Y
         const laneYPositions = laneRows.map(row =>
             this.map.tileToWorldY(row) + this.map.tileHeight / 2
         );
 
-        console.log("LANES DEL TILEMAP:", laneYPositions);
 
         // ---------------------------------------------------------
         // HORUS BOSS (usando lanes del tilemap)
@@ -168,6 +168,10 @@ export default class BossH_Test extends Phaser.Scene {
             }
         });
 
+        this.powerups = this.add.group();
+
+        this.spawnPowerUp(350, 500, POWERUP_TYPES.DOUBLE_JUMP)
+
         this.horus.startBattle();
 
         // ---------------------------------------------------------
@@ -183,6 +187,20 @@ export default class BossH_Test extends Phaser.Scene {
             0, false, false, false, false
         );
     }
+      spawnPowerUp(x, y, type) {
+            let power;
+            if(type != POWERUP_TYPES.STAR){
+                power = new PowerUp(this, x, y, type, type, 0)
+            }
+            else{
+                power = new Star(this, x, y);
+            }
+            power.setVelocityX(power.body.velocity.x * 0.09315); // Salir del bloque hacia arriba
+            power.setVelocityY(-power.body.velocity.x/2);
+            this.powerups.add(power);
+            return this.powerups;
+        }
+    
 
     update(time, delta) {
         if (this.jugador) this.jugador.update(time, delta);
