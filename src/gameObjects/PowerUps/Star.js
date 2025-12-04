@@ -31,7 +31,7 @@ export default class Star extends PowerUp {
      * @param {Player} player - Jugador que recoge el power-up.
      */
     collect(player) {
-        super.collect(player);
+        player.activePowerUp = this.type;
 
         // Aumentar velocidad del jugador
         player.speed = player.base.speed * 1.25;
@@ -92,15 +92,17 @@ export default class Star extends PowerUp {
         }
 
         player.invTimer = player.scene.time.delayedCall(STAR_DURATION, () => {
-            player.endStarInvincibility();
+            this.endStarInvincibility(player);
         });
+        
+        this.destroy();
     }
 
     /**
      * Finaliza el estado de invencibilidad de la estrella.
      * Cancela temporizadores, restaura velocidad, música y apariencia del jugador.
      */
-    endStarInvincibility() {
+    endStarInvincibility(player) {
 
         // Cancelar eventos y temporizadores
         if (player.invEvent?.remove) {
@@ -121,7 +123,7 @@ export default class Star extends PowerUp {
 
         // Parar música de estrella y reanudar música de nivel
         if (player.starman && player.starman.isPlaying || player.scene.endTimer) {
-            this.starman.stop();
+            player.starman.stop();
         }
         if (player.starEndingSound && player.starEndingSound.isPlaying) {
             player.starEndingSound.stop();

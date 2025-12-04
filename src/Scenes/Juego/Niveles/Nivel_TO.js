@@ -277,8 +277,7 @@ class Nivel_TO extends Phaser.Scene
         this.setupCollisions();
 
         this.powerups = this.add.group();
-
-
+        this.hammers = this.add.group();
 
         // Configurar mejor los límites del mundo
         this.matter.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);

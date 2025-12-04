@@ -123,7 +123,7 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
   collect(player) {
     if (!this.active) return;
 
-    super.deactivatePowerUp({ keepSize: player.isSuperSize });
+    this.deactivatePowerUp({ keepSize: player.isSuperSize });
     if(!player.isSuperSize) this.enableSuperSize?.(player);
 
     player.activePowerUp = this.type;
