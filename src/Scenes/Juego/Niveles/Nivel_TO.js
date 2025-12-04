@@ -7,6 +7,7 @@ import PiranhaPlant from '../../../gameObjects/Enemies/PiranhaPlant.js';
 import Pokey from '../../../gameObjects/Enemies/Pokey.js';
 import TransitionCode from '../../../gameObjects/UI/Transition.js'
 import { PowerUp, POWERUP_TYPES } from '../../../gameObjects/PowerUps/PowerUps.js';
+import Star from '../../../gameObjects/PowerUps/Star.js';
 import { DIE_TYPES } from '../../../gameObjects/Enemies/Goomba.js';
 class Nivel_TO extends Phaser.Scene
 {
@@ -318,7 +319,7 @@ class Nivel_TO extends Phaser.Scene
         this.matter.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels, 0, false, false, false, false);
         this.createText();  
         // this.spawnPowerUp(200, 600, POWERUP_TYPES.HAMMER);
-        this.spawnPowerUp(220, 600, POWERUP_TYPES.STAR);
+        this.spawnPowerUp(300, 600, POWERUP_TYPES.STAR);
 
 
         const enemies = this.map.getObjectLayer('Enemigos').objects;
@@ -1329,7 +1330,13 @@ class Nivel_TO extends Phaser.Scene
 
     // Spawner simple (tu PowerUp ya añade físicas y movimiento)
     spawnPowerUp(x, y, type) {
-        let power = new PowerUp(this, x, y, type, type, 0)
+        let power;
+        if(type != POWERUP_TYPES.STAR){
+            power = new PowerUp(this, x, y, type, type, 0)
+        }
+        else{
+            power = new Star(this, x, y);
+        }
         power.setVelocityX(power.body.velocity.x * 0.09315); // Salir del bloque hacia arriba
         power.setVelocityY(-power.body.velocity.x/2);
         this.powerups.add(power);

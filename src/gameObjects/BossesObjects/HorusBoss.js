@@ -4,7 +4,8 @@
 import BossBase, { BOSS_STATE } from "./BaseBoss.js";
 import Koopa from "../Enemies/Koopa.js";
 import Pokey from "../Enemies/Pokey.js";
-import HorusColumn from "./ColumnasHorus.js";
+import HorusColumn from "./HorusColums.js";
+import HorusWindZone from "./HorusWindZone.js";
 
 export default class HorusBoss extends BossBase {
     /**
@@ -36,10 +37,16 @@ export default class HorusBoss extends BossBase {
             koopaSpeed = 2,
             laneYPositions = [520, 560, 600],
 
-            attackDistance = 4000000,
+            attackDistance = 4000000.00,
             endX = null,
 
             columnSpacingX = 260, // separación entre columnas de una misma oleada
+
+            map = scene.make.tilemap({ key: 'map1', tileWidth: 32, tileHeight: 32 }),
+            tileset = map.addTilesetImage('MapaTiles', 'mi_tileset'),
+
+            groundLayer = map.createLayer('CapaSuelo', tileset, 0, 0).setDepth(1),
+
         } = config;
 
         super(scene, x, y, "horus_idle", {
@@ -61,20 +68,24 @@ export default class HorusBoss extends BossBase {
         this.attackDistance = attackDistance;
         this.endX = endX;
 
+        this.map = map;
+        this.groundLayer = groundLayer;
+
         this.columnSpacingX = columnSpacingX;
 
         this.lastAttackX = player ? player.x : 0;
         this.columns = [];
+        this.attackPatterns = ["windZones", "columnWave"];
 
         // ---------------------------
         // Seguimiento y vuelo bonito
         // ---------------------------
 
         // Offset base de posición respecto a Mario
-        this.baseOffsetX = 270;    // delante/detrás
+        this.baseOffsetX = 200;    // delante/detrás
         this.baseOffsetY = -220;   // por encima
 
-        this.followOffsetX = this.baseOffsetX;
+        this.followOffsetX = 200;
         this.followOffsetY = this.baseOffsetY;
 
         this.followSide = 1;       // 1 = delante, -1 = detrás
@@ -120,27 +131,27 @@ export default class HorusBoss extends BossBase {
         }
 
         // Timeline: se acerca por detrás, cruza por encima y se coloca en su posición de vuelo
-        this.scene.tweens.timeline({
+        // 1er tween: aparece por detrás hasta casi encima
+        this.scene.tweens.add({
             targets: this,
+            alpha: 1,
+            x: this.player.x - 60,
+            y: this.player.y - 80,
+            scale: this.baseScale,
+            duration: this.introDuration * 0.4,
             ease: "Cubic.easeInOut",
-            tweens: [
-                {
-                    // aparece volando por detrás hasta casi encima
-                    alpha: 1,
-                    x: this.player.x - 60,
-                    y: this.player.y - 80,
-                    scale: this.baseScale,
-                    duration: this.introDuration * 0.6,
-                },
-                {
-                    // se adelanta y “salta” por delante y arriba
+            onComplete: () => {
+                // 2º tween: se adelanta y “salta” por delante y arriba
+                this.scene.tweens.add({
+                    targets: this,
                     x: this.player.x + this.baseOffsetX,
                     y: this.player.y + this.baseOffsetY,
                     duration: this.introDuration * 0.6,
-                },
-            ],
-            onComplete: () => {
-                this.changeState(BOSS_STATE.NEUTRAL);
+                    ease: "Cubic.easeInOut",
+                    onComplete: () => {
+                        this.changeState(BOSS_STATE.NEUTRAL);
+                    },
+                });
             },
         });
     }
@@ -241,13 +252,29 @@ export default class HorusBoss extends BossBase {
             this.play("horus_cast");
         }
 
-        // Durante el ataque queremos que se quede más claramente delante
         this.followSide = 1;
 
         this.performAttack();
     }
 
-    performAttack() {
+     performAttack() {
+        // Elegimos un patrón aleatorio de la lista
+        const pattern = Phaser.Utils.Array.GetRandom(this.attackPatterns);
+        console.log("[HorusBoss] Patrón de ataque:", pattern);
+
+        switch (pattern) {
+            case "windZones":
+                this.performWindAttack();
+                break;
+            case "columnWave":
+            default:
+                this.performColumnAttack();
+                break;
+        }
+    }
+
+        // Patrón 1: columnas sólidas + Koopas (tu patrón original)
+    performColumnAttack() {
         const scene = this.scene;
         const player = this.player;
 
@@ -263,32 +290,26 @@ export default class HorusBoss extends BossBase {
         // X base algo por delante del jugador
         const spawnBaseX = player.x + 400;
 
-        const lanes = Phaser.Utils.Array.Shuffle(this.laneYPositions.slice()).slice(
-            0,
-            this.columnsPerWave
-        );
+        const lanes = Phaser.Utils.Array
+            .Shuffle(this.laneYPositions.slice())
+            .slice(0, this.columnsPerWave);
 
         lanes.forEach((laneY, index) => {
             const delay = index * 150;
 
             scene.time.delayedCall(delay, () => {
-                const useGap = Math.random() < 0.4;
-                const colHeight = 260;
-
                 const spawnX = spawnBaseX + index * this.columnSpacingX;
 
                 const col = new HorusColumn(
                     scene,
+                    this.map,
+                    this.groundLayer,
                     spawnX,
                     laneY,
-                    colHeight,
-                    this.columnSpeed,
-                    useGap,
-                    96, // gapHeight
-                    96, // gapOffset
-                    96  // width
+                    Phaser.Math.Clamp(Math.floor(Math.random() * 10), 3, 7),
+                    0,
+                    2
                 );
-
                 this.columns.push(col);
 
                 this.spawnWindKoopa(spawnX + 80, laneY - 32);
@@ -303,6 +324,7 @@ export default class HorusBoss extends BossBase {
             this.finishAttack();
         });
     }
+
 
     spawnWindKoopa(x, y) {
         const scene = this.scene;
@@ -333,14 +355,72 @@ export default class HorusBoss extends BossBase {
         const spawnX = cam.scrollX + cam.width + 100;
         const spawnY = Phaser.Utils.Array.GetRandom(this.laneYPositions);
 
-        // Hook para Pokey / Piranha / lo que toque
         new Pokey(
             scene,
             spawnX,
             spawnY - 32,
-            5,
+            Phaser.Math.Clamp(Math.floor(Math.random()/0.2), 2, 5),
             1.5
         );
+    }
+
+        // Patrón 2: zonas de viento atravesables + Koopas
+    performWindAttack() {
+        const scene = this.scene;
+        const player = this.player;
+
+        if (!player) {
+            this.finishAttack();
+            return;
+        }
+
+        if (this.windSound) {
+            this.windSound.play();
+        }
+
+        const spawnBaseX = player.x + 400;
+
+        const lanes = Phaser.Utils.Array
+            .Shuffle(this.laneYPositions.slice())
+            .slice(0, this.columnsPerWave);
+
+        lanes.forEach((laneY, index) => {
+            const delay = index * 150;
+
+            scene.time.delayedCall(delay, () => {
+                const width = 96;      // ancho de la zona de viento
+                const height = 260;    // alto de la zona de viento
+                const spawnX = spawnBaseX + index * this.columnSpacingX;
+
+                const windZone = new HorusWindZone(
+                    scene,
+                    spawnX,
+                    laneY,
+                    width,
+                    height,
+                    this.columnSpeed,
+                    this.player
+                );
+
+                this.columns.push(windZone);
+
+                // opcional: Koopas arrastrados por el viento
+                this.spawnWindKoopa(spawnX + 80, laneY - 32);
+            });
+        });
+
+        scene.time.delayedCall(400, () => {
+            this.spawnExtraEnemy();
+        });
+
+        scene.time.delayedCall(1200, () => {
+            this.finishAttack();
+        });
+    }
+
+
+    updateAttack(time, delta){
+        this.x += this.player.speed * delta/21;
     }
 
     // -------------------------------------------------------

@@ -17,7 +17,7 @@
 
 @font-face{
   font-family: 'aku-kamu';
-  src: url('../assets/web/aku_kamu/AkuKamu.otf') format('opentype');
+  src: url('../assets/web/aku_kamu/AkuKamu.otf');
   font-weight: normal;
   font-style: normal;
 }

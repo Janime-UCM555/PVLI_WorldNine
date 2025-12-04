@@ -814,7 +814,7 @@ class Mario extends Phaser.GameObjects.Sprite
         this.deactivatePowerUp({ keepSize: false });
 
         // 5. Resetear velocidades para caída
-        this.setVelocityX(this.speed);
+        this.setVelocityX(0);
         this.setVelocityY(0);
 
         // 6. Posicionar a Mario en una posición segura
@@ -1213,99 +1213,9 @@ class Mario extends Phaser.GameObjects.Sprite
         this.deactivatePowerUp();
     }
     
-    setInvincible(durationMs) {
-        // Solo gestiona la estrella, no toca otros powerups
-        this.isInvincible = true;
+    
 
-        this.speed = this.base.speed * 1.25;
-
-        // Música
-        if (this.scene.levelMusic && this.scene.levelMusic.isPlaying) {
-            this.scene.levelMusic.pause();
-        }
-        if (this.starman) {
-            this.starman.play({ loop: true });
-        }
-        // Efecto arcoíris
-        const rainbowColors = [
-            0xFF0000, // Rojo
-            0xFF7F00, // Naranja
-            0xFFFF00, // Amarillo
-            0x00FF00, // Verde
-            0x0000FF, // Azul
-            0x4B0082, // Índigo
-            0x8B00FF  // Violeta
-        ];
-        let colorIndex = 0;
-
-        if (this.invEvent?.remove) {
-            this.invEvent.remove(false);
-        }
-        this.invEvent = this.scene.time.addEvent({
-            delay: 100,
-            loop: true,
-            callback: () => {
-                this.setTint(rainbowColors[colorIndex]);
-                colorIndex = (colorIndex + 1) % rainbowColors.length;
-            }
-        });
-
-        // Timer de aviso de que se acaba la estrella
-        const warningTime = 1000;
-        const timeUntilWarning = durationMs - warningTime;
-
-        if (this.warningTimer?.remove) {
-            this.warningTimer.remove(false);
-        }
-        this.warningTimer = this.scene.time.delayedCall(timeUntilWarning, () => {
-            if (!this.starEndingSound) {
-                this.starEndingSound = this.scene.sound.add('starEnding');
-            }
-            this.starEndingSound.play();
-        });
-
-        // Timer principal de invencibilidad
-        if (this.invTimer?.remove) {
-            this.invTimer.remove(false);
-        }
-        this.invTimer = this.scene.time.delayedCall(durationMs, () => {
-            this.endStarInvincibility();
-        });
-    }
-
-    endStarInvincibility() {
-        // Cancelar eventos y timers
-        if (this.invEvent?.remove) {
-            this.invEvent.remove(false);
-            this.invEvent = null;
-        }
-        if (this.invTimer?.remove) {
-            this.invTimer.remove(false);
-            this.invTimer = null;
-        }
-        if (this.warningTimer?.remove) {
-            this.warningTimer.remove(false);
-            this.warningTimer = null;
-        }
-
-        this.speed = this.base.speed;
-
-        // Parar músicas de estrella y reanudar música de nivel
-        if (this.starman && this.starman.isPlaying||this.scene.endTimer) {
-            this.starman.stop();
-        }
-        if (this.starEndingSound && this.starEndingSound.isPlaying) {
-                this.starEndingSound.stop();
-        }
-        if (this.scene.levelMusic && this.scene.levelMusic.isPaused && !this.scene.endTimer) {
-                this.scene.levelMusic.resume();
-        }
-
-        // Restaurar apariencia
-        this.clearTint();
-        this.alpha = 1;
-        this.isInvincible = false;
-    }
+    
 
     enableHammer() {
         // Cambiar de power-up ofensivo, pero conservar tamaño si es Super Mario
