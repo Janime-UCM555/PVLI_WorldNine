@@ -29,14 +29,6 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
     scene.matter.add.gameObject(this);
     this.setOrigin(0.5, 0.5);
 
-    // this.setActive(true).setVisible(true);
-    // this.body.setAllowGravity(true);
-    // this.body.setCollideWorldBounds(true);
-    // Configuración de colisiones específica
-    // this.body.checkCollision.left = true;
-    // this.body.checkCollision.right = true;
-    // this.body.checkCollision.up = false;  // No colisiona por arriba para que Mario no pueda saltar encima de los Power-Ups
-    // this.body.checkCollision.down = true;
     this.blocked= {
       left: false,
       right: false,
@@ -131,16 +123,19 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
   collect(player) {
     if (!this.active) return;
 
+    super.deactivatePowerUp({ keepSize: player.isSuperSize });
+    if(!player.isSuperSize) this.enableSuperSize?.(player);
+
     player.activePowerUp = this.type;
 
     switch (this.type) {
-      case POWERUP_TYPES.STAR:
-        player.setInvincible?.(STAR_DURATION);
-        // se desactiva automáticamente tras STAR_DURATION
-        break;
-      case POWERUP_TYPES.HAMMER:
-        player.enableHammer?.();
-        break;
+      // case POWERUP_TYPES.STAR:
+      //   player.setInvincible?.(STAR_DURATION);
+      //   // se desactiva automáticamente tras STAR_DURATION
+      //   break;
+      // case POWERUP_TYPES.HAMMER:
+      //   player.enableHammer?.();
+      //   break;
       case POWERUP_TYPES.DOUBLE_JUMP:
         player.enableDoubleJump?.();
         break;
@@ -150,9 +145,9 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
       case POWERUP_TYPES.JUMP_BOOTS:
         player.enableHighJump?.();
         break;
-        case POWERUP_TYPES.MUSHROOM:
-        player.enableSuperSize?.();
-        break;
+        // case POWERUP_TYPES.MUSHROOM:
+        // player.enableSuperSize?.();
+        // break;
     }
 
     // Por si queremos añadir efectos de sonido
@@ -171,6 +166,92 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
     // this.disableBody(true, true);
     this.destroy();
   }
+
+  deactivatePowerUp(player, options = {}) {
+        // Si no hay power-up activo y no es Super Mario, no hacer nada
+        if (!player.activePowerUp && !player.isSuperSize) return;
+
+        const keepSize = options.keepSize ?? false;
+
+        // 1. Quitar efectos de estrella
+        if (player.invEvent?.remove) {
+            player.invEvent.remove(false);
+            player.invEvent = null;
+        }
+
+        if (player.invTimer?.remove) {
+            player.invTimer.remove(false);
+            player.invTimer = null;
+        }
+
+        if (player.warningTimer?.remove) {
+            player.warningTimer.remove(false);
+            player.warningTimer = null;
+        }
+
+        if (player.starman && player.starman.isPlaying) {
+            player.starman.stop();
+        }
+        if (this.starEndingSound && this.starEndingSound.isPlaying) {
+            this.starEndingSound.stop();
+        }
+        if (this.scene.levelMusic && this.scene.levelMusic.isPaused && !this.scene.endTimer) {
+            this.scene.levelMusic.resume();
+        }
+
+        // 2. Restaurar apariencia
+        this.clearTint();
+        this.alpha = 1;
+
+        // 3. Restaurar tamaño si toca
+        if (!keepSize && this.isSuperSize) {
+            this.setScale(this.base.scaleX, this.base.scaleY);
+
+            // Solo si es arcade, esto existe
+            if (this.baseBody && this.body && this.body.setSize) {
+                this.body.setSize(
+                    this.baseBody.w * this.base.scaleX,
+                    this.baseBody.h * this.base.scaleY
+                );
+                this.body.setOffset(this.baseBody.offsetX, this.baseBody.offsetY);
+            }
+
+            this.isSuperSize = false;
+        }
+
+        // 4. Resetear flags y multiplicadores
+        this.isInvincible = false;
+        this.canThrowHammer = false;
+        this.canDoubleJump = false;
+        this.hasDoubleJumped = false;
+        this.canDash = false;
+        this.isDashing = false;
+        this.canHighJump = false;
+        this.highJumpMultiplier = 1.5;
+
+        // 5. Restaurar velocidad y salto base
+        this.speed = this.base.speed;
+        this.minJumpVelocity = this.base.minJumpVelocity ?? this.minJumpVelocity;
+        this.maxJumpVelocity = this.base.maxJumpVelocity ?? this.base.jumpForce ?? this.maxJumpVelocity;
+
+        // 6. Power-up activo
+        this.activePowerUp = keepSize && this.isSuperSize
+            ? POWERUP_TYPES.MUSHROOM
+            : null;
+    }
+
+    enableSuperSize(player) {
+        // Evita duplicar
+        if (player.isSuperSize) return;
+
+        player.powerUpSound?.play();
+
+        const k = player.scaleMultiplier;
+        player.isSuperSize = true;
+
+        // Escala visual (Super Mario / Powered-Up)
+        player.setScale(player.base.scaleX * k, player.base.scaleY * k);
+    }
 
   /** Update simple para rebotar en paredes y moverse. */
   preUpdate(time, delta) {

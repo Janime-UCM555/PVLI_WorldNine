@@ -1213,18 +1213,6 @@ class Mario extends Phaser.GameObjects.Sprite
         this.deactivatePowerUp();
     }
     
-    
-
-    
-
-    enableHammer() {
-        // Cambiar de power-up ofensivo, pero conservar tamaño si es Super Mario
-        this.deactivatePowerUp({ keepSize: this.isSuperSize });
-        if(!this.isSuperSize) this.enableSuperSize();
-        this.activePowerUp = POWERUP_TYPES.HAMMER;
-        this.canThrowHammer = true;
-    }
-
     tryThrowHammer() {
     if (!this.canThrowHammer) return;
 
