@@ -158,7 +158,7 @@ class Nivel_TO extends Phaser.Scene
         // Quitamos la colisión con los bordes del mapa
         this.matter.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels, 0, false, false, false, false);
         this.createText();  
-        // this.spawnPowerUp(200, 600, POWERUP_TYPES.HAMMER);
+        // this.spawnPowerUp(this, 200, 600, POWERUP_TYPES.HAMMER);
 
 
         const enemies = this.map.getObjectLayer('Enemigos').objects;

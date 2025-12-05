@@ -1131,13 +1131,13 @@ class BossJ extends Phaser.Scene
             // Comprobar si el jugador se ha caído
             this.checkPlayerFell();
 
-            /*
+            
             // Movimiento continuo hacia la derecha
             Phaser.Physics.Matter.Matter.Body.setVelocity(this.pilar, {
                 x: this.velocidadPilar,
                 y: this.pilar.velocity.y
             });
-            */
+            
         }
         /*
         else{
