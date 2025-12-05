@@ -84,8 +84,8 @@ class Mario extends Phaser.GameObjects.Sprite
         this.playerBody = M.Bodies.rectangle(sx,sy, w * 0.75, h, { chamfer: { radius: 10 }, label:"Mario" });
         this.sensors = {
             bottom: M.Bodies.rectangle(sx, h, sx, h*0.1, { isSensor: true, label:"Mario" }),
-            left: M.Bodies.rectangle(sx - w * 0.5, sy / 1.4, 5, h*0.3, { isSensor: true, label:"Mario" }),
-            right: M.Bodies.rectangle(sx + w * 0.5, sy / 1.4, 5, h*0.3, { isSensor: true, label:"Mario" }),
+            left: M.Bodies.rectangle(sx - w * 0.5, sy / 1.2, 5, h * 0.6, { isSensor: true, label:"Mario" }),
+            right: M.Bodies.rectangle(sx + w * 0.5, sy / 1.2, 5, h * 0.6, { isSensor: true, label:"Mario" }),
         };
 
         const compoundBody = M.Body.create({
@@ -793,6 +793,12 @@ class Mario extends Phaser.GameObjects.Sprite
         this.canDrop = false;
         this.bubblePhase = 0;
         this.bubbleOscillation = null;
+        
+        // Parar todos los tweens que afecten al jugador y a su velocidad
+        this.scene.tweens.killTweensOf(this);
+        if (this.body) {
+            this.scene.tweens.killTweensOf(this.body.velocity);
+        }
 
         // 2. Reactivar el cuerpo físico
         if (this.body) {
@@ -1257,42 +1263,93 @@ class Mario extends Phaser.GameObjects.Sprite
     }
 }
 
+/**
+   * Desactiva el power-up actual del jugador.
+   * 
+   * - Limpia timers y sonidos de estrella.
+   * - Restaura tinte, alpha y tamaño (si no se indica `keepSize`).
+   * - Resetea flags de habilidades (dash, doble salto, martillo, etc.).
+   * - Restaura velocidad y parámetros de salto a sus valores base.
+   * - Ajusta `activePowerUp` según si el jugador sigue siendo Super.
+   *
+   * @param {{ keepSize?: boolean }} [options] - Opciones adicionales.
+   */
+  deactivatePowerUp(options = {}) {
+     const player = this;
 
-    enableDoubleJump() {
-        this.deactivatePowerUp({ keepSize: this.isSuperSize });
-        if(!this.isSuperSize) this.enableSuperSize();
-        this.activePowerUp = POWERUP_TYPES.DOUBLE_JUMP;
-        this.canDoubleJump = true;
-        this.hasDoubleJumped = false;
+    // Si no hay power-up activo y no es Super Mario, no hacer nada
+    if (!player.activePowerUp && !player.isSuperSize) return;
+
+    const keepSize = options.keepSize ?? false;
+
+    // 1. Quitar efectos de estrella
+    if (player.invEvent?.remove) {
+      player.invEvent.remove(false);
+      player.invEvent = null;
     }
 
-    // enableDash() {
-    //     this.deactivatePowerUp({ keepSize: this.isSuperSize });
-    //     if(!this.isSuperSize) this.enableSuperSize();
-    //     this.activePowerUp = POWERUP_TYPES.DASH;
-    //     this.canDash = true;
-
-    // Aumentamos velocidad base mientras esté activo
-    //         this.speed = this.base.speed * 1.5;
-    //     if (this.body) {
-    //         this.body.setVelocityX(this.speed);
-    //     }
-    // }
-
-    enableHighJump() {
-        this.deactivatePowerUp({ keepSize: this.isSuperSize });
-        if(!this.isSuperSize) this.enableSuperSize();
-        this.activePowerUp = POWERUP_TYPES.JUMP_BOOTS;
-        this.canHighJump = true;
-
-        // Hacer el salto más alto (más negativo)
-        const baseMaxJump = this.base.maxJumpVelocity ?? this.base.jumpForce ?? this.maxJumpVelocity;
-        this.maxJumpVelocity = baseMaxJump * this.highJumpMultiplier;
-        // Lo hacemos más rapido también para diferenciarlo del doble salto
-        this.speed = this.base.speed * 1.5;
+    if (player.invTimer?.remove) {
+      player.invTimer.remove(false);
+      player.invTimer = null;
     }
 
-    
+    if (player.warningTimer?.remove) {
+      player.warningTimer.remove(false);
+      player.warningTimer = null;
+    }
 
+    if (player.starman && player.starman.isPlaying) {
+      player.starman.stop();
+    }
+    if (player.starEndingSound && player.starEndingSound.isPlaying) {
+      player.starEndingSound.stop();
+    }
+    if (player.scene.levelMusic && player.scene.levelMusic.isPaused && !player.scene.endTimer) {
+      player.scene.levelMusic.resume();
+    }
+
+    // 2. Restaurar apariencia
+    player.clearTint();
+    player.alpha = 1;
+
+    // 3. Restaurar tamaño si toca
+    if (!keepSize && player.isSuperSize) {
+      player.setScale(player.base.scaleX, player.base.scaleY);
+
+      // Solo si es arcade, esto existe
+      if (player.baseBody && player.body && player.body.setSize) {
+        player.body.setSize(
+          player.baseBody.w * player.base.scaleX,
+          player.baseBody.h * player.base.scaleY
+        );
+        player.body.setOffset(player.baseBody.offsetX, player.baseBody.offsetY);
+      }
+
+      player.isSuperSize = false;
+    }
+
+    // 4. Resetear flags y multiplicadores
+    player.isInvincible = false;
+    player.canThrowHammer = false;
+    player.canDoubleJump = false;
+    player.hasDoubleJumped = false;
+    player.canDash = false;
+    player.isDashing = false;
+    player.canHighJump = false;
+    player.highJumpMultiplier = 1.5;
+
+    // 5. Restaurar velocidad y salto base
+    player.speed = player.base.speed;
+    player.minJumpVelocity = player.base.minJumpVelocity ?? player.minJumpVelocity;
+    player.maxJumpVelocity =
+      player.base.maxJumpVelocity ??
+      player.base.jumpForce ??
+      player.maxJumpVelocity;
+
+    // 6. Power-up activo
+    player.activePowerUp = keepSize && player.isSuperSize
+      ? POWERUP_TYPES.MUSHROOM
+      : null;
+  }
 }
 export default Mario;

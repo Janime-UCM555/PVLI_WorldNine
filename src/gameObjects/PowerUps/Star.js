@@ -32,6 +32,7 @@ export default class Star extends PowerUp {
      */
     collect(player) {
         player.activePowerUp = this.type;
+        player.isInvincible = true;
 
         // Aumentar velocidad del jugador
         player.speed = player.base.speed * 1.25;

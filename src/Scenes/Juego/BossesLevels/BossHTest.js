@@ -5,6 +5,9 @@ import Star from '../../../gameObjects/PowerUps/Star.js';
 import Fin from '../../../gameObjects/LevelBlockObjects/BarraFin.js';
 import {PowerUp, POWERUP_TYPES } from '../../../gameObjects/PowerUps/PowerUps.js';
 import Hammer from '../../../gameObjects/PowerUps/Hammer.js';
+import DoubleJump from '../../../gameObjects/PowerUps/DoubleJump.js';
+import Mushroom from '../../../gameObjects/PowerUps/Mushroom.js';
+import JumpBoots from '../../../gameObjects/PowerUps/HighJump.js';
 
 const CATEGORY_PLAYER  = 0x0001;
 const CATEGORY_ENEMY   = 0x0002;
@@ -129,7 +132,7 @@ export default class BossH_Test extends Phaser.Scene {
         // ---------------------------------------------------------
         // MARIO
         // ---------------------------------------------------------
-        this.jugador = new Mario(this, 300, 600, "mario_run", 3.5, -3.75, true);
+        this.jugador = new Mario(this, 100, 500, "mario_run", 3.5, -3.75, true);
 
         // ---------------------------------------------------------
         // ✨ LANES desde el TILEMAP
@@ -172,7 +175,9 @@ export default class BossH_Test extends Phaser.Scene {
 
         this.powerups = this.add.group();
 
-        this.spawnPowerUp(350, 500, POWERUP_TYPES.HAMMER)
+        this.spawnPowerUp(350, 500, POWERUP_TYPES.JUMP_BOOTS)
+        this.spawnPowerUp(350, 500, POWERUP_TYPES.MUSHROOM)
+        this.spawnPowerUp(350, 500, POWERUP_TYPES.DOUBLE_JUMP)
 
         this.horus.startBattle();
 
@@ -191,11 +196,22 @@ export default class BossH_Test extends Phaser.Scene {
     }
       spawnPowerUp(x, y, type) {
             let power;
-            if(type != POWERUP_TYPES.STAR){
-                power = new Hammer(this, x, y)
-            }
-            else{
+            switch (type) {
+            case POWERUP_TYPES.STAR:
                 power = new Star(this, x, y);
+                break;
+            case POWERUP_TYPES.HAMMER:
+                power = new Hammer(this, x, y);
+                break;
+            case POWERUP_TYPES.DOUBLE_JUMP:
+                power = new DoubleJump(this, x, y);
+                break;
+            case POWERUP_TYPES.JUMP_BOOTS:
+                power = new JumpBoots(this, x, y);
+                break;
+                case POWERUP_TYPES.MUSHROOM:
+                power = new Mushroom(this, x, y);
+                break;
             }
             power.setVelocityX(power.body.velocity.x * 0.09315); // Salir del bloque hacia arriba
             power.setVelocityY(-power.body.velocity.x/2);
