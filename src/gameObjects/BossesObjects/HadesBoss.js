@@ -292,9 +292,6 @@ export default class HadesBoss extends BossBase {
         fire.hasHitPlayer = true;
         fire.damageApplied = true;
 
-        // Detener el pilar de la escena
-        this.scene.pilar.isStatic = true;
-
         // Iniciar desvanecimiento
         this.scene.time.delayedCall(75, () => {
             if (fire && !fire.isFadingOut) {
@@ -302,25 +299,47 @@ export default class HadesBoss extends BossBase {
             }
         });
 
-        // Aplicar daño al jugador
-        if (!this.player.isInvincible) {
-            // Reproducir sonido de muerte
-            this.scene.sound.play('muerte');
+        // Aplicar reducción de velocidad al jugador
+        if (!this.player.isInvincible && !this.player.isHurt) {
+            // Parpadeo visual usando tween
+            const blinkDuration = 1000; // 1 segundo de parpadeo
+            const blinkInterval = 200; // Parpadear cada 200ms
         
-            this.player.hurt();
-            this.player.setStatic(true);
-
-            // Usar la transición de la escena después de un breve delay
-            this.scene.time.delayedCall(300, () => {
-                if (this.scene.doubleEndTransition) {
-                    this.scene.doubleEndTransition(() => {
-                        this.scene.scene.restart();
-                    });
-                } else {
-                    this.scene.time.delayedCall(1000, () => {
-                        this.scene.scene.restart();
-                    });
+            // Calcular número de parpadeos
+            const blinkCount = Math.floor(blinkDuration / blinkInterval);
+        
+            // Tween de parpadeo
+            this.blinkTween = this.scene.tweens.add({
+                targets: this.player,
+                alpha: 0.3, // Hacer semi-transparente
+                duration: blinkInterval / 2, // Mitad del tiempo para ir a transparente
+                yoyo: true, // Volver al estado original
+                repeat: blinkCount - 1, // Repetir
+                ease: 'Linear',
+                onUpdate: () => {
+                    // Alternar visibilidad basado en alpha
+                    if (this.player.alpha < 0.5) {
+                        this.player.setVisible(false);
+                    } else {
+                        this.player.setVisible(true);
+                    }
+                },
+                onComplete: () => {
+                    // Asegurar que vuelva a ser visible
+                    this.player.setAlpha(1);
+                    this.player.setVisible(true);
                 }
+            });
+
+            // Guardar velocidad original del jugador
+            const originalPlayerSpeed = this.player.speed;
+
+            // Reducir velocidad al 50%
+            this.player.speed *= 0.5;
+
+            // Restaurar velocidad original después de un delay de 1 segundo
+            this.scene.time.delayedCall(1000, () => {
+                this.player.speed = originalPlayerSpeed;
             });
         }
     }

@@ -455,6 +455,159 @@ class BossHades extends Phaser.Scene
         return group;
     }
 
+    createAnimations() {
+        this.anims.create({
+            key: 'sunB_move',
+            frames: this.anims.generateFrameNumbers('Impulsos', { start: 0, end: 1 }),
+            frameRate: 4,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'sunM_move',
+            frames: this.anims.generateFrameNumbers('Impulsos', { start: 3, end: 4 }),
+            frameRate: 6,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'sunA_move',
+            frames: this.anims.generateFrameNumbers('Impulsos', { start: 6, end: 7 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'coin_gold_spin',
+            frames: this.anims.generateFrameNumbers('coin_tileset', { start: 0, end: 8 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'coin_purple_spin',
+            frames: this.anims.generateFrameNumbers('coin_tileset', { start: 9, end: 17 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'mario_run',
+            frames: this.anims.generateFrameNumbers('mario_run', { start: 0, end: 3 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mario_panicrun',
+            frames: this.anims.generateFrameNumbers('mario_panicrun', { start: 0, end: 3 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mario_idle',
+            frames: this.anims.generateFrameNumbers('mario_idle', { start: 0, end: 2 }),
+            frameRate: 1,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mario_jump',
+            frames: this.anims.generateFrameNumbers('mario_jump', { start: 0, end: 1 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mario_panicjump',
+            frames: this.anims.generateFrameNumbers('mario_panicjump', { start: 0, end: 1 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mario_fall',
+            frames: this.anims.generateFrameNumbers('mario_fall', { start: 0, end: 1 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mario_panicfall',
+            frames: this.anims.generateFrameNumbers('mario_panicfall', { start: 0, end: 1 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mario_hurt',
+            frames: this.anims.generateFrameNumbers('mario_hurt', { start: 0, end: 0 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'mario_stop',
+            frames: this.anims.generateFrameNumbers('mario_stop', { start: 0, end: 0 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'mario_victory',
+            frames: this.anims.generateFrameNumbers('mario_victory', { start: 0, end: 0 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'mario_bubble',
+            frames: this.anims.generateFrameNumbers('mario_bubble', {start: 0, end: 0}),
+            frameReate: 8,
+            repeat: -1
+        })
+
+        this.anims.create({
+            key: 'mario_throw',
+            frames: this.anims.generateFrameNumbers('mario_throw', {start: 0, end: 3}),
+            frameReate: 8,
+            repeat: 0
+        })
+
+        this.anims.create({
+            key: 'gombrome_walk',
+            frames: this.anims.generateFrameNumbers('gombrome_walk', { start: 0, end: 3 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'Koopa_walk_R',
+            frames: this.anims.generateFrameNumbers('Koopa_walk_R', { start: 0, end: 3 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'pilar_fuego',
+            frames: this.anims.generateFrameNumbers('pilar_fuegoTiles', { start: 0, end: 10 }),
+            frameRate: 20,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'HadesAnim',
+            frames: this.anims.generateFrameNumbers('Hades', { start: 0, end: 4 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'HadesDeadAnim',
+            frames: this.anims.generateFrameNumbers('HadesDead', { start: 0, end: 2 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'WispFireAnim',
+            frames: this.anims.generateFrameNumbers('WispFire', { start: 0, end: 1 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'WispFireFadingAnim',
+            frames: this.anims.generateFrameNumbers('WispFireFading', { start: 0, end: 0 }),
+            frameRate: 8,
+            repeat: -1
+        });
+    }
     
     setupCollisions() {
         //Máscaras de colisión
