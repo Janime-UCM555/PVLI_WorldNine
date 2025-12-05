@@ -6,6 +6,7 @@ import Koopa from "../Enemies/Koopa.js";
 import Pokey from "../Enemies/Pokey.js";
 import HorusColumn from "./HorusColums.js";
 import HorusWindZone from "./HorusWindZone.js";
+import DoubleJump from "../PowerUps/DoubleJump.js";
 
 export default class HorusBoss extends BossBase {
     /**
@@ -75,7 +76,18 @@ export default class HorusBoss extends BossBase {
 
         this.lastAttackX = player ? player.x : 0;
         this.columns = [];
-        this.attackPatterns = ["windZones", "columnWave"];
+        this.attackPatterns = ["windZones", "columnWave", "spawnEnemys"];
+        
+        // ---------------------------
+        // Minions invocados por Horus
+        // ---------------------------
+        /**
+         * Enemigos (Koopas, Pokeys, etc.) creados por este boss.
+         * Se actualizan desde el preUpdate de Horus.
+         * @type {Phaser.GameObjects.GameObject[]}
+         */
+        this.minions = [];
+
 
         // ---------------------------
         // Seguimiento y vuelo bonito
@@ -138,7 +150,7 @@ export default class HorusBoss extends BossBase {
             x: this.player.x - 60,
             y: this.player.y - 80,
             scale: this.baseScale,
-            duration: this.introDuration * 0.4,
+            duration: this.introDuration,
             ease: "Cubic.easeInOut",
             onComplete: () => {
                 // 2º tween: se adelanta y “salta” por delante y arriba
@@ -257,7 +269,7 @@ export default class HorusBoss extends BossBase {
         this.performAttack();
     }
 
-     performAttack() {
+    performAttack() {
         // Elegimos un patrón aleatorio de la lista
         const pattern = Phaser.Utils.Array.GetRandom(this.attackPatterns);
         console.log("[HorusBoss] Patrón de ataque:", pattern);
@@ -265,6 +277,20 @@ export default class HorusBoss extends BossBase {
         switch (pattern) {
             case "windZones":
                 this.performWindAttack();
+                break;
+            case "spawnEnemys":
+                this.spawnWindKoopa(this.player.x + 400, this.laneYPositions[0]);
+                this.spawnExtraEnemy(this.player.x + 600, this.laneYPositions[0]);
+               
+                let power = new DoubleJump(this.scene, this.player.x + 1000, this.laneYPositions[0]);
+
+                power.setVelocityX(power.body.velocity.x * -0.09315); // Salir del bloque hacia arriba
+                power.setVelocityY(-power.body.velocity.x/2);
+                this.scene.powerups.add(power);
+
+                this.scene.time.delayedCall(1200, () => {
+                    this.finishAttack();
+                });
                 break;
             case "columnWave":
             default:
@@ -299,6 +325,10 @@ export default class HorusBoss extends BossBase {
 
             scene.time.delayedCall(delay, () => {
                 const spawnX = spawnBaseX + index * this.columnSpacingX;
+                const colheight = Phaser.Math.Between(3, 8);
+                const hasHole = colheight > 4 || Math.random() < 0.5;
+                const hole = hasHole? 3 : 0;
+                const offset = Phaser.Math.Between(2, 4);
 
                 const col = new HorusColumn(
                     scene,
@@ -306,23 +336,75 @@ export default class HorusBoss extends BossBase {
                     this.groundLayer,
                     spawnX,
                     laneY,
-                    Phaser.Math.Clamp(Math.floor(Math.random() * 10), 3, 6),
-                    Math.random() < 0.5? 0 : 3,
-                    Math.random() < 0.5? 0 : 3
+                    colheight,
+                    hole,
+                    offset
                 );
                 this.columns.push(col);
-
-                this.spawnWindKoopa(spawnX + 80, laneY - 32);
             });
         });
-
-        scene.time.delayedCall(400, () => {
-            this.spawnExtraEnemy();
-        });
-
         scene.time.delayedCall(1200, () => {
             this.finishAttack();
         });
+    }
+
+      /**
+     * preUpdate de Horus: deja que BossBase haga su lógica interna
+     * y luego actualizamos a todos los minions.
+     */
+    preUpdate(time, delta) {
+        // Lógica de estados / animaciones definida en BossBase
+        super.preUpdate(time, delta);
+
+        // Actualizar minions invocados
+        this.updateMinions(time, delta);
+    }
+
+    // -------------------------------------------------------
+    // MINIONS: gestión genérica de enemigos invocados
+    // -------------------------------------------------------
+    /**
+     * Registra un minion para que el boss lo actualice y limpie.
+     * @param {Phaser.GameObjects.GameObject} minion 
+     */
+    addMinion(minion) {
+        if (!minion) return;
+        this.minions.push(minion);
+    }
+
+    /**
+     * Llamada cada frame desde preUpdate.
+     * Actualiza a todos los minions vivos y limpia los caídos.
+     */
+    updateMinions(time, delta) {
+        for (let i = this.minions.length - 1; i >= 0; i--) {
+            const m = this.minions[i];
+
+            // Si el minion ha sido destruido o ya no está activo, lo eliminamos
+            if (!m || !m.active) {
+                this.minions.splice(i, 1);
+                continue;
+            }
+
+            // Si el minion tiene un update(time, delta) propio, lo llamamos
+            if (typeof m.update === "function") {
+                m.update(time, delta);
+            }
+        }
+    }
+
+    /**
+     * Destruye todos los minions asociados a este boss.
+     * Se usa al morir Horus o si quieres limpiar la arena.
+     */
+    clearMinions() {
+        for (let i = 0; i < this.minions.length; i++) {
+            const m = this.minions[i];
+            if (m && typeof m.destroy === "function") {
+                m.destroy();
+            }
+        }
+        this.minions.length = 0;
     }
 
 
@@ -338,6 +420,8 @@ export default class HorusBoss extends BossBase {
                 true
             );
             koopa.direction = -1; // viento hacia la izquierda
+            this.addMinion(koopa);
+
         } catch (e) {
             console.warn(
                 "No se pudo crear Koopa para Horus (revisa textura/ruta):",
@@ -355,13 +439,15 @@ export default class HorusBoss extends BossBase {
         const spawnX = cam.scrollX + cam.width + 100;
         const spawnY = Phaser.Utils.Array.GetRandom(this.laneYPositions);
 
-        new Pokey(
+        let pokey = new Pokey(
             scene,
             spawnX,
             spawnY - 32,
             Phaser.Math.Clamp(Math.floor(Math.random()/0.2), 2, 5),
             1.5
         );
+        this.addMinion(pokey);
+
     }
 
         // Patrón 2: zonas de viento atravesables + Koopas
@@ -403,14 +489,7 @@ export default class HorusBoss extends BossBase {
                 );
 
                 this.columns.push(windZone);
-
-                // opcional: Koopas arrastrados por el viento
-                this.spawnWindKoopa(spawnX + 80, laneY - 32);
             });
-        });
-
-        scene.time.delayedCall(400, () => {
-            this.spawnExtraEnemy();
         });
 
         scene.time.delayedCall(1200, () => {

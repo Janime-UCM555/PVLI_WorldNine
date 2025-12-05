@@ -161,7 +161,7 @@ export default class BossH_Test extends Phaser.Scene {
             columnSpacingX: 260,
 
             koopaTexture: "Koopa_walk_R",
-            koopaSpeed: 30,
+            koopaSpeed: 3,
 
             map: this.map,
 
@@ -194,108 +194,108 @@ export default class BossH_Test extends Phaser.Scene {
             0, false, false, false, false
         );
     }
-      spawnPowerUp(x, y, type) {
-            let power;
-            switch (type) {
-            case POWERUP_TYPES.STAR:
-                power = new Star(this, x, y);
-                break;
-            case POWERUP_TYPES.HAMMER:
-                power = new Hammer(this, x, y);
-                break;
-            case POWERUP_TYPES.DOUBLE_JUMP:
-                power = new DoubleJump(this, x, y);
-                break;
-            case POWERUP_TYPES.JUMP_BOOTS:
-                power = new JumpBoots(this, x, y);
-                break;
-                case POWERUP_TYPES.MUSHROOM:
-                power = new Mushroom(this, x, y);
-                break;
-            }
-            power.setVelocityX(power.body.velocity.x * 0.09315); // Salir del bloque hacia arriba
-            power.setVelocityY(-power.body.velocity.x/2);
-            this.powerups.add(power);
-            return this.powerups;
+    spawnPowerUp(x, y, type) {
+        let power;
+        switch (type) {
+        case POWERUP_TYPES.STAR:
+            power = new Star(this, x, y);
+            break;
+        case POWERUP_TYPES.HAMMER:
+            power = new Hammer(this, x, y);
+            break;
+        case POWERUP_TYPES.DOUBLE_JUMP:
+            power = new DoubleJump(this, x, y);
+            break;
+        case POWERUP_TYPES.JUMP_BOOTS:
+            power = new JumpBoots(this, x, y);
+            break;
+            case POWERUP_TYPES.MUSHROOM:
+            power = new Mushroom(this, x, y);
+            break;
         }
+        power.setVelocityX(power.body.velocity.x * 0.09315); // Salir del bloque hacia arriba
+        power.setVelocityY(-power.body.velocity.x/2);
+        this.powerups.add(power);
+        return this.powerups;
+    }
 
-        requestHammer(player) {
-            let hammer = this.hammers.getChildren().find(h => !h.active);
-        
-            if (!hammer) {
-                hammer = this.matter.add.sprite(player.x, player.y, 'hammer');
-                hammer.setCircle(8);
-                hammer.setBounce(0.8);
-                hammer.setIgnoreGravity(false);
-                hammer.setFixedRotation();
-                hammer.isHammer = true;
-                hammer.used = false;
-                hammer.setDepth(6);
-        
-                // Config rebotes por primera vez
-                hammer._bounces = 0;
-                hammer._maxBounces = 3;
-        
-                // Manejar colisiones
-               hammer.setOnCollide((collision) => {
-                    if (hammer.used) return; // si ya no hace daño, ignorar
-        
-                    const bodyA = collision.bodyA;
-                    const bodyB = collision.bodyB;
-                    const other = (bodyA === hammer.body) ? bodyB : bodyA;
-        
-                    const otherGO = other?.gameObject;
-        
-                    // 🔹 Interface común de enemigos
-                    if (otherGO && otherGO.isEnemy && typeof otherGO.die === 'function') {
-                        otherGO.die(DIE_TYPES.HAMMER);
-                    }
-        
-                    // Rebote solo contra bloques u objetos estáticos
-                    if (other && other.isStatic) {
-                        hammer._bounces++;
-        
-                        if (hammer._bounces >= hammer._maxBounces) {
-                            hammer.used = true;        // ya no hace daño
-                            hammer.setBounce(0);       // sin rebote
-        
-                            // Desaparecer después de 0.3s
-                            this.time.delayedCall(300, () => {
-                                this.recycleHammer(hammer);
-                            });
-                        }
-                    }
-                });
-        
-                this.hammers.add(hammer);
-            }
-        
-            hammer.used = false;
-            hammer._bounces = 0;
-            hammer.setBounce(0.4);
+    requestHammer(player) {
+        let hammer = this.hammers.getChildren().find(h => !h.active);
+    
+        if (!hammer) {
+            hammer = this.matter.add.sprite(player.x, player.y, 'hammer');
+            hammer.setCircle(8);
+            hammer.setBounce(0.8);
             hammer.setIgnoreGravity(false);
-            hammer.setActive(true);
-            hammer.setVisible(true);
-            hammer.setVelocity(0, 0);
-            hammer.setAngularVelocity(0);
-            hammer.setDepth(6);
-        
-            return hammer;
-        }
-        
-        
-        recycleHammer(hammer) {
-            if (!hammer) return;
-        
+            hammer.setFixedRotation();
+            hammer.isHammer = true;
             hammer.used = false;
+            hammer.setDepth(6);
+    
+            // Config rebotes por primera vez
             hammer._bounces = 0;
-            hammer.setActive(false);
-            hammer.setVisible(false);
-            hammer.setVelocity(0, 0);
-            hammer.setAngularVelocity(0);
-            hammer.setPosition(-1000, -1000);
+            hammer._maxBounces = 3;
+    
+            // Manejar colisiones
+            hammer.setOnCollide((collision) => {
+                if (hammer.used) return; // si ya no hace daño, ignorar
+    
+                const bodyA = collision.bodyA;
+                const bodyB = collision.bodyB;
+                const other = (bodyA === hammer.body) ? bodyB : bodyA;
+    
+                const otherGO = other?.gameObject;
+    
+                // 🔹 Interface común de enemigos
+                if (otherGO && otherGO.isEnemy && typeof otherGO.die === 'function') {
+                    otherGO.die(DIE_TYPES.HAMMER);
+                }
+    
+                // Rebote solo contra bloques u objetos estáticos
+                if (other && other.isStatic) {
+                    hammer._bounces++;
+    
+                    if (hammer._bounces >= hammer._maxBounces) {
+                        hammer.used = true;        // ya no hace daño
+                        hammer.setBounce(0);       // sin rebote
+    
+                        // Desaparecer después de 0.3s
+                        this.time.delayedCall(300, () => {
+                            this.recycleHammer(hammer);
+                        });
+                    }
+                }
+            });
+    
+            this.hammers.add(hammer);
         }
-        
+    
+        hammer.used = false;
+        hammer._bounces = 0;
+        hammer.setBounce(0.4);
+        hammer.setIgnoreGravity(false);
+        hammer.setActive(true);
+        hammer.setVisible(true);
+        hammer.setVelocity(0, 0);
+        hammer.setAngularVelocity(0);
+        hammer.setDepth(6);
+    
+        return hammer;
+    }
+    
+    
+    recycleHammer(hammer) {
+        if (!hammer) return;
+    
+        hammer.used = false;
+        hammer._bounces = 0;
+        hammer.setActive(false);
+        hammer.setVisible(false);
+        hammer.setVelocity(0, 0);
+        hammer.setAngularVelocity(0);
+        hammer.setPosition(-1000, -1000);
+    }
+    
     
 
     update(time, delta) {

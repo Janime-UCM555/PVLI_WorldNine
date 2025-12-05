@@ -23,10 +23,19 @@ export default class Mushroom extends PowerUp {
      * @param {Player} player - Jugador que recoge el power-up.
      */
     collect(player) {
-        super.collect(player);
 
-        // Activar estado Super
+        // Si el jugador aún no es Super, se le aplica el efecto de tamaño
+        if (!player.isSuperSize) {
+            this.enableSuperSize?.(player);
+        }
+
+        // Se registra este power-up como activo en el jugador
         player.activePowerUp = POWERUP_TYPES.MUSHROOM;
+
+        // Se activa el estado Super en el jugador
         player.isSuper = true;
+
+        // Se elimina el objeto de la escena tras ser recogido
+        this.destroy();
     }
 }
