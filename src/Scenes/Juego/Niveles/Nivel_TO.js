@@ -165,7 +165,6 @@ class Nivel_TO extends Phaser.Scene
         this.goombas = this.add.group();
         this.koopas = this.add.group();
         this.piranhas = this.add.group();
-        this.pokeys = this.add.group();
         for (const enemie of enemies)
         {
             if (enemie.name === 'Goomba')
@@ -215,15 +214,16 @@ class Nivel_TO extends Phaser.Scene
                 piranha.setCollisionCategory(CATEGORY_ENEMY);
                 piranha.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN, CATEGORY_ENEMY]);
             }
-            else if (enemie.name === 'Pokey')
-            {
-                const segments = enemie.properties?.find(p => p.name === 'segments')?.value || 5;
-                const pokey = new Pokey(this, enemie.x, enemie.y, segments, 1);
-                this.pokeys.add(pokey);
-                // pokey.setDepth(2);
+            // else if (enemie.name === 'Pokey')
+            // {
+            //     const segments = enemie.properties?.find(p => p.name === 'segments')?.value || 5;
+            //     const pokey = new Pokey(this, enemie.x, enemie.y, segments, 1);
+            //     this.pokeys.add(pokey);
+            //     // pokey.setDepth(2);
                 
-            }
+            // }
         }
+        this.pokey = new Pokey(this, 400, 300, 5, 0.5);
     }
     createObjectsFromLayer(layerName) {
         const objects = this.map.getObjectLayer(layerName).objects;
@@ -587,6 +587,7 @@ class Nivel_TO extends Phaser.Scene
         this.individualUpdates(this.pokeys, time,delta)
         this.individualUpdates(this.fallBlock, time,delta)
         this.individualUpdates(this.pausa, time,delta)
+        this.individualUpdates(this.pokey, time,delta)
     }
 
     // Verificar si el jugador se ha caído

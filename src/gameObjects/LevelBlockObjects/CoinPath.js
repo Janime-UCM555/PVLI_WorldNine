@@ -21,9 +21,6 @@ export class CoinPath extends SceneBlocks {
 
         this.setStatic(true);
         this.setSensor(true);
-
-        // this.setCollisionCategory(CATEGORY_FALLOFF);
-        // this.setCollidesWith([CATEGORY_PLAYER, CATEGORY_ENEMY, CATEGORY_POWERUP]);
     
         let tex = 'CoinPassD';
         this.type = obj.name;
@@ -50,12 +47,6 @@ export class CoinPath extends SceneBlocks {
                 // Arriba Recto por defecto
                 let coinDistanceX = 10;
                 let coinDistanceY = -40;
-                // if (this.type === "PasoMonedasAr") 
-                // { 
-                //     const coinDistanceX = 10;
-                //     const coinDistanceY = -40;
-                //     this.spawnCoins(coinDistanceX,coinDistanceY,this);
-                // }
                 if(this.type === "PasoMonedasAbDer") 
                 { // Abajo Derecha
                     // 5 monedas Abajo Diagonal

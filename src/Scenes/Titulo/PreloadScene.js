@@ -42,23 +42,23 @@ class PreloadScene extends Phaser.Scene {
     });
     this.load.image('GombRome_Stomp', 'GameSprites/Characters/Enemigos/Goomba/GombRome_Stomp.png');
 
-        // Koopa
-        this.load.image('Koopa_idle_R', 'GameSprites/Characters/Enemigos/Koopa/Koopa_idle_R.png');
-        this.load.image('Koopa_idle', 'GameSprites/Characters/Enemigos/Koopa/Koopa_idle.png');
-        this.load.image('Koopa_shell', 'GameSprites/Characters/Enemigos/Koopa/Koopa_shell.png');
-        this.load.spritesheet('Koopa_walk_R', 'GameSprites/Characters/Enemigos/Koopa/Koopa_walk_R.png', {
-            frameWidth: 41,
-            frameHeight: 60
-        });
-        this.load.spritesheet('Koopa_walk', 'GameSprites/Characters/Enemigos/Koopa/Koopa_walk.png', {
-            frameWidth: 41,
-            frameHeight: 50
-        });
-        this.load.image('Piranha_plant', 'GameSprites/Characters/Enemigos/PiranhaPlant/PiranhaPlant_Idle.png');
-        this.load.spritesheet('piranha_movement', 'GameSprites/Characters/Enemigos/PiranhaPlant/PiranhaPlant_movement.png', {
-            frameWidth: 46,
-            frameHeight: 51
-        });
+    // Koopa
+    this.load.image('Koopa_idle_R', 'GameSprites/Characters/Enemigos/Koopa/Koopa_idle_R.png');
+    this.load.image('Koopa_idle', 'GameSprites/Characters/Enemigos/Koopa/Koopa_idle.png');
+    this.load.image('Koopa_shell', 'GameSprites/Characters/Enemigos/Koopa/Koopa_shell.png');
+    this.load.spritesheet('Koopa_walk_R', 'GameSprites/Characters/Enemigos/Koopa/Koopa_walk_R.png', {
+        frameWidth: 41,
+        frameHeight: 60
+    });
+    this.load.spritesheet('Koopa_walk', 'GameSprites/Characters/Enemigos/Koopa/Koopa_walk.png', {
+        frameWidth: 41,
+        frameHeight: 50
+    });
+    this.load.image('Piranha_plant', 'GameSprites/Characters/Enemigos/PiranhaPlant/PiranhaPlant_Idle.png');
+    this.load.spritesheet('piranha_movement', 'GameSprites/Characters/Enemigos/PiranhaPlant/PiranhaPlant_movement.png', {
+        frameWidth: 46,
+        frameHeight: 51
+    });
 
     this.load.spritesheet('pokey', 'GameSprites/Characters/Enemigos/Pokey/Pokey.png', {
         frameWidth: 30,
@@ -267,6 +267,12 @@ class PreloadScene extends Phaser.Scene {
     }
     createAnimations() {
         this.anims.create({
+            key: 'pilar_fuego',
+            frames: this.anims.generateFrameNumbers('pilar_fuegoTiles', { start: 0, end: 10 }),
+            frameRate: 20,
+            repeat: -1
+        });
+        this.anims.create({
             key: 'sunB_move',
             frames: this.anims.generateFrameNumbers('Impulsos', { start: 0, end: 1 }),
             frameRate: 4,
@@ -356,6 +362,27 @@ class PreloadScene extends Phaser.Scene {
             frameReate: 8,
             repeat: 0
         })
+                
+        this.anims.create({
+            key: 'mario_panicjump',
+            frames: this.anims.generateFrameNumbers('mario_panicjump', { start: 0, end: 1 }),
+            frameRate: 8,
+            repeat: -1
+        });
+           
+        this.anims.create({
+            key: 'mario_panicfall',
+            frames: this.anims.generateFrameNumbers('mario_panicfall', { start: 0, end: 1 }),
+            frameRate: 20,
+            repeat: -1
+        });
+        
+        this.anims.create({
+            key: 'mario_panicrun',
+            frames: this.anims.generateFrameNumbers('mario_panicrun', { start: 0, end: 3 }),
+            frameRate: 8,
+            repeat: -1
+        });
 
         this.anims.create({
             key: 'gombrome_walk',

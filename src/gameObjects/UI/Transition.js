@@ -1,4 +1,14 @@
 const TransitionCode = {
+    /**
+     * 
+     * @param {scene} scene 
+     * @param {camera} cam 
+     * @param {time} duration 
+     * @param {Position2D} centerWorld
+     * @param {pos} startR - Radio empieza
+     * @param {pos} endR - Radio fin
+     * @param {Callback} callback - Método que se ejecuta al final de la transición
+     */
     invoke(scene, cam, duration, centerWorld, startR, endR, callback) {
         // Fondo negro que cubrirá todo
         const blackout = scene  .add.rectangle(0, 0, cam.width, cam.height, 0x000000)

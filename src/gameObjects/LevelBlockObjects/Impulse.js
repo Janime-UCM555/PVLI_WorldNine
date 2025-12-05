@@ -4,6 +4,11 @@ import{
     CATEGORY_SENSOR
 } from "../collisionCategories.js"
 export class Impulse extends SceneBlocks {
+    /**
+   * @param {Phaser.Scene} scene
+   * @param {gameObject} obj
+   * @param {texture} texture
+   */
     constructor(scene, obj) {
         super(scene, obj, 'CoinPassS');
 
