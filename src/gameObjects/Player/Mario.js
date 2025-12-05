@@ -1,5 +1,10 @@
 import { POWERUP_TYPES } from "../PowerUps/PowerUps.js";
-
+import{
+    CATEGORY_PLAYER,
+    CATEGORY_ENEMY,
+    CATEGORY_POWERUP,
+    CATEGORY_TERRAIN
+} from "../collisionCategories.js"
 class Mario extends Phaser.GameObjects.Sprite
 {
     constructor(scene, x, y, texture, speed = 200, jumpForce = -225, flipHorizontal = true, inBoss=false) {
@@ -23,6 +28,7 @@ class Mario extends Phaser.GameObjects.Sprite
         this.canDrop = false; // Indica si puede salir de la burbuja
         this.bubblesLeft = 2; // Número de burbujas restantes
 
+        this.canSunJump = false;
         this.inBoss = inBoss;
 
         // Sistema de salto
@@ -97,11 +103,6 @@ class Mario extends Phaser.GameObjects.Sprite
         });
 
         this.body.label="Mario";
-        const CATEGORY_PLAYER  = 0x0001;
-        const CATEGORY_ENEMY   = 0x0002;
-        const CATEGORY_TERRAIN = 0x0004;
-        const CATEGORY_POWERUP = 0x0003;
-
         this.setExistingBody(compoundBody);
         this.setCollisionCategory(CATEGORY_PLAYER);
         this.setCollidesWith([CATEGORY_TERRAIN, CATEGORY_ENEMY, CATEGORY_POWERUP]);
@@ -315,8 +316,10 @@ class Mario extends Phaser.GameObjects.Sprite
 
         // Al presionar el ratón
         this.scene.input.on('pointerdown', (pointer) => {
+                        
             if ((pointer.leftButtonDown() && this.scene.scene.isActive()))
             {
+                this.canSunJump = true;
                 // Si está en burbuja y puede salir, manejar la salida
                 if (this.isInBubble && this.canDrop) {
                     this.scene.sound.play("bubblePop");
@@ -331,7 +334,7 @@ class Mario extends Phaser.GameObjects.Sprite
                     if (!this.isGrounded) {
                         this.hasBufferedJump = true;
                         this.wasHoldingJumpWhenBuffered = true; // Recordar que se estaba manteniendo el botón
-                }
+                    }
                 }
             }
             if (pointer.rightButtonDown()) {
@@ -353,11 +356,10 @@ class Mario extends Phaser.GameObjects.Sprite
     }
 
     handleJump(time, delta) {
-
         this.isStopped = false;
 
         const canGroundJump = this.isGrounded || this.canEnemyJump || this.coyoteTimeCounter > 0;
-
+        
         const canDoubleJump = this.canDoubleJump && !this.isGrounded && !this.hasDoubleJumped && !this.isInBubble;
 
         // Manejar inicio del salto desde buffer si está disponible solo si todavía se está manteniendo el botón
@@ -391,6 +393,7 @@ class Mario extends Phaser.GameObjects.Sprite
 
         // Resetear el booleano de solicitud
         this.jumpRequested = false;
+        this.canSunJump=false;
     }
 
     startJump(time) {
@@ -559,9 +562,6 @@ class Mario extends Phaser.GameObjects.Sprite
 
         // ---- Empuje y ventana de invulnerabilidad ----
         this.hurt();
-        const CATEGORY_ENEMY   = 0x0002;
-        const CATEGORY_TERRAIN = 0x0004;
-        const CATEGORY_POWERUP = 0x0003;
 
         this.startPush();
         this.isInvulnerable = true;
@@ -1085,7 +1085,6 @@ class Mario extends Phaser.GameObjects.Sprite
         this.numTouching.up = 0;
     }
     isTerrain(body) {
-        const CATEGORY_TERRAIN = 0x0004;
         return (body.collisionFilter.category & CATEGORY_TERRAIN) !== 0;
     }
     handleCollisionActive(event) {
@@ -1205,6 +1204,7 @@ class Mario extends Phaser.GameObjects.Sprite
         this.jumpVelocity = 0;
         this.coyoteTimeCounter = this.coyoteTime;
         this.jumpRequested = false;
+        this.canSunJump = false;
         this.jumpHeld = false;
         this.hasBufferedJump = false;
         this.wasHoldingJumpWhenBuffered = false;

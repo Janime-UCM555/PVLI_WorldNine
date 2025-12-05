@@ -20,27 +20,27 @@ class PreloadScene extends Phaser.Scene {
   this.load.setBaseURL(absoluteBase);
   // Todo lo que cargues a partir de aquí será relativo a /assets/
   this.load.setPath('assets/');
-        this.load.image('star_pattern', 'GameSprites/Precarga/star_pattern.png');
+    this.load.image('star_pattern', 'GameSprites/Precarga/star_pattern.png');
 
-        // Goomba
-        this.load.spritesheet('Gomb_Bite', 'GameSprites/Characters/Enemigos/Goomba/Gomb_Bite.png', {
-            frameWidth: 32,
-            frameHeight: 30
-        });
-        this.load.image('Gomb_Stomp', 'GameSprites/Characters/Enemigos/Goomba/Gomb_Stomp.png');
-        this.load.spritesheet('Gomb_Walk', 'GameSprites/Characters/Enemigos/Goomba/Gomb_Walk.png', {
-            frameWidth: 30,
-            frameHeight: 30
-        });
-        this.load.spritesheet('gombrome_walk', 'GameSprites/Characters/Enemigos/Goomba/GombRome_Walk.png', {
-            frameWidth: 30,
-            frameHeight: 30
-        });
-        this.load.spritesheet('GombRome_Bite', 'GameSprites/Characters/Enemigos/Goomba/GombRome_Bite.png', {
-            frameWidth: 32,
-            frameHeight: 30
-        });
-        this.load.image('GombRome_Stomp', 'GameSprites/Characters/Enemigos/Goomba/GombRome_Stomp.png');
+    // Goomba
+    this.load.spritesheet('Gomb_Bite', 'GameSprites/Characters/Enemigos/Goomba/Gomb_Bite.png', {
+        frameWidth: 32,
+        frameHeight: 30
+    });
+    this.load.image('Gomb_Stomp', 'GameSprites/Characters/Enemigos/Goomba/Gomb_Stomp.png');
+    this.load.spritesheet('Gomb_Walk', 'GameSprites/Characters/Enemigos/Goomba/Gomb_Walk.png', {
+        frameWidth: 30,
+        frameHeight: 30
+    });
+    this.load.spritesheet('gombrome_walk', 'GameSprites/Characters/Enemigos/Goomba/GombRome_Walk.png', {
+        frameWidth: 30,
+        frameHeight: 30
+    });
+    this.load.spritesheet('GombRome_Bite', 'GameSprites/Characters/Enemigos/Goomba/GombRome_Bite.png', {
+        frameWidth: 32,
+        frameHeight: 30
+    });
+    this.load.image('GombRome_Stomp', 'GameSprites/Characters/Enemigos/Goomba/GombRome_Stomp.png');
 
         // Koopa
         this.load.image('Koopa_idle_R', 'GameSprites/Characters/Enemigos/Koopa/Koopa_idle_R.png');
@@ -60,64 +60,64 @@ class PreloadScene extends Phaser.Scene {
             frameHeight: 51
         });
 
-        this.load.spritesheet('pokey', 'GameSprites/Characters/Enemigos/Pokey/Pokey.png', {
-            frameWidth: 30,
-            frameHeight: 30
-        });
+    this.load.spritesheet('pokey', 'GameSprites/Characters/Enemigos/Pokey/Pokey.png', {
+        frameWidth: 30,
+        frameHeight: 30
+    });
 
-        // Mario
-        this.load.spritesheet('mario_run', 'GameSprites/Characters/Mario/Mario_run.png', {
-            frameWidth: 32,
-            frameHeight: 56,
-        });
-        this.load.spritesheet('mario_jump', 'GameSprites/Characters/Mario/Mario_jump.png', {
-            frameWidth: 48,
-            frameHeight: 56,
-        });
-        this.load.spritesheet('mario_stop', 'GameSprites/Characters/Mario/Mario_no_movement.png', {
-            frameWidth: 32,
-            frameHeight: 56,
-        });
-        this.load.spritesheet('mario_hurt', 'GameSprites/Characters/Mario/Mario_hurt.png', {
-            frameWidth: 48,
-            frameHeight: 56,
-        });
-        this.load.spritesheet('mario_victory', 'GameSprites/Characters/Mario/Mario_victory.png', {
-            frameWidth: 48,
-            frameHeight: 56,
-        });
-        this.load.spritesheet('mario_fall', 'GameSprites/Characters/Mario/Mario_fall.png', {
-            frameWidth: 48,
-            frameHeight: 56
-        });
-        this.load.spritesheet('Mario_walk', 'GameSprites/Characters/Mario/Mario_walk.png', {
-            frameWidth: 32,
-            frameHeight: 56
-        });
-        this.load.spritesheet('mario_throw', 'GameSprites/Characters/Mario/Mario_hammer_throw.png', {
-            frameWidth: 48,
-            frameHeight: 55,
-        });
-        this.load.spritesheet('mario_bubble', 'GameSprites/Characters/Mario/Mario_bubble.png', {
-            frameWidth: 72,
-            frameHeight: 72,
-        });
-        this.load.spritesheet('mario_idle', 'GameSprites/Characters/Mario/Mario_idle.png', {
-            frameWidth: 32,
-            frameHeight: 56,
-        });
-        this.load.spritesheet('mario_panicrun', 'GameSprites/Characters/Mario/Mario_panicrun.png', {
-            frameWidth: 44,
-            frameHeight: 56,
-        });
-        this.load.spritesheet('mario_panicjump', 'GameSprites/Characters/Mario/Mario_panicjump.png', {
-            frameWidth: 44,
-            frameHeight: 56,
-        });
-        this.load.spritesheet('mario_panicfall', 'GameSprites/Characters/Mario/Mario_panicfall.png', {
-            frameWidth: 44,
-            frameHeight: 56,
-        });
+    // Mario
+    this.load.spritesheet('mario_run', 'GameSprites/Characters/Mario/Mario_run.png', {
+        frameWidth: 32,
+        frameHeight: 56,
+    });
+    this.load.spritesheet('mario_jump', 'GameSprites/Characters/Mario/Mario_jump.png', {
+        frameWidth: 48,
+        frameHeight: 56,
+    });
+    this.load.spritesheet('mario_stop', 'GameSprites/Characters/Mario/Mario_no_movement.png', {
+        frameWidth: 32,
+        frameHeight: 56,
+    });
+    this.load.spritesheet('mario_hurt', 'GameSprites/Characters/Mario/Mario_hurt.png', {
+        frameWidth: 48,
+        frameHeight: 56,
+    });
+    this.load.spritesheet('mario_victory', 'GameSprites/Characters/Mario/Mario_victory.png', {
+        frameWidth: 48,
+        frameHeight: 56,
+    });
+    this.load.spritesheet('mario_fall', 'GameSprites/Characters/Mario/Mario_fall.png', {
+        frameWidth: 48,
+        frameHeight: 56
+    });
+    this.load.spritesheet('Mario_walk', 'GameSprites/Characters/Mario/Mario_walk.png', {
+        frameWidth: 32,
+        frameHeight: 56
+    });
+    this.load.spritesheet('mario_throw', 'GameSprites/Characters/Mario/Mario_hammer_throw.png', {
+        frameWidth: 48,
+        frameHeight: 55,
+    });
+    this.load.spritesheet('mario_bubble', 'GameSprites/Characters/Mario/Mario_bubble.png', {
+        frameWidth: 72,
+        frameHeight: 72,
+    });
+    this.load.spritesheet('mario_idle', 'GameSprites/Characters/Mario/Mario_idle.png', {
+        frameWidth: 32,
+        frameHeight: 56,
+    });
+    this.load.spritesheet('mario_panicrun', 'GameSprites/Characters/Mario/Mario_panicrun.png', {
+        frameWidth: 44,
+        frameHeight: 56,
+    });
+    this.load.spritesheet('mario_panicjump', 'GameSprites/Characters/Mario/Mario_panicjump.png', {
+        frameWidth: 44,
+        frameHeight: 56,
+    });
+    this.load.spritesheet('mario_panicfall', 'GameSprites/Characters/Mario/Mario_panicfall.png', {
+        frameWidth: 44,
+        frameHeight: 56,
+    });
 
         // Júpiter
         this.load.spritesheet('jupiter_neutral', 'GameSprites/Characters/Bosses/Jupiter/Jupiter_Neutral.png', {
@@ -163,94 +163,94 @@ class PreloadScene extends Phaser.Scene {
             frameHeight: 34
         });
 
-        //PowerUps
-        this.load.image('star', 'GameSprites/PowerUps/star.png');
-        this.load.image('hammer', 'GameSprites/PowerUps/hammer.png');
-        this.load.image('double_jump', 'GameSprites/PowerUps/double_jump.png');
-        this.load.image('dash', 'GameSprites/PowerUps/dash.png');
-        this.load.image('jump_boots', 'GameSprites/PowerUps/jump_boots.png');
-        this.load.image('mushroom', 'GameSprites/PowerUps/mushroom.png');
+    //PowerUps
+    this.load.image('star', 'GameSprites/PowerUps/star.png');
+    this.load.image('hammer', 'GameSprites/PowerUps/hammer.png');
+    this.load.image('double_jump', 'GameSprites/PowerUps/double_jump.png');
+    this.load.image('dash', 'GameSprites/PowerUps/dash.png');
+    this.load.image('jump_boots', 'GameSprites/PowerUps/jump_boots.png');
+    this.load.image('mushroom', 'GameSprites/PowerUps/mushroom.png');
 
-        // Blocks
-        this.load.image('block?', 'GameSprites/Items/blockint.png');
-        this.load.image('blockempty', 'GameSprites/Items/blockempty.png');
-        this.load.image('block', 'GameSprites/Items/blockBreakable.png');
+    // Blocks
+    this.load.image('block?', 'GameSprites/Items/blockint.png');
+    this.load.image('blockempty', 'GameSprites/Items/blockempty.png');
+    this.load.image('block', 'GameSprites/Items/blockBreakable.png');
 
-        //FallBlocks
-        this.load.image('fallOffBlock1', 'GameSprites/Items/FallOffBlock.png');
-        this.load.image('fallOffBlock2', 'GameSprites/Items/FallOffBlock2.png');
-        
-        //Bloques Pause y Continue
-        this.load.image('Pause', 'GameSprites/Items/PauseBlock.png');
-        this.load.image('Resume', 'GameSprites/Items/ResumeBlock.png');
-        
-        //Pinchos
-        this.load.image('spikes', 'GameSprites/Items/Spikes.png');
+    //FallBlocks
+    this.load.image('fallOffBlock1', 'GameSprites/Items/FallOffBlock.png');
+    this.load.image('fallOffBlock2', 'GameSprites/Items/FallOffBlock2.png');
+    
+    //Bloques Pause y Continue
+    this.load.image('Pause', 'GameSprites/Items/PauseBlock.png');
+    this.load.image('Resume', 'GameSprites/Items/ResumeBlock.png');
+    
+    //Pinchos
+    this.load.image('spikes', 'GameSprites/Items/Spikes.png');
 
-        //CoinPass 2 direcciones
-        this.load.image('CoinPassD', 'GameSprites/Items/CoinPassDiagonal.png');
-        this.load.image('CoinPassS', 'GameSprites/Items/CoinPassStraight.png');
+    //CoinPass 2 direcciones
+    this.load.image('CoinPassD', 'GameSprites/Items/CoinPassDiagonal.png');
+    this.load.image('CoinPassS', 'GameSprites/Items/CoinPassStraight.png');
 
-        //Intensidad soles
-        this.load.spritesheet('Impulsos', 'GameSprites/Items/SunIntensity.png', {
-            frameWidth: 32,
-            frameHeight: 32,
-        });
+    //Intensidad soles
+    this.load.spritesheet('Impulsos', 'GameSprites/Items/SunIntensity.png', {
+        frameWidth: 32,
+        frameHeight: 32,
+    });
 
-        // Tilesets
-        this.load.image('mi_tileset', 'GameSprites/Tilesets/base_tileset.png');
-        this.load.image('bg_tileset', 'GameSprites/Tilesets/Rome_BG.png');
-        this.load.image('bg_tileset_D', 'GameSprites/Tilesets/Dessert_BG.png');
-        this.load.image('bg_tileset_P', 'GameSprites/Tilesets/Pyramid_BG.png');
-        this.load.spritesheet('barra_tileset', 'GameSprites/Items/barraFin.png', {
-            frameWidth: 64,
-            frameHeight: 32
-        });
-        this.load.spritesheet('coin_tileset', 'GameSprites/Items/Coins.png', {
-            frameWidth: 32,
-            frameHeight: 32
-        });
-        
-        // PilaresBosses
-        this.load.spritesheet('pilar_fuegoTiles', 'GameSprites/ObjetosBosses/PilarFuego.png', {
-            frameWidth: 128,
-            frameHeight: 126
-        });
+    // Tilesets
+    this.load.image('mi_tileset', 'GameSprites/Tilesets/base_tileset.png');
+    this.load.image('bg_tileset', 'GameSprites/Tilesets/Rome_BG.png');
+    this.load.image('bg_tileset_D', 'GameSprites/Tilesets/Dessert_BG.png');
+    this.load.image('bg_tileset_P', 'GameSprites/Tilesets/Pyramid_BG.png');
+    this.load.spritesheet('barra_tileset', 'GameSprites/Items/barraFin.png', {
+        frameWidth: 64,
+        frameHeight: 32
+    });
+    this.load.spritesheet('coin_tileset', 'GameSprites/Items/Coins.png', {
+        frameWidth: 32,
+        frameHeight: 32
+    });
+    
+    // PilaresBosses
+    this.load.spritesheet('pilar_fuegoTiles', 'GameSprites/ObjetosBosses/PilarFuego.png', {
+        frameWidth: 128,
+        frameHeight: 126
+    });
 
-        //Logo
-        this.load.image('TitleName', 'web/TituloPNG.png');
+    //Logo
+    this.load.image('TitleName', 'web/TituloPNG.png');
 
-        // Sonidos
-        this.load.audio('MarioYell', 'sonidos/MarioYell.mp3');
-        this.load.audio('coin_sound', 'sonidos/SE/Items/Monedas/coin.wav');
-        this.load.audio('purple_coin_sound', 'sonidos/SE/Items/Monedas/purpleCoin.wav');
-        this.load.audio('purple_coin_all_sound', 'sonidos/SE/Items/Monedas/purpleCoinAll.wav');
-        this.load.audio('salto', 'sonidos/SE/Mario/Acciones/salto.wav');
-        this.load.audio('aplastar', 'sonidos/SE/Mario/Acciones/Stomp.wav');
-        this.load.audio('muerte', 'sonidos/SE/Mario/Acciones/Muerte.wav');
-        this.load.audio('PowerUp', 'sonidos/SE/Items/PowerUps/PowerUp.wav');
-        this.load.audio('PowerDown', 'sonidos/SE/Items/PowerUps/PowerDown.wav');
-        this.load.audio('paso1', 'sonidos/SE/Mario/Acciones/pisadaBloque1.wav');
-        this.load.audio('paso2', 'sonidos/SE/Mario/Acciones/pisadaBloque2.wav');
-        this.load.audio('starJump', 'sonidos/SE/Mario/Acciones/saltoEstrella.wav');
-        this.load.audio('starEnding', 'sonidos/SE/Items/PowerUps/estrellaSeAcaba.wav');
-        this.load.audio('BrickBlock', 'sonidos/SE/Items/Bloques/BrickBlock.wav');
-        this.load.audio('Bump', 'sonidos/SE/Items/Bloques/Bump.wav');
-        this.load.audio('PauseBlq', 'sonidos/SE/Items/Bloques/PauseBlock.wav');
-        this.load.audio('ImpB', 'sonidos/SE/Items/Bloques/ImpulseA.wav');
-        this.load.audio('ImpM', 'sonidos/SE/Items/Bloques/ImpulseB.wav');
-        this.load.audio('ImpA', 'sonidos/SE/Items/Bloques/ImpulseM.wav');
-        this.load.audio('bubblePop', 'sonidos/SE/Mario/Acciones/BubblePop.wav');
-        this.load.audio('bubbleCreate', 'sonidos/SE/Mario/Acciones/BubbleCreate.wav');
-        this.load.audio('coinPath', 'sonidos/SE/Items/Bloques/CoinPath.wav');
-        this.load.audio('JupiterLightningSound', 'sonidos/SE/JupiterSFX/JupiterLightning.wav');
+    // Sonidos
+    this.load.audio('MarioYell', 'sonidos/MarioYell.mp3');
+    this.load.audio('coin_sound', 'sonidos/SE/Items/Monedas/coin.wav');
+    this.load.audio('purple_coin_sound', 'sonidos/SE/Items/Monedas/purpleCoin.wav');
+    this.load.audio('purple_coin_all_sound', 'sonidos/SE/Items/Monedas/purpleCoinAll.wav');
+    this.load.audio('salto', 'sonidos/SE/Mario/Acciones/salto.wav');
+    this.load.audio('aplastar', 'sonidos/SE/Mario/Acciones/Stomp.wav');
+    this.load.audio('muerte', 'sonidos/SE/Mario/Acciones/Muerte.wav');
+    this.load.audio('PowerUp', 'sonidos/SE/Items/PowerUps/PowerUp.wav');
+    this.load.audio('PowerDown', 'sonidos/SE/Items/PowerUps/PowerDown.wav');
+    this.load.audio('paso1', 'sonidos/SE/Mario/Acciones/pisadaBloque1.wav');
+    this.load.audio('paso2', 'sonidos/SE/Mario/Acciones/pisadaBloque2.wav');
+    this.load.audio('starJump', 'sonidos/SE/Mario/Acciones/saltoEstrella.wav');
+    this.load.audio('starEnding', 'sonidos/SE/Items/PowerUps/estrellaSeAcaba.wav');
+    this.load.audio('BrickBlock', 'sonidos/SE/Items/Bloques/BrickBlock.wav');
+    this.load.audio('Bump', 'sonidos/SE/Items/Bloques/Bump.wav');
+    this.load.audio('PauseBlq', 'sonidos/SE/Items/Bloques/PauseBlock.wav');
+    this.load.audio('ImpB', 'sonidos/SE/Items/Bloques/ImpulseA.wav');
+    this.load.audio('ImpM', 'sonidos/SE/Items/Bloques/ImpulseB.wav');
+    this.load.audio('ImpA', 'sonidos/SE/Items/Bloques/ImpulseM.wav');
+    this.load.audio('bubblePop', 'sonidos/SE/Mario/Acciones/BubblePop.wav');
+    this.load.audio('bubbleCreate', 'sonidos/SE/Mario/Acciones/BubbleCreate.wav');
+    this.load.audio('coinPath', 'sonidos/SE/Items/Bloques/CoinPath.wav');
+    this.load.audio('JupiterLightningSound', 'sonidos/SE/JupiterSFX/JupiterLightning.wav');
 
-        // Música
-        this.load.audio('level_music', 'sonidos/BGM/level_theme.mp3');
-        this.load.audio('Desierto', 'sonidos/BGM/Desierto.mp3');
-        this.load.audio('menu_music', 'sonidos/BGM/menu_theme.mp3');
-        this.load.audio('victory_music', 'sonidos/BGM/Nivel_Completado.wav');
-        this.load.audio('starman', 'sonidos/BGM/Starman.wav');
+    // Música
+    this.load.audio('level_music', 'sonidos/BGM/level_theme.mp3');
+    this.load.audio('Desierto', 'sonidos/BGM/Desierto.mp3');
+    this.load.audio('menu_music', 'sonidos/BGM/menu_theme.mp3');
+    this.load.audio('victory_music', 'sonidos/BGM/Nivel_Completado.wav');
+    this.load.audio('starman', 'sonidos/BGM/Starman.wav');
 
         // Menu SFX
         this.load.audio('iris-out', 'sonidos/SE/MenuSFX/smw_goal_iris-out.wav');
@@ -263,6 +263,111 @@ class PreloadScene extends Phaser.Scene {
                 // this.scene.start('MainMenu');
                 this.showPlayButton();
             });
+        });
+    }
+    createAnimations() {
+        this.anims.create({
+            key: 'sunB_move',
+            frames: this.anims.generateFrameNumbers('Impulsos', { start: 0, end: 1 }),
+            frameRate: 4,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'sunM_move',
+            frames: this.anims.generateFrameNumbers('Impulsos', { start: 3, end: 4 }),
+            frameRate: 6,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'sunA_move',
+            frames: this.anims.generateFrameNumbers('Impulsos', { start: 6, end: 7 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'coin_gold_spin',
+            frames: this.anims.generateFrameNumbers('coin_tileset', { start: 0, end: 8 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'coin_purple_spin',
+            frames: this.anims.generateFrameNumbers('coin_tileset', { start: 9, end: 17 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'mario_run',
+            frames: this.anims.generateFrameNumbers('mario_run', { start: 0, end: 3 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mario_idle',
+            frames: this.anims.generateFrameNumbers('mario_idle', { start: 0, end: 2 }),
+            frameRate: 1,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mario_jump',
+            frames: this.anims.generateFrameNumbers('mario_jump', { start: 0, end: 1 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mario_fall',
+            frames: this.anims.generateFrameNumbers('mario_fall', { start: 0, end: 1 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mario_hurt',
+            frames: this.anims.generateFrameNumbers('mario_hurt', { start: 0, end: 0 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'mario_stop',
+            frames: this.anims.generateFrameNumbers('mario_stop', { start: 0, end: 0 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'mario_victory',
+            frames: this.anims.generateFrameNumbers('mario_victory', { start: 0, end: 0 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'mario_bubble',
+            frames: this.anims.generateFrameNumbers('mario_bubble', {start: 0, end: 0}),
+            frameReate: 8,
+            repeat: -1
+        })
+
+        this.anims.create({
+            key: 'mario_throw',
+            frames: this.anims.generateFrameNumbers('mario_throw', {start: 0, end: 3}),
+            frameReate: 8,
+            repeat: 0
+        })
+
+        this.anims.create({
+            key: 'gombrome_walk',
+            frames: this.anims.generateFrameNumbers('gombrome_walk', { start: 0, end: 3 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'Koopa_walk_R',
+            frames: this.anims.generateFrameNumbers('Koopa_walk_R', { start: 0, end: 3 }),
+            frameRate: 8,
+            repeat: -1
         });
     }
     showPlayButton()
@@ -294,6 +399,7 @@ class PreloadScene extends Phaser.Scene {
 
     }
     create() {
+        this.createAnimations();
         const width = this.cameras.main.width;
         const height = this.cameras.main.height;
         this.stars = this.add.tileSprite(

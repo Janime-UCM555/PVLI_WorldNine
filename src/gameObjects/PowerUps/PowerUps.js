@@ -11,6 +11,11 @@ export const POWERUP_TYPES = {
   DASH: "dash",
   JUMP_BOOTS: "jump_boots"
 };
+import{
+    CATEGORY_PLAYER,
+    CATEGORY_TERRAIN,
+    CATEGORY_POWERUP,
+} from "../collisionCategories.js"
 
 /**
  * @typedef {'mushroom' | 'star' | 'hammer' | 'double_jump' | 'dash' | 'jump_boots'} PowerUpType
@@ -120,12 +125,13 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
     // El cuerpo a la posición inicial
     M.Body.setPosition(compoundBody, { x, y });
 
-    // Categorías de colisión
-    const CATEGORY_PLAYER  = 0x0001;
-    const CATEGORY_TERRAIN = 0x0004;
-    const CATEGORY_POWERUP = 0x0003;
+    
+    // const mask = CATEGORY_PLAYER | CATEGORY_TERRAIN | CATEGORY_POWERUP;
 
-    this.setCollisionCategory(CATEGORY_POWERUP);
+    // // Apply to all parts
+    // this.enemyBody.collisionFilter.category = CATEGORY_ENEMY;
+    // this.enemyBody.collisionFilter.mask = mask;
+    this.setCollisionCategory([CATEGORY_POWERUP]);
     this.setCollidesWith([CATEGORY_PLAYER, CATEGORY_TERRAIN]);
 
     // Asociamos el cuerpo al sprite
@@ -152,6 +158,13 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
         const bodyA = event.pairs[i].bodyA;
         const bodyB = event.pairs[i].bodyB;
 
+        if (!bodyA.isStatic && !bodyB.isStatic && !bodyA instanceof PowerUp && !bodyB instanceof PowerUp) {
+            continue;
+        }
+        if (bodyA === this.playerBody || bodyB === this.playerBody)
+        {
+            continue;
+        }
         // 1) Primero, comprobar si ESTE power-up ha chocado con Mario
         const isThisPowerBody =
           bodyA === this.playerBody || bodyB === this.playerBody;
@@ -164,7 +177,8 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
           const player = bodyA.label === "Mario" ? bodyA.gameObject : bodyB.gameObject;
           this.collect(player);   // <-- SOLO este powerup
           continue;               // No hace falta procesar sensores para este par
-        }
+        
+
 
         // 2) A partir de aquí, lógica de sensores
         if (bodyA === this.sensors.left || bodyB === this.sensors.left) {
@@ -177,6 +191,7 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
           this.numTouching.bottom++;
         }
       }
+    }
     });
 
     // Actualizar flags blocked según numTouching
@@ -246,3 +261,4 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
     }
   }
 }
+export default PowerUp;
