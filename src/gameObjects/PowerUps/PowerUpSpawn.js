@@ -1,4 +1,9 @@
-import PowerUp from "./PowerUps.js";
+import DoubleJump from "./DoubleJump.js";
+import Hammer from "./Hammer.js";
+import JumpBoots from "./HighJump.js";
+import Mushroom from "./Mushroom.js";
+import {POWERUP_TYPES } from "./PowerUps.js";
+import Star from "./Star.js";
 // Spawner simple (tu PowerUp ya añade físicas y movimiento)
 export const spawnPowerUp= (scene, x, y, type) =>
 {
