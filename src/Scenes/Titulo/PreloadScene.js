@@ -145,6 +145,24 @@ class PreloadScene extends Phaser.Scene {
             frameHeight: 350,
         });
 
+        // Hades
+        this.load.spritesheet('Hades', 'GameSprites/Characters/Bosses/Hades/HadesAnim.png', {
+            frameWidth: 46,
+            frameHeight: 47
+        });
+        this.load.spritesheet('HadesDead', 'GameSprites/Characters/Bosses/Hades/HadesDeadAnim.png', {
+            frameWidth: 44,
+            frameHeight: 46
+        });
+        this.load.spritesheet('WispFire', 'GameSprites/Characters/Bosses/Hades/FuegoFatuoAnim.png', {
+            frameWidth: 30,
+            frameHeight: 45
+        });
+        this.load.spritesheet('WispFireFading', 'GameSprites/Characters/Bosses/Hades/FuegoFatuoApagado.png', {
+            frameWidth: 32,
+            frameHeight: 34
+        });
+
         //PowerUps
         this.load.image('star', 'GameSprites/PowerUps/star.png');
         this.load.image('hammer', 'GameSprites/PowerUps/hammer.png');

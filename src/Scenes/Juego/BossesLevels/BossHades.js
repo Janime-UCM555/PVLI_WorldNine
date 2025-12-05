@@ -6,22 +6,21 @@ import Koopa from '../../../gameObjects/Enemies/Koopa.js';
 import PiranhaPlant from '../../../gameObjects/Enemies/PiranhaPlant.js';
 import Pokey from '../../../gameObjects/Enemies/Pokey.js';
 import TransitionCode from '../../../gameObjects/UI/Transition.js'
-import JupiterBoss from '../../../gameObjects/BossesObjects/JupiterBoss.js';
+import HadesBoss from '../../../gameObjects/BossesObjects/HadesBoss.js';
 import { PowerUp, POWERUP_TYPES } from '../../../gameObjects/PowerUps/PowerUps.js';
 import { DIE_TYPES } from '../../../gameObjects/Enemies/Goomba.js';
-class BossJ extends Phaser.Scene
+class BossHades extends Phaser.Scene
 {
     constructor(){
-        super({key:'BossJ'});
+        super({key:'BossHades'});
     }
     
     
     init(){
-//
+
     }
 
     preload(){
-        console.log('=== INICIO ===');
         this.load.tilemapTiledJSON('map', 'MapaDeTiled/BossJupiter.json');
         this.score=0;
         this.coinScore = 0;
@@ -96,8 +95,6 @@ class BossJ extends Phaser.Scene
             }
         });
 
-
-
         this.jugador = new Mario(this, 25, 625, 'mario_run', 5, -3.75, true, true);
         this.jugador.setDepth(3);
 
@@ -106,7 +103,7 @@ class BossJ extends Phaser.Scene
             this.jugador.play('mario_panicrun');
         }
 
-        this.jupiterBoss = new JupiterBoss(this, 550, 575, {
+        this.hadesBoss = new HadesBoss(this, 550, 575, {
             player: this.jugador
         });
 
@@ -378,25 +375,24 @@ class BossJ extends Phaser.Scene
             isSensor:true,
             depth: 3
         });
-        // Convertirlo en un sprite visible (opcional)
+        // Convertirlo en un sprite visible
         if (this.anims.exists('pilar_fuego'))
         {
-            this.pilarSprite = this.add.sprite(200, 300, 'pilar_fuego').play('pilar_fuego');// 500, this.cameras.main.height*1.5, );
+            this.pilarSprite = this.add.sprite(200, 300, 'pilar_fuego').play('pilar_fuego');
             this.pilarSprite.setDisplaySize(800, this.cameras.main.height*1.5);
-        }// this.pilarSprite.play("pilar_fuego");
+        }
         this.pilarSprite.setDepth(5);
         this.matter.add.gameObject(this.pilarSprite, this.pilar);
 
-        // Velocidad hacia la derecha
-        this.velocidadPilar = 4.5;
+        this.velocidadPilar = this.jugador.speed * 0.9; // Velocidad hacia la derecha
 
         this.time.delayedCall(2000, () => {
-            this.jupiterBoss.startBattle();
+            this.hadesBoss.startBattle();
         });
 
         this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-            if (this.jupiterBoss) {
-                this.jupiterBoss.destroy();
+            if (this.hadesBoss) {
+                this.hadesBoss.destroy();
             }
         });
     }
@@ -582,14 +578,36 @@ class BossJ extends Phaser.Scene
             frameRate: 8,
             repeat: -1
         });
-        /*
         this.anims.create({
             key: 'pilar_fuego',
             frames: this.anims.generateFrameNumbers('pilar_fuegoTiles', { start: 0, end: 10 }),
             frameRate: 20,
             repeat: -1
         });
-        */
+        this.anims.create({
+            key: 'HadesAnim',
+            frames: this.anims.generateFrameNumbers('Hades', { start: 0, end: 4 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'HadesDeadAnim',
+            frames: this.anims.generateFrameNumbers('HadesDead', { start: 0, end: 2 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'WispFireAnim',
+            frames: this.anims.generateFrameNumbers('WispFire', { start: 0, end: 1 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'WispFireFadingAnim',
+            frames: this.anims.generateFrameNumbers('WispFireFading', { start: 0, end: 0 }),
+            frameRate: 8,
+            repeat: -1
+        });
     }
     
     setupCollisions() {
@@ -600,12 +618,8 @@ class BossJ extends Phaser.Scene
         const CATEGORY_TERRAIN = 0x0004;
         const CATEGORY_FALLOFF = 0x0005;
         const M = Phaser.Physics.Matter.Matter;
-        // Colisión con barra final
+        // Colisiones
         const handle = (event, bodyA, bodyB) => {
-            // if(!bodyA.gameObject || bodyB.gameObject)
-            // {
-            //     return;
-            // }
             if (bodyA.gameObject == this.jugador && bodyB.gameObject == this.barraFin
                 || bodyB.gameObject == this.jugador && bodyA.gameObject == this.barraFin)
             {
@@ -639,14 +653,13 @@ class BossJ extends Phaser.Scene
             }
             if (bodyA.gameObject == this.jugador && bodyB.gameObject && bodyB.gameObject.name == "spikes" &&
                 !this.jugador.isInvincible)
-               // && !this.jugador.isBeingPushed && !this.jugador.isInvulnerable && !this.jugador.isInvincible)
             {
                 const player = this.jugador;
                 if (!player.isSuperSize && !this.scene.endTimer) 
                 {
                     this.sound.play('muerte');
 
-                    // Detener cualquier movimiento de Mario antes de la burbuja
+                    // Detener cualquier movimiento de Mario
                     player.setVelocity(0, 0);
                     if (player.body) {
                         player.body.velocity.x = 0;
@@ -731,7 +744,6 @@ class BossJ extends Phaser.Scene
             if ((bodyA.gameObject == this.jugador &&bodyB.gameObject?.name=="impulsoA") ||
             (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="impulsoA")) 
             {
-                // console.log(this.jugador.jumpRequested);
                 if (bodyA.gameObject?.name == "impulsoA")
                 {
                     this.impulsoActivo = bodyA.gameObject;
@@ -749,7 +761,6 @@ class BossJ extends Phaser.Scene
             if ((bodyA.gameObject == this.jugador && bodyB.gameObject?.name=="impulsoM") ||
             (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="impulsoM")) 
             {
-                // console.log(this.jugador.jumpRequested);
                 if (bodyA.gameObject?.name == "impulsoM")
                 {
                     this.impulsoActivo = bodyA.gameObject;
@@ -767,7 +778,6 @@ class BossJ extends Phaser.Scene
             if ((bodyA.gameObject == this.jugador && bodyB.gameObject?.name=="impulsoB") ||
                 (bodyB.gameObject == this.jugador && bodyA.gameObject?.name=="impulsoB")) 
             {                
-                // console.log(this.jugador.jumpRequested)
                 if (bodyA.gameObject?.name == "impulsoB")
                 {
                     this.impulsoActivo = bodyA.gameObject;
@@ -790,7 +800,7 @@ class BossJ extends Phaser.Scene
                 const activarOneWay = () => {
                     sensor.blockTop.setCollidesWith([CATEGORY_ENEMY, CATEGORY_PLAYER]);
                 };
-                if (/*this.jugador.body.velocity.y > 0 &&*/ this.jugador.body.position.y < sensor.position.y)
+                if (this.jugador.body.position.y < sensor.position.y)
                 activarOneWay();
             }
             if(bodyA.gameObject == this.jugador && bodyB.gameObject && bodyB.gameObject._props) 
@@ -798,17 +808,21 @@ class BossJ extends Phaser.Scene
                 if (!(this.jugador.body.velocity.y < 0 && this.jugador.getCenter().y > bodyB.bounds.max.y)){
                     return; // Solo al golpear desde abajo
                 } 
-                const aim = this.findSpawnBlockAbovePlayer(this.jugador, 20, 20); // (toleranciaX, toleranciaY)
+                const aim = this.findSpawnBlockAbovePlayer(this.jugador, 20, 20);
                 const target = aim || bodyB.gameObject; // prioriza spawn si hay uno “casi”
                 this.blockHit(this.jugador, target);
             }
-             if(bodyB.label=="Goomba" && bodyA.label=="Mario"  ||
-            bodyA.label=="Goomba" && bodyB.label=="Mario"  )
+             if(bodyB.label=="Goomba" && bodyA.label=="Mario" ||
+            bodyA.label=="Goomba" && bodyB.label=="Mario")
             {
-                const goomba  = bodyA.label=="Goomba"  ? bodyA.gameObject : bodyB.gameObject;
-                // const player = bodyA.label=="Mario" ? bodyA.gameObject : bodyB.gameObject;
-
-                goomba.handlePlayerCollision(this.jugador);
+                this.endTimer = true;
+                this.pilar.isStatic = true;
+                this.sound.play('muerte');
+                this.jugador.hurt();
+                this.jugador.setStatic(true);
+                this.doubleEndTransition(()=>{
+                    this.scene.restart();
+                });
             }
             if(bodyB.label=="Goomba" && bodyA.label=="Goomba" || 
                 bodyB.label=="Koopa" && bodyA.label=="Goomba" ||
@@ -819,19 +833,25 @@ class BossJ extends Phaser.Scene
 
                 goomba.handleEnemyCollision(koopa);
             }
-            if(bodyB.label=="Koopa" && bodyA.label=="Mario"  ||
-                bodyA.label=="Koopa"&& bodyB.label=="Mario" )
+            if(bodyB.label=="Koopa" && bodyA.label=="Mario" ||
+                bodyA.label=="Koopa"&& bodyB.label=="Mario")
             {
-                // const player  = bodyB.label=="Mario"  ? bodyA.gameObject : bodyB.gameObject;
-                const koopa = bodyA.label=="Koopa" ? bodyA.gameObject : bodyB.gameObject;
-
-                koopa.handlePlayerCollision(this.jugador);
+                this.endTimer = true;
+                this.pilar.isStatic = true;
+                this.sound.play('muerte');
+                this.jugador.hurt();
+                this.jugador.setStatic(true);
+                this.doubleEndTransition(()=>{
+                    this.scene.restart();
+                });
             }
             if(bodyA.label == "Mario" && bodyB.label=="Muerte"||
                 bodyB.label == "Mario" && bodyA.label=="Muerte" && !this.endTimer)
             {
+                this.endTimer = true;
+                this.pilar.isStatic = true;
+                this.sound.play('muerte');
                 this.jugador.hurt();
-                this.endTimer=true;
                 this.jugador.setStatic(true);
                 this.doubleEndTransition(()=>{
                     this.scene.restart();
@@ -848,7 +868,6 @@ class BossJ extends Phaser.Scene
             }
         }
         this.matter.world.on('collisionstart', handle);
-        // this.matter.world.off('collisionexit', exitHandle);
         this.matter.world.on('collisionend', exitHandle);
         this.matter.world.on('collisionactive', handle);
     }
@@ -886,14 +905,14 @@ class BossJ extends Phaser.Scene
         block => {
             const props = block._props || {};
             if (!props.spawn) return;
-            // condiciones: está por encima del player y cerca en X/Y
-                const dx = Math.abs(block.x - player.x);
-                const isAbove = player.y > block.y;
-                const closeX = dx <= (block.displayWidth / 2 + toleranciaX);
-                const closeY = ( this.jugador.getCenter().y <= bodyB.bounds.max.y + toleranciaY);
-                if (isAbove && closeX && closeY) {
-                    if (dx < bestDx) { bestDx = dx; best = b; }
-                }
+            // Condiciones: está por encima del player y cerca en X/Y
+            const dx = Math.abs(block.x - player.x);
+            const isAbove = player.y > block.y;
+            const closeX = dx <= (block.displayWidth / 2 + toleranciaX);
+            const closeY = ( this.jugador.getCenter().y <= bodyB.bounds.max.y + toleranciaY);
+            if (isAbove && closeX && closeY) {
+                if (dx < bestDx) { bestDx = dx; best = b; }
+            }
         });
         return best;
     }
@@ -905,7 +924,6 @@ class BossJ extends Phaser.Scene
             if (props.Breakable && player.isSuperSize) {
                 this.sound.play('BrickBlock');
                 block.destroy();
-                // this.sound.play('block_break');
                 return;
             }
             else
@@ -917,7 +935,6 @@ class BossJ extends Phaser.Scene
                 // Spawn power-up
                 if(player.isSuperSize){
                     this.spawnPowerUp(block.x + block.width / 2, block.y - block.height, props.PowerUp, props.PowerUp);
-                    // this.sound.play('powerup_appears');
                 }
                 else
                 {
@@ -951,8 +968,24 @@ class BossJ extends Phaser.Scene
 
         this.moveCameraToBottomRight();
 
-        if (this.jupiterBoss) {
-            this.jupiterBoss.defeat();
+        if (this.hadesBoss) {
+            this.hadesBoss.defeat();
+        }
+
+        // Destruir todos los enemigos
+        this.destroyAllEnemies();
+        
+        // Detener el pilar inmediatamente
+        if (this.pilar) {
+            Phaser.Physics.Matter.Matter.Body.setVelocity(this.pilar, { x: 0, y: 0 });
+        
+            // Hacer el pilar estático para que no se mueva más
+            this.pilar.isStatic = true;
+        
+            // Desactivar colisiones
+            if (this.pilar.collisionFilter) {
+                this.pilar.collisionFilter.mask = 0;
+            }
         }
 
         this.jugador.win();
@@ -1020,12 +1053,7 @@ class BossJ extends Phaser.Scene
     {
         // Este gráfico representa la línea dónde se alinea la UI por la derecha
 
-        // var graphics = this.add.graphics();
-
         const posUI = this.cameras.main.centerX+this.cameras.main.centerX/2; // Posición UI por la derecha
-        // graphics.lineStyle(1, 0xffffff, 1);
-        // graphics.lineBetween(posUI, 0,posUI, 600);
-        // graphics.setScrollFactor(0);
 
         const fontSize = 29; // 50 / 1.65 ≈ 29
         document.fonts.load('32px aku-kamu').then(() => {
@@ -1036,14 +1064,12 @@ class BossJ extends Phaser.Scene
             .setFill('#38b762ff')
             .setFontSize(fontSize + 'px')
             .setDepth(10)
-            // .setText("60")
             .setScrollFactor(0);
 
             this.textTimer = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '00',{fontFamily: 'aku-kamu'})
             .setOrigin(0.5,5)
             .setStroke('#000000ff', 6)
             .setFill('#ffffffff')
-            // .setText("60")
             .setDepth(10)
             .setFontSize(fontSize + 'px')
             .setScrollFactor(0)
@@ -1055,18 +1081,14 @@ class BossJ extends Phaser.Scene
             .setDepth(10)
             .setFontSize(fontSize + 'px')
             .setScrollFactor(0);
-            // textScore.setShadow(10, 10, 'rgba(0,0,0,0.5)', 10); 
-            // this.textScore.setText("".padStart(10,"0"))
 
             this.textCoins = this.add.text(posUI, this.cameras.main.centerY, "".padStart(2,"0"),{fontFamily: 'aku-kamu'})
             .setOrigin(1,4)
             .setStroke('#000000ff', 6)
             .setFill('#DBC716')
-            // .setText("".padStart(2,"0"))
             .setDepth(10)
             .setFontSize(fontSize + 'px')
             .setScrollFactor(0);
-            // this.textCoins.setText("".padStart(2,"0"));
 
             this.textPurpleCoins = this.add.text(posUI, this.cameras.main.centerY,"".padStart(1,"0"),{fontFamily: 'aku-kamu'})
             .setOrigin(1,3)
@@ -1079,10 +1101,6 @@ class BossJ extends Phaser.Scene
 
             this.timerMethod();
         });
-
-        // this.textPurpleCoins.setText("".padStart(1,"0"));
-
-        // this.ui.add([this.fpsText,this.textPurpleCoins,this.textCoins,this.textScore,this.textTimer]);
     }
 
     timerMethod ()
@@ -1162,9 +1180,6 @@ class BossJ extends Phaser.Scene
         this.jugador.y = 625;
         this.jugador.resetStates(); // Resetear estados
         this.jugador.resume(); // Reanudar movimiento
-        if (this.jugador.body) {
-            // this.jugador.setVelocity(0, 0);
-        }
         // Resetear estado de daño
         this.jugador.isHurt = false;
         // Asegurar animación correcta al reiniciar
@@ -1176,11 +1191,9 @@ class BossJ extends Phaser.Scene
         this.jugador.isInBubble = false;
         this.jugador.canDrop = false;
 
-        // Resetear el estado de ataque de JupiterBoss
-        if (this.jupiterBoss) {
-            this.jupiterBoss.resetAttackState();
-            // Asegurar que el movimiento de zona se cancele
-            this.jupiterBoss.isInZoneMovement = false;
+        // Resetear el estado de ataque de HadesBoss
+        if (this.hadesBoss) {
+            this.hadesBoss.resetAttackState();
         }
     }
 
@@ -1217,7 +1230,7 @@ class BossJ extends Phaser.Scene
                 if (this.jugador.isJumping) {
                     // Reanudar al jugador
                     this.jugador.setVelocityY(-6);
-                    this.jugador.resume(); // Si tienes animaciones pausadas
+                    this.jugador.resume(); // Si hay animaciones pausadas
                     this.enPausa = false;
 
                     // Restaurar bloque
@@ -1264,19 +1277,20 @@ class BossJ extends Phaser.Scene
             // Comprobar si el jugador se ha caído
             this.checkPlayerFell();
 
-            /*
-            // Movimiento continuo hacia la derecha
-            Phaser.Physics.Matter.Matter.Body.setVelocity(this.pilar, {
-                x: this.velocidadPilar,
-                y: this.pilar.velocity.y
-            });
-            */
-        }
-        /*
-        else{
+            // Movimiento normal del pilar
+            if (this.pilar && !this.pilar.isStatic) {
+                Phaser.Physics.Matter.Matter.Body.setVelocity(this.pilar, {
+                    x: this.velocidadPilar,
+                    y: 0
+                });
+            }
+        } else {
+            // Cuando el juego ha terminado
             this.pilar.collisionFilter.mask= 0;
+
+            // Asegurarse de que el pilar esté completamente detenido
+            Phaser.Physics.Matter.Matter.Body.setVelocity(this.pilar, { x: 0, y: 0 });
         }
-        */
     }
 
     // Actualizar objetos
@@ -1307,20 +1321,21 @@ class BossJ extends Phaser.Scene
             });
         }
 
-        // Actualizar JupiterBoss
-        if (this.jupiterBoss) {
-            this.jupiterBoss.update(time, delta);
+        // Actualizar HadesBoss
+        if (this.hadesBoss) {
+            this.hadesBoss.update(time, delta);
         }
     }
 
     // Verificar si el jugador se ha caído
     checkPlayerFell() {
         if (this.jugador.y > this.map.heightInPixels + 50 && !this.jugador.isInBubble && !this.endTimer) {
-            this.jupiterBoss.setTexture('jupiter_neutral');
             this.endTimer = true;
+            this.pilar.isStatic = true;
             this.sound.play('muerte');
             this.jugador.y = this.map.heightInPixels + 45;
             this.jugador.hurt();
+            this.jugador.setStatic(true);
             this.doubleEndTransition(()=>{
                 this.scene.restart();
             });
@@ -1337,14 +1352,14 @@ class BossJ extends Phaser.Scene
         let targetX;
 
         // Establecer el objetivo de la cámara horizontalmente
-        if (this.jugador.x < cameraViewWidth *0.45) {
+        if (this.jugador.x < cameraViewWidth *0.15) {
             targetX = -200;
         }
         else if(Math.abs(this.jugador.body.velocity.x) < 1) {
-            targetX = this.jugador.x - cameraViewWidth *0.9;
+            targetX = this.jugador.x - cameraViewWidth *0.6;
         }
         else {
-            targetX = this.jugador.x - cameraViewWidth * 0.8;
+            targetX = this.jugador.x - cameraViewWidth * 0.5;
         }
 
         // Seguimiento vertical
@@ -1391,7 +1406,49 @@ class BossJ extends Phaser.Scene
         });
     }
 
-    // Spawner simple (tu PowerUp ya añade físicas y movimiento)
+    destroyAllEnemies() {
+        // Destruir todos los Goombas
+        if (this.goombas) {
+            this.goombas.getChildren().forEach(goomba => {
+                if (goomba.safeDestroy) {
+                    goomba.safeDestroy(); // Usa el método seguro si existe
+                } else if (goomba.destroy) {
+                    goomba.destroy(); // Usa destroy normal si no
+                }
+            });
+            this.goombas.clear(true, true); // Limpiar el grupo completamente
+        }
+
+        // Destruir todos los Koopas
+        if (this.koopas) {
+            this.koopas.getChildren().forEach(koopa => {
+                if (koopa.safeDestroy) {
+                    koopa.safeDestroy();
+                } else if (koopa.destroy) {
+                    koopa.destroy();
+                }
+            });
+            this.koopas.clear(true, true);
+        }
+
+        // Destruir cualquier otro enemigo que puedas tener
+        if (this.pokeys) {
+            this.pokeys.getChildren().forEach(pokey => {
+                if (pokey.destroy) pokey.destroy();
+            });
+            this.pokeys.clear(true, true);
+        }
+
+        // Destruir cualquier enemigo que haya sido spawnedo por Hades y no esté en grupos
+        // (opcional, por si acaso)
+        this.children.each(child => {
+            if (child.isEnemy && child.destroy) {
+                child.destroy();
+            }
+        });
+    }
+
+    // Spawner simple
     spawnPowerUp(x, y, type) {
         let power = new PowerUp(this, x, y, type, type, 0)
         power.setVelocityX(power.body.velocity.x * 0.09315); // Salir del bloque hacia arriba
@@ -1427,7 +1484,7 @@ class BossJ extends Phaser.Scene
 
                 const otherGO = other?.gameObject;
 
-                // 🔹 Interface común de enemigos
+                // Interface común de enemigos
                 if (otherGO && otherGO.isEnemy && typeof otherGO.die === 'function') {
                     otherGO.die(DIE_TYPES.HAMMER);
                 }
@@ -1437,8 +1494,8 @@ class BossJ extends Phaser.Scene
                     hammer._bounces++;
 
                     if (hammer._bounces >= hammer._maxBounces) {
-                        hammer.used = true;        // ya no hace daño
-                        hammer.setBounce(0);       // sin rebote
+                        hammer.used = true;        // Ya no hace daño
+                        hammer.setBounce(0);       // Sin rebote
 
                         // Desaparecer después de 0.3s
                         this.time.delayedCall(300, () => {
@@ -1491,4 +1548,4 @@ class BossJ extends Phaser.Scene
     }
 }
 
-export default BossJ;
+export default BossHades;
