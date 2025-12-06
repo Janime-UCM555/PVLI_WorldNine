@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="322" height="26" tilewidth="32" tileheight="32" infinite="0" nextlayerid="15" nextobjectid="230">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="322" height="26" tilewidth="32" tileheight="32" infinite="0" nextlayerid="15" nextobjectid="231">
  <editorsettings>
   <export target="MapaDesierto.json" format="json"/>
  </editorsettings>
@@ -251,7 +251,7 @@
  <objectgroup id="7" name="BarraFin">
   <object id="46" gid="4496" x="9920" y="416" width="64" height="32"/>
  </objectgroup>
- <objectgroup id="8" name="Bloques" visible="0">
+ <objectgroup id="8" name="Bloques">
   <object id="193" name="?" gid="4295" x="288" y="576" width="32" height="32">
    <properties>
     <property name="PowerUp" value="hammer"/>
