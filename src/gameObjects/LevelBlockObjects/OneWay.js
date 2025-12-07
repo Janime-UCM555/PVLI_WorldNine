@@ -27,7 +27,7 @@ export class OneWay extends SceneBlocks {
         const x = this.x;
         const y = this.y - this.height * 2 + sensorHeight;
 
-        const sensor = this.scene.matter.add.rectangle(x, y, obj.width, 5, {
+        const sensor = this.scene.matter.add.rectangle(x, y, obj.width*2, 5, {
             isSensor: true,
             // staticBody: true,
             // isStatic: true
@@ -51,28 +51,28 @@ export class OneWay extends SceneBlocks {
             // {
             //     return;
             // }
-            if (!this.hasPlayer &&((bodyA.label === "oneWay"  && bodyA.isSensor  && bodyB.label === "Mario") ||
-                (bodyB.label === "oneWay" && bodyB.isSensor && bodyA.label === "Mario" )))
+            if (!this.hasPlayer &&((bodyA.label === "oneWay"  && bodyA === this.sensor && bodyB.label === "Mario") ||
+                (bodyB.label === "oneWay"  && bodyB=== this.sensor&& bodyA.label === "Mario" )))
             {
-                // if (this.scene.jugador.body.velocity.y > 0 && this.scene.jugador.body.position.y < this.y)
-                // {
-                    this.hasPlayer = true;
+                if (this.scene.jugador.body.velocity.y > 0 && this.scene.jugador.body.position.y < this.y)
+                {
                     this.setCollidesWith([CATEGORY_ENEMY, CATEGORY_PLAYER]);
+                    this.hasPlayer = true;
                     // this.scene.time.delayedCall(300, () => {
                     // this.hasPlayer=false;
                     // this.setCollidesWith([CATEGORY_ENEMY]);});
-                    // }
+                }
             }
         }
-        const exitHandle = (event, bodyA, bodyB) => {
-            if (this.hasPlayer)
-            {
-                this.hasPlayer=false;
-                this.setCollidesWith([CATEGORY_ENEMY]);
-            }
-        }
+        this.setOnCollideEnd((data) => {
+            this.hasPlayer=false;
+            this.setCollidesWith([CATEGORY_ENEMY]);
+        });
+        // const exitHandle = (event, bodyA, bodyB) => {
+
+        // }
         this.scene.matter.world.on('collisionstart', handle);
-        this.scene.matter.world.on('collisionend', exitHandle);
+        // this.scene.matter.world.on('collisionend', exitHandle);
     }
 }
 export default OneWay;

@@ -13,30 +13,7 @@ class MainMenu extends Phaser.Scene
     
     preload(){
         this.load.image('menu_pattern', 'assets/GameSprites/Precarga/menu_pattern.jpg');
-        this.load.spritesheet('mario_walk', 'assets/GameSprites/Characters/Mario/Mario_walk.png', {
-            frameWidth: 32,
-            frameHeight: 55,
-        });
-        
-        this.load.spritesheet('mario_run', 'assets/GameSprites/Characters/Mario/Mario_run.png', {
-            frameWidth: 32,
-            frameHeight: 55,
-        });
 
-        this.load.spritesheet('mario_jump', 'assets/GameSprites/Characters/Mario/Mario_jump.png', {
-            frameWidth: 45,
-            frameHeight: 55,
-        });
-
-        this.load.spritesheet('mario_hurt', 'assets/GameSprites/Characters/Mario/Mario_hurt.png', {
-            frameWidth: 45,
-            frameHeight: 55,
-        });
-        
-        this.load.spritesheet('mario_throw', 'assets/GameSprites/Characters/Mario/Mario_hammer_throw.png', {
-            frameWidth: 48,
-            frameHeight: 55,
-        });
         this.load.audio('coin_sound', 'assets/sonidos/SE/Items/Monedas/coin.wav');
 
         this.load.image('TitleName', 'assets/web/TituloPNG.png');
@@ -64,51 +41,20 @@ class MainMenu extends Phaser.Scene
     // Para que las estrellas cubran toda la pantalla
     this.stars.setDisplaySize(width, height);
 
-      this.anims.create({
-      key: 'mario_Walk',
-      frames: this.anims.generateFrameNumbers('mario_walk', { start: 0, end: 3 }),
-      frameRate: 8,
-      repeat: -1
-    });
-    this.anims.create({
-      key: 'mario_Run',
-      frames: this.anims.generateFrameNumbers('mario_run', { start: 0, end: 3 }),
-      frameRate: 12,
-      repeat: -1
-    });
-    this.anims.create({
-      key: 'mario_Jump',
-      frames: this.anims.generateFrameNumbers('mario_jump', { start: 0, end: 1 }),
-      frameRate: 6,
-      repeat: -1
-    });
-    this.anims.create({
-      key: 'mario_Hurt',
-      frames: this.anims.generateFrameNumbers('mario_hurt', { start: 0, end: 0 }),
-      frameRate: 1,
-      repeat: -1
-    });
-    this.anims.create({
-      key: 'mario_Throw',
-      frames: this.anims.generateFrameNumbers('mario_throw', { start: 0, end: 3 }),
-      frameRate: 8,
-      repeat: -1
-    });
-
     this.mario = this.add.sprite(this.cameras.main.width - 50, this.cameras.main.height - 50, 'mario_walk');
-    this.mario.play('mario_Walk');
+    this.mario.play('mario_walk');
 
     this.mario2 = this.add.sprite(this.cameras.main.width - 100, this.cameras.main.height - 50, 'mario_run');
-    this.mario2.play('mario_Run');
+    this.mario2.play('mario_run');
 
     this.mario3 = this.add.sprite(this.cameras.main.width - 150, this.cameras.main.height - 50, 'mario_jump');
-    this.mario3.play('mario_Jump');
+    this.mario3.play('mario_jump');
 
     this.mario4 = this.add.sprite(this.cameras.main.width - 200, this.cameras.main.height - 50, 'mario_hurt');
-    this.mario4.play('mario_Hurt');
+    this.mario4.play('mario_hurt');
 
     this.mario5 = this.add.sprite(this.cameras.main.width - 250, this.cameras.main.height - 50, 'mario_throw');
-    this.mario5.play('mario_Throw');
+    this.mario5.play('mario_throw');
 
     // Música de fondo del menú
     if (!this.menuMusic || !this.menuMusic.isPlaying) {
@@ -125,7 +71,7 @@ class MainMenu extends Phaser.Scene
         this.sound.play('coin_sound', { volume: 0 });
         this.buttonMove.input.enabled = false;
         TransitionCode.invoke(this, this.cameras.main, 1000,{x: this.cameras.main.width/2, y:  this.cameras.main.height/2}, 1500, 0,
-        ()=>{this.scene.launch('Nivel_D');
+        ()=>{this.scene.launch('Nivel_TO');
             this.scene.stop();
         });
     })

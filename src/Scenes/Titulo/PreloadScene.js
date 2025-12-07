@@ -90,7 +90,7 @@ class PreloadScene extends Phaser.Scene {
         frameWidth: 48,
         frameHeight: 56
     });
-    this.load.spritesheet('Mario_walk', 'GameSprites/Characters/Mario/Mario_walk.png', {
+    this.load.spritesheet('mario_walk', 'GameSprites/Characters/Mario/Mario_walk.png', {
         frameWidth: 32,
         frameHeight: 56
     });

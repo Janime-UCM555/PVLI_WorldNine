@@ -16,8 +16,8 @@ export class Impulse extends SceneBlocks {
         this.hasPlayer = false;
         this.setBody({
             type: 'rectangle',
-            width: obj.width * 3,
-            height: obj.height * 3,
+            width: obj.width * 2,
+            height: obj.height * 2,
         });
 
         this.setSensor(true);
@@ -43,7 +43,6 @@ export class Impulse extends SceneBlocks {
     }
     impulsePlayer(type)
     {
-        this.setCollidesWith([]);
         // this.scene.jugador.canSunJump = false;
         let player = this.scene.jugador.body;
         const M = Phaser.Physics.Matter.Matter;
@@ -64,6 +63,7 @@ export class Impulse extends SceneBlocks {
             M.Body.setVelocity(player, { x: player.velocity.x, y: -20 });
         }
         this.hasPlayer=false;
+        // this.setCollidesWith([]);
         this.scene.time.delayedCall(1000, ()=>{this.setCollidesWith([CATEGORY_PLAYER])});
     }
     setUpCollisions()
@@ -77,9 +77,11 @@ export class Impulse extends SceneBlocks {
                            (bodyB.label === "Mario") ? bodyB : null;
 
             if (player) {
-                this.hasPlayer = true;
-                if (this.scene.jugador.canSunJump && this.hasPlayer) //|| this.scene.jugador.jumpHeld)
+                player.inImpulse=true;
+                this.scene.jugador.inImpulse = true;
+                if (this.scene.jugador.canSunJump) //|| this.scene.jugador.jumpHeld)
                 {
+                    this.hasPlayer = true;
                     this.impulsePlayer(this.type);
                 }
             }
@@ -87,6 +89,7 @@ export class Impulse extends SceneBlocks {
         const exitHandle = () => 
         {
             this.hasPlayer=false;
+            this.scene.time.delayedCall(200, ()=>{this.scene.jugador.inImpulse = false;});
         }
         this.scene.matter.world.on('collisionend', exitHandle);
     }

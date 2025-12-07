@@ -49,7 +49,7 @@ import FallBlock from '../../../gameObjects/LevelBlockObjects/FallBlock.js';
  * Generador de PowerUps.
  * @module PowerUps/Spawn
  */
-import spawnPowerUp from "../../../gameObjects/PowerUps/PowerUpSpawn.js"
+import spawnPowerUp from '../../../gameObjects/PowerUps/PowerUpSpawn.js';
 
 /**
  * Categorías de colisión de Matter.js
@@ -68,6 +68,7 @@ import{
  * @module PowerUps
  */
 import { PowerUp, POWERUP_TYPES } from '../../../gameObjects/PowerUps/PowerUps.js';
+
 import Star from '../../../gameObjects/PowerUps/Star.js';
 
 /**

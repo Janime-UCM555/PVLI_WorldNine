@@ -1,4 +1,6 @@
 import GameScenes from './GameScenes.js'
+import { PowerUp, POWERUP_TYPES } from '../../../gameObjects/PowerUps/PowerUps.js';
+import spawnPowerUp from '../../../gameObjects/PowerUps/PowerUpSpawn.js';
 
 class Nivel_D extends GameScenes
 {
@@ -30,7 +32,7 @@ class Nivel_D extends GameScenes
         else if(this.levelMusic){
             this.levelMusic.stop();
         }
-    
+        spawnPowerUp(this,50, 625, POWERUP_TYPES.HAMMER);
    }
 
     ganasPartida() {

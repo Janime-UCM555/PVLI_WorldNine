@@ -6,14 +6,16 @@ export default class JupiterBoss extends BossBase {
      * @param {number} x
      * @param {number} y
      * @param {object} config  - igual que BossBase (player, onBattleEnd, etc.)
+     * @param {Array<{minX: number, maxX: number, id: number}>} attackZones
      */
-    constructor(scene, x, y, config = {}) {
+    constructor(scene, x, y, config = {}, attackZones) {
         super(scene, x, y, 'jupiter_neutral', {
             ...config,
             // Valores por defecto específicos de Júpiter:
             introDuration: 750,   // duración de la animación de entrada
             neutralMoveSpeed: 0.075,   // Velocidad de Júpiter
         });
+        this.attackZones = attackZones; // Guardamos el array de zonas
 
         // Precargar el sonido del rayo
         this.lightningSound = scene.sound.add('JupiterLightningSound');
@@ -33,11 +35,11 @@ export default class JupiterBoss extends BossBase {
         this.oscillationTime = 0;
 
         // Zonas X donde Júpiter puede atacar
-        this.attackZones = [
-            { minX: 600, maxX: 1150, id: 1 }, // Zona 1
-            { minX: 1250, maxX: 1800, id: 2 }, // Zona 2
-            { minX: 2450, maxX: 3000, id: 3 }, // Zona 3
-        ];
+        // this.attackZones = [
+        //     { minX: 600, maxX: 1150, id: 1 }, // Zona 1
+        //     { minX: 1250, maxX: 1800, id: 2 }, // Zona 2
+        //     { minX: 2450, maxX: 3000, id: 3 }, // Zona 3
+        // ];
 
         this.zoneMovementEnabledIds = [2]; // Solo estas zonas activan movimiento especial
 

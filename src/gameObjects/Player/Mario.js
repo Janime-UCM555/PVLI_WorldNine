@@ -29,6 +29,7 @@ class Mario extends Phaser.GameObjects.Sprite
         this.bubblesLeft = 2; // Número de burbujas restantes
 
         this.canSunJump = false;
+        this.inImpulse=false;
         this.inBoss = inBoss;
 
         // Sistema de salto
@@ -320,6 +321,12 @@ class Mario extends Phaser.GameObjects.Sprite
             if ((pointer.leftButtonDown() && this.scene.scene.isActive()))
             {
                 this.canSunJump = true;
+                // console.log("on");
+                this.scene.time.delayedCall(100, ()=>{this.canSunJump=false;/*console.log("off")*/});
+                if (this.inImpulse)
+                {
+                    return;
+                }
                 // Si está en burbuja y puede salir, manejar la salida
                 if (this.isInBubble && this.canDrop) {
                     this.scene.sound.play("bubblePop");
@@ -356,6 +363,9 @@ class Mario extends Phaser.GameObjects.Sprite
     }
 
     handleJump(time, delta) {
+        if(this.inImpulse) {
+            return;
+        }
         this.isStopped = false;
 
         const canGroundJump = this.isGrounded || this.canEnemyJump || this.coyoteTimeCounter > 0;
@@ -374,7 +384,7 @@ class Mario extends Phaser.GameObjects.Sprite
         }
         // Manejar inicio del salto normal
         if (this.jumpRequested) {
-            if (canGroundJump) {
+            if (canGroundJump && !this.inImpulse) {
                 this.startJump(time);
                 this.hasDoubleJumped = false; // Resetear doble salto al saltar desde suelo
                 this.hasBufferedJump = false; // Limpiar el buffer también en salto normal
@@ -393,7 +403,6 @@ class Mario extends Phaser.GameObjects.Sprite
 
         // Resetear el booleano de solicitud
         this.jumpRequested = false;
-        this.canSunJump=false;
     }
 
     startJump(time) {
@@ -1100,7 +1109,8 @@ class Mario extends Phaser.GameObjects.Sprite
             }
 
             // verificamos si esta tocando suelo
-            if (bodyA === this.sensors.bottom && this.isTerrain(bodyB) || bodyB === this.sensors.bottom && this.isTerrain(bodyA))
+            if ((bodyA === this.sensors.bottom && this.isTerrain(bodyB) && bodyB.isStatic)
+                || (bodyB === this.sensors.bottom && this.isTerrain(bodyA) && bodyA.isStatic))
             {
                 // Contar cualquier superficie como suelo (por ejemplo, saltar sobre una caja no estática).
                 this.numTouching.bottom += 1;
@@ -1204,7 +1214,6 @@ class Mario extends Phaser.GameObjects.Sprite
         this.jumpVelocity = 0;
         this.coyoteTimeCounter = this.coyoteTime;
         this.jumpRequested = false;
-        this.canSunJump = false;
         this.jumpHeld = false;
         this.hasBufferedJump = false;
         this.wasHoldingJumpWhenBuffered = false;

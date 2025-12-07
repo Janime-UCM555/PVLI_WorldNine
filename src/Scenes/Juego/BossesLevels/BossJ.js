@@ -24,13 +24,12 @@ class BossJ extends GameScenes
         super.create();
         // Música de fondo del nivel
         if ((!this.levelMusic || !this.levelMusic.isPlaying) && !this.endTimer) {
-            this.levelMusic = this.sound.add('Desierto', { loop: true, volume: 1 });
+            this.levelMusic = this.sound.add('Boss_Jupiter', { loop: false, volume: 1 });
             this.levelMusic.play();
         }
         else if(this.levelMusic){
             this.levelMusic.stop();
         }
-    
    }
 
     ganasPartida(barra) {

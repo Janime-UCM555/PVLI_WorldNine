@@ -498,21 +498,6 @@ class Pokey extends Phaser.GameObjects.Container
     }
 
     
-    /** Update simple para rebotar en paredes y moverse. */
-    preUpdate(time, delta) {
-        if (this.blocked.left) 
-        {
-            const M = Phaser.Physics.Matter.Matter;
-            M.Body.setVelocity(this.compoundBody, { x: Math.abs(this.compoundBody.velocity.x), y: this.compoundBody.velocity.y });
-        
-        }
-        else if (this.blocked.right) 
-        {
-            const M = Phaser.Physics.Matter.Matter;
-            M.Body.setVelocity(this.compoundBody, { x: -Math.abs(this.compoundBody.velocity.x), y: this.compoundBody.velocity.y });
-        }
-    }
-
     safeDestroy() {
         if (this.shouldBeDestroyed) return;
         
