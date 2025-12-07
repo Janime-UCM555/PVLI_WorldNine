@@ -51,8 +51,8 @@ export class OneWay extends SceneBlocks {
             // {
             //     return;
             // }
-            if (!this.hasPlayer &&((bodyA.label === "oneWay"  &&bodyB.label === "Mario") ||
-                (bodyB.label === "oneWay" && bodyA.label === "Mario" )))
+            if (!this.hasPlayer &&((bodyA.label === "oneWay"  && bodyA.isSensor  && bodyB.label === "Mario") ||
+                (bodyB.label === "oneWay" && bodyB.isSensor && bodyA.label === "Mario" )))
             {
                 // if (this.scene.jugador.body.velocity.y > 0 && this.scene.jugador.body.position.y < this.y)
                 // {

@@ -26,14 +26,12 @@ class Nivel_TO extends GameScenes
     }
 
     
-    ganasPartida(player, barra) {
-        this.increaseScore(Math.round(barra.y * 10), 'score');
+    ganasPartida() {
         this.endTimer=true;
 
         this.moveCameraToBottomRight();
 
         this.jugador.win();
-        barra.destroy();
         this.jugador.play('mario_stop', true);
 
         // Destruir todos los Goombas

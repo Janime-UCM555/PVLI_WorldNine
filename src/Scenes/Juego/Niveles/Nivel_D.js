@@ -33,14 +33,13 @@ class Nivel_D extends GameScenes
     
    }
 
-    ganasPartida(barra) {
-        this.increaseScore(Math.round(barra.y * 10), 'score');
+    ganasPartida() {
         this.endTimer=true;
 
         this.moveCameraToBottomRight();
 
         this.jugador.win();
-        barra.destroy();
+        // barra.destroy();
         this.jugador.play('mario_stop', true);
 
         // Detener música de nivel al ganar

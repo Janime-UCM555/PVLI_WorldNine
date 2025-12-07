@@ -54,7 +54,9 @@ export class Fin extends SceneBlocks
                            (bodyB.label === "Mario") ? bodyB : null;
 
             if (player && this.scene) {
-                this.scene.ganasPartida(player, this);
+                this.scene.increaseScore(Math.round(this.y * 10), 'score');
+                this.scene.ganasPartida();
+                this.destroy();
             }
         });
     }
