@@ -171,7 +171,7 @@ class EscenaBase extends Phaser.Scene {
 
         
 
-        this.jugador = new Mario(this, 25, 625, 'mario_run', 3.5*5, -3.75, true, false);
+        this.jugador = new Mario(this, 25, 625, 'mario_run', 3.5, -3.75, true, false);
         this.jugador.setDepth(3);
 
         // Forzar la inicialización de animaciones
