@@ -16,7 +16,7 @@ export class Fin extends SceneBlocks
         
 
         this.speed = 600;
-        this.y= obj.y+100;
+        this.y= obj.y-30;
         // this.x= obj.x;
         this.iniY = this.y;
         this.range = 100;

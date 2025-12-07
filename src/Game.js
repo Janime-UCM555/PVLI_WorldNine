@@ -15,7 +15,7 @@ import BossHades from './Scenes/Juego/BossesLevels/BossHades.js';
 let config = {
 	type: Phaser.AUTO,
 	pixelArt: true,
-	snapToPixels: false,
+	snapToPixels: true,
 	parent: 'game',
 	fps:300,
 	scale: {

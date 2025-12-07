@@ -66,9 +66,9 @@ export class Block extends SceneBlocks {
                     spawnPowerUp(this.scene,this.x + this.width / 2, this.y - this.height, POWERUP_TYPES.MUSHROOM, 'mushroom');
                 }
 
-            this._props.Spawn = false; // Evitar respawn
+                this._props.Spawn = false; // Evitar respawn
 
-            this.setTexture('blockempty'); // Cambiar textura a bloque vacío
+                this.setTexture('blockempty'); // Cambiar textura a bloque vacío
             }
         }
     }
@@ -88,7 +88,7 @@ export class Block extends SceneBlocks {
                 } 
                 // const aim = this.findSpawnBlockAbovePlayer(this.jugador, 20, 20); // (toleranciaX, toleranciaY)
                 // const target = aim || bodyB.gameObject; // prioriza spawn si hay uno “casi”
-                this.blockHit(player);
+                this.blockHit(this.scene.jugador);
             }
         });
     }

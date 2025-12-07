@@ -212,7 +212,7 @@ class PreloadScene extends Phaser.Scene {
     });
     
     // PilaresBosses
-    this.load.spritesheet('pilar_fuegoTiles', 'GameSprites/ObjetosBosses/PilarFuego.png', {
+    this.load.spritesheet('pilar_nubeTiles', 'GameSprites/ObjetosBosses/PilarNube.png', {
         frameWidth: 128,
         frameHeight: 126
     });
@@ -247,6 +247,7 @@ class PreloadScene extends Phaser.Scene {
 
     // Música
     this.load.audio('level_music', 'sonidos/BGM/level_theme.mp3');
+    this.load.audio('Boss_Jupiter', 'sonidos/BGM/BossJ.mp3');
     this.load.audio('Desierto', 'sonidos/BGM/Desierto.mp3');
     this.load.audio('menu_music', 'sonidos/BGM/menu_theme.mp3');
     this.load.audio('victory_music', 'sonidos/BGM/Nivel_Completado.wav');
@@ -267,8 +268,8 @@ class PreloadScene extends Phaser.Scene {
     }
     createAnimations() {
         this.anims.create({
-            key: 'pilar_fuego',
-            frames: this.anims.generateFrameNumbers('pilar_fuegoTiles', { start: 0, end: 10 }),
+            key: 'pilar_ny',
+            frames: this.anims.generateFrameNumbers('pilar_nubeTiles', { start: 0, end: 10 }),
             frameRate: 20,
             repeat: -1
         });

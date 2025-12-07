@@ -47,23 +47,25 @@ export class OneWay extends SceneBlocks {
     }
     setUpCollisions() {
         const handle = (event, bodyA, bodyB) => {
-            if(!bodyA.gameObject || bodyB.gameObject)
-            {
-                return;
-            }
+            // if(!bodyA.gameObject || bodyB.gameObject)
+            // {
+            //     return;
+            // }
             if (!this.hasPlayer &&((bodyA.label === "oneWay"  &&bodyB.label === "Mario") ||
                 (bodyB.label === "oneWay" && bodyA.label === "Mario" )))
             {
-                if (this.scene.jugador.body.velocity.y > 0 && this.scene.jugador.body.position.y < this.y)
-                {
+                // if (this.scene.jugador.body.velocity.y > 0 && this.scene.jugador.body.position.y < this.y)
+                // {
                     this.hasPlayer = true;
                     this.setCollidesWith([CATEGORY_ENEMY, CATEGORY_PLAYER]);
-                }
+                    // this.scene.time.delayedCall(300, () => {
+                    // this.hasPlayer=false;
+                    // this.setCollidesWith([CATEGORY_ENEMY]);});
+                    // }
             }
         }
         const exitHandle = (event, bodyA, bodyB) => {
-            if (((bodyA.label === "oneWay" && bodyB.label === "Mario") ||
-                (bodyB.label === "oneWay" &&  bodyA.label === "Mario")))
+            if (this.hasPlayer)
             {
                 this.hasPlayer=false;
                 this.setCollidesWith([CATEGORY_ENEMY]);
