@@ -99,11 +99,11 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
      * @type {{left: MatterJS.BodyType, right: MatterJS.BodyType, bottom: MatterJS.BodyType}}
      */
     this.sensors = {
-      left: M.Bodies.rectangle(sx - w / 1.5, sy, 5, h / 2, {
+      left: M.Bodies.rectangle(sx - w / 1.5, sy / 2, 5, 9/10 *  h, {
         isSensor: true,
         label: "PowerUp"
       }),
-      right: M.Bodies.rectangle(sx + w / 1.5, sy, 5, h / 2, {
+      right: M.Bodies.rectangle(sx + w / 1.5, sy / 2, 5, 9/10 * h, {
         isSensor: true,
         label: "PowerUp"
       }),
@@ -125,9 +125,6 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
     // El cuerpo a la posición inicial
     M.Body.setPosition(compoundBody, { x, y });
 
-    
-    // const mask = CATEGORY_PLAYER | CATEGORY_TERRAIN | CATEGORY_POWERUP;
-
     // // Apply to all parts
     // this.enemyBody.collisionFilter.category = CATEGORY_ENEMY;
     // this.enemyBody.collisionFilter.mask = mask;
@@ -139,7 +136,7 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
     this.setFixedRotation();
 
     // Movimiento básico (rebote ligero y desplazamiento)
-    this.setBounce(0.1, 0.2);
+    this.setBounce(0.1, 1);
     this.setVelocityX(POWERUP_SPEED);
 
     /** Velocidad usada al rebotar contra paredes. */
@@ -177,20 +174,20 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
           const player = bodyA.label === "Mario" ? bodyA.gameObject : bodyB.gameObject;
           this.collect(player);   // <-- SOLO este powerup
           continue;               // No hace falta procesar sensores para este par
-        
-
-
-        // 2) A partir de aquí, lógica de sensores
-        if (bodyA === this.sensors.left || bodyB === this.sensors.left) {
-          this.numTouching.left++;
         }
-        if (bodyA === this.sensors.right || bodyB === this.sensors.right) {
-          this.numTouching.right++;
+        else {
+          // No es colisión con Mario, seguir a sensores
+          // 2) A partir de aquí, lógica de sensores
+          if (bodyA === this.sensors.left || bodyB === this.sensors.left) {
+            this.numTouching.left++;
+          }
+          if (bodyA === this.sensors.right || bodyB === this.sensors.right) {
+            this.numTouching.right++;
+          }
+          if (bodyA === this.sensors.bottom || bodyB === this.sensors.bottom) {
+            this.numTouching.bottom++;
+          }
         }
-        if (bodyA === this.sensors.bottom || bodyB === this.sensors.bottom) {
-          this.numTouching.bottom++;
-        }
-      }
     }
     });
 

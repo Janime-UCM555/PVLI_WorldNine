@@ -272,8 +272,6 @@ export default class HorusBoss extends BossBase {
     performAttack() {
         // Elegimos un patrón aleatorio de la lista
         const pattern = Phaser.Utils.Array.GetRandom(this.attackPatterns);
-        console.log("[HorusBoss] Patrón de ataque:", pattern);
-
         switch (pattern) {
             case "windZones":
                 this.performWindAttack();
