@@ -18,6 +18,7 @@ class Pokey extends Phaser.GameObjects.Container
         this.shouldBeDestroyed = false;
         this.currentlyVisible = false;
         this.isEnemy = true; // Marca como enemigo
+        this.isCrumbling = false; // Nuevo: para controlar el estado de desmoronamiento
 
         // Sensores para detección de colisiones
         this.blocked = {
@@ -39,6 +40,7 @@ class Pokey extends Phaser.GameObjects.Container
         // Arrays para guardar las partes
         this.bodySegments = [];
         this.bodyBodies = []; // Información de los segmentos
+        this.fallingSegments = []; // Nuevo: para guardar los segmentos que caen
 
         // Crear los segmentos visuales
         this.createSegments();
@@ -47,11 +49,6 @@ class Pokey extends Phaser.GameObjects.Container
         this.setupPhysics();
 
         this.hitSound = scene.sound.add('aplastar');
-
-        // this.scene.matter.world.on('beforeupdate', this.resetTouching, this);
-        // this.scene.matter.world.on('collisionactive', this.handleCollisions);
-        // this.scene.matter.world.on('afterupdate', this.updateBlocked, this);
-        // this.listenersAdded = true;
         
         // Configurar colisión con los bordes del mundo
         this.setUpWorldBoundsCollision();
@@ -137,7 +134,126 @@ class Pokey extends Phaser.GameObjects.Container
     }
 
     die(killType = DIE_TYPES.STOMP) {
-        this.safeDestroy();
+        this.crumble();
+    }
+
+    // Nuevo método: hacer que el Pokey se desmorone
+    crumble() {
+        if (this.isCrumbling || !this.isAlive) return;
+        
+        this.isCrumbling = true;
+        this.isAlive = false;
+        
+        // Reproducir sonido
+        this.hitSound.play();
+        
+        // Remover el cuerpo compuesto original
+        if (this.compoundBody) {
+            this.scene.matter.world.remove(this.compoundBody);
+            this.compoundBody = null;
+        }
+        
+        const M = Phaser.Physics.Matter.Matter;
+        const CATEGORY_DEBRIS = 0x0008; // Nueva categoría para escombros
+        const DEBRIS_MASK = 0x0004; // Solo colisiona con terreno
+        
+        // Crear cuerpos físicos independientes para cada segmento
+        const allSegments = [...this.bodySegments, this.head];
+        
+        allSegments.forEach((segment, index) => {
+            if (!segment) return;
+            
+            // Calcular la posición mundial del segmento
+            const worldX = this.x + segment.x;
+            const worldY = this.y + segment.y;
+            
+            // Crear un cuerpo físico para este segmento
+            const isHead = (index === allSegments.length - 1);
+            const height = isHead ? this.headSegmentHeight : this.bodySegmentHeight;
+            const width = 24;
+            
+            const segmentBody = M.Bodies.rectangle(
+                worldX,
+                worldY - height / 2, // Ajustar al centro del segmento
+                width,
+                height,
+                {
+                    chamfer: { radius: 5 },
+                    density: 0.001,
+                    friction: 0.3,
+                    restitution: 0.3,
+                    collisionFilter: {
+                        category: CATEGORY_DEBRIS,
+                        mask: DEBRIS_MASK
+                    }
+                }
+            );
+            
+            // Aplicar una pequeña velocidad lateral aleatoria para separar los segmentos
+            const randomVelocityX = (Math.random() - 0.5) * 2; // Entre -1 y 1
+            const randomVelocityY = -1 - Math.random() * 2; // Un pequeño impulso hacia arriba
+            
+            M.Body.setVelocity(segmentBody, {
+                x: randomVelocityX,
+                y: randomVelocityY
+            });
+            
+            // Aplicar una pequeña rotación aleatoria
+            M.Body.setAngularVelocity(segmentBody, (Math.random() - 0.5) * 0.1);
+            
+            // Añadir el cuerpo al mundo
+            this.scene.matter.world.add(segmentBody);
+            
+            // Remover el segmento del Container
+            this.remove(segment, false);
+            
+            // Añadir el segmento directamente a la escena
+            this.scene.add.existing(segment);
+            
+            // Guardar referencia para actualizar
+            this.fallingSegments.push({
+                sprite: segment,
+                body: segmentBody
+            });
+        });
+        
+        // Limpiar los arrays originales
+        this.bodySegments = [];
+        this.head = null;
+        
+        // Programar la limpieza después de que caigan
+        this.scene.time.delayedCall(3000, () => {
+            this.cleanupFallingSegments();
+        });
+    }
+    
+    // Nuevo método: limpiar los segmentos que caen
+    cleanupFallingSegments() {
+        this.fallingSegments.forEach(segment => {
+            if (segment.body) {
+                this.scene.matter.world.remove(segment.body);
+            }
+            if (segment.sprite) {
+                segment.sprite.destroy();
+            }
+        });
+        
+        this.fallingSegments = [];
+        this.shouldBeDestroyed = true;
+        
+        // Destruir el Container
+        this.destroy();
+    }
+    
+    // Actualizar la posición de los segmentos que caen
+    updateFallingSegments() {
+        this.fallingSegments.forEach(segment => {
+            if (segment.sprite && segment.body) {
+                segment.sprite.x = segment.body.position.x;
+                segment.sprite.y = segment.body.position.y + segment.sprite.height / 2;
+                segment.sprite.rotation = segment.body.angle;
+            }
+        });
     }
 
     createSegments() {
@@ -207,11 +323,6 @@ class Pokey extends Phaser.GameObjects.Container
 
         // Sensores para detectar paredes y suelo (sin colisión física)
         this.sensors = {
-            // bottom: M.Bodies.rectangle(this.x, this.y + 5, totalWidth * 1.5, 5, { isSensor: true ,
-            // collisionFilter: {
-            //     category: CATEGORY_ENEMY,
-            //     mask: mask
-            // }}), // Más largo para detectar bordes
             left: M.Bodies.rectangle(this.x - totalWidth * 0.75, bodyCenterY, 5, this.totalHeight * 0.5, { isSensor: true,
             collisionFilter: {
                 category: CATEGORY_ENEMY,
@@ -232,32 +343,10 @@ class Pokey extends Phaser.GameObjects.Container
             parts: [this.enemyBody,this.sensors.left, this.sensors.right, this.sensors.bottomLeft, this.sensors.bottomRight, this.sensors.bottom],
             friction: 0,
             frictionAir: 0.01,
-            // collisionFilter: {
-            // category: CATEGORY_ENEMY,
-            // mask: mask
-            // },
             restitution: 0.05,
             label: "Pokey"
         });
         this.compoundBody.label="Pokey";
-        // Mask categories
-
-        // Apply to all parts
-        // this.enemyBody.collisionFilter.category = CATEGORY_ENEMY;
-        // this.enemyBody.collisionFilter.mask = mask;
-
-        // this.sensors.bottom.collisionFilter.category = CATEGORY_ENEMY;
-        // this.sensors.bottom.collisionFilter.mask = mask;
-
-        // this.sensors.left.collisionFilter.category = CATEGORY_ENEMY;
-        // this.sensors.left.collisionFilter.mask = mask;
-
-        // this.sensors.right.collisionFilter.category = CATEGORY_ENEMY;
-        // this.sensors.right.collisionFilter.mask = mask;
-
-        // this.compoundBody.collisionFilter.category = CATEGORY_ENEMY;
-        // this.compoundBody.collisionFilter.mask = mask;
-
 
         // Hacer el cuerpo dinámico (no estático) para que pueda moverse
         M.Body.setStatic(this.compoundBody, false);
@@ -271,7 +360,6 @@ class Pokey extends Phaser.GameObjects.Container
         // Guardar referencia al Pokey en TODOS los cuerpos (incluyendo sensores)
         this.compoundBody.gameObject = this;
         this.enemyBody.gameObject = this;
-        // this.sensors.bottom.gameObject = this;
         this.sensors.left.gameObject = this;
         this.sensors.right.gameObject = this;
         this.sensors.bottom.gameObject = this;
@@ -283,11 +371,11 @@ class Pokey extends Phaser.GameObjects.Container
     }
 
     handlePlayerCollision(player) {
-        if (!this.isAlive) return;
+        if (!this.isAlive || this.isCrumbling) return;
 
         // Si el jugador es invencible, destruir el Pokey
         if (player.isInvincible) {
-            this.safeDestroy();
+            this.crumble();
             return;
         }
 
@@ -386,18 +474,10 @@ class Pokey extends Phaser.GameObjects.Container
         // Sincronizar posición del Container con el cuerpo de Matter
         // El cuerpo está centrado en el Pokey completo, pero el Container está en la BASE
         this.setPosition(this.compoundBody.position.x, this.compoundBody.position.y + this.totalHeight/2);
-        // this.x = this.compoundBody.position.x;
-        // this.y = this.compoundBody.position.y + (this.totalHeight / 2); // Ajustar a la base
     }
 
     // Detección de bordes (similar al Koopa)
     handleLedges() {
-        // if (!this.isAlive) return;
-
-        // const isLateralCollision = 
-            // (this.blocked.bottomRight && this.direction === 1) ||
-            // (!this.blocked.bottomLeft && this.direction === -1);
-        // console.log(this.blocked.bottom);
         if ((this.direction === 1 && !this.blocked.bottomRight) || (this.direction === -1 && !this.blocked.bottomLeft)) 
         {
             this.changeDirection();
@@ -420,8 +500,6 @@ class Pokey extends Phaser.GameObjects.Container
     
     /** Update simple para rebotar en paredes y moverse. */
     preUpdate(time, delta) {
-        // super.preUpdate(time, delta);
-        // console.log(this.blocked.left);
         if (this.blocked.left) 
         {
             const M = Phaser.Physics.Matter.Matter;
@@ -456,6 +534,12 @@ class Pokey extends Phaser.GameObjects.Container
     }
 
     update(time, delta) {
+        // Si está desmoronándose, solo actualizar los segmentos que caen
+        if (this.isCrumbling) {
+            this.updateFallingSegments();
+            return;
+        }
+        
         if (!this.isAlive || this.shouldBeDestroyed) return;
 
         const camera = this.scene.cameras.main;
@@ -472,19 +556,6 @@ class Pokey extends Phaser.GameObjects.Container
             return;
         }
 
-        // Configurar listeners de Matter (solo una vez)
-        // if (!this.listenersAdded) {
-        //     this.scene.matter.world.on('beforeupdate', this.resetTouching, this);
-        //     this.scene.matter.world.on('collisionactive', this.handleCollisions, this);
-        //     this.scene.matter.world.on('afterupdate', this.updateBlocked, this);
-        //     this.listenersAdded = true;
-        // }
-
-        // Verificar bordes si está en el suelo
-        // if (this.isAlive && !this.shouldBeDestroyed && this.blocked.bottom) {
-        //     this.checkForLedges();
-        // }
-
         // Manejar colisiones con paredes
         if (this.isAlive && !this.shouldBeDestroyed) {
             this.handleWallCollision();
@@ -498,8 +569,6 @@ class Pokey extends Phaser.GameObjects.Container
         if (this.isAlive && !this.shouldBeDestroyed) {
             this.updateMovement();
         }
-        
-        // console.log(this);
     }
 }
 
