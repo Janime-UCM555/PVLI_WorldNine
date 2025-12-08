@@ -284,6 +284,11 @@ body{
       box-shadow: 0 0 0 3px #bfdbfe;
     }
 
+    .myth-dot--global {
+      background: #51ff62;
+      box-shadow: 0 0 0 3px #aeffac;
+    }
+
     .level-texts {
       min-width: 0;
     }

@@ -77,6 +77,48 @@ import Star from '../../../gameObjects/PowerUps/Star.js';
  */
 import { DIE_TYPES } from '../../../gameObjects/Enemies/Goomba.js';
 
+export const purpleCoinsByLevel = {
+    Nivel_R: 0,
+    Nivel_D: 0,
+    Nivel_G: 0,
+    BossJ: 0,
+    BossH: 0,
+    BossHades: 0
+};
+
+export const collectedPurpleCoinsByLevel = {
+    Nivel_R: [],
+    Nivel_D: [],
+    Nivel_G: [],
+    BossJ: [],
+    BossH: [],
+    BossHades: []
+};
+
+const savedCounts = localStorage.getItem('w9_purpleCoinsByLevel');
+if (savedCounts) {
+    try {
+        const parsed = JSON.parse(savedCounts);
+        Object.assign(purpleCoinsByLevel, parsed);
+    } catch (e) {
+        console.warn('No se pudieron cargar las monedas moradas guardadas', e);
+    }
+}
+
+const savedCollected = localStorage.getItem('w9_collectedPurpleCoinsByLevel');
+if (savedCollected) {
+    try {
+        const parsed = JSON.parse(savedCollected);
+        for (const level in collectedPurpleCoinsByLevel) {
+            if (parsed[level]) {
+                collectedPurpleCoinsByLevel[level] = parsed[level];
+            }
+        }
+    } catch (e) {
+        console.warn('No se pudieron cargar las monedas moradas recogidas', e);
+    }
+}
+
 /**
  * Mapa que relaciona nombres de capas con clases constructoras.
  * Sirve como fábrica para crear objetos desde Tiled.
@@ -105,6 +147,8 @@ class EscenaBase extends Phaser.Scene {
     }
 
     create() {
+
+         this.purpleCoinScore = purpleCoinsByLevel[this.level] ?? 0;
 
         // Actualizar la interfaz web
         if (window.updateWebStatus) {
@@ -139,7 +183,7 @@ class EscenaBase extends Phaser.Scene {
         this.oneWay = this.createObjectsFromLayer('OneWays');
         this.coinPath = this.createObjectsFromLayer('CaminoMonedas');
 
-        this.coins = this.createObjectsFromLayer('Monedas');
+        this.coins = this.createsCoinsFromLayer('Monedas');
         this.coins.setDepth(2);
 
         // const enemies = this.map.getObjectLayer('Enemigos').objects;
@@ -293,6 +337,69 @@ class EscenaBase extends Phaser.Scene {
         }
         // Create común
     }
+    createText()
+    {
+        // Este gráfico representa la línea dónde se alinea la UI por la derecha
+
+        // var graphics = this.add.graphics();
+
+        const posUI = this.cameras.main.centerX+this.cameras.main.centerX/2; // Posición UI por la derecha
+        // graphics.lineStyle(1, 0xffffff, 1);
+        // graphics.lineBetween(posUI, 0,posUI, 600);
+        // graphics.setScrollFactor(0);
+
+        const fontSize = 29; // 50 / 1.65 ≈ 29
+        document.fonts.load('32px aku-kamu').then(() => {
+           if(this.game.config.physics?.matter?.debug){
+            this.fpsText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -',{fontFamily: 'aku-kamu'})
+                .setOrigin(-2,5)
+                .setStroke('#000000ff', 6)
+                .setFill('#38b762ff')
+                .setFontSize(fontSize + 'px')
+                .setDepth(6)
+                .setScrollFactor(0);
+            
+           }
+                
+            
+
+            this.textTimer = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '00',{fontFamily: 'aku-kamu'})
+            .setOrigin(0.5,5)
+            .setStroke('#000000ff', 6)
+            .setFill('#ffffffff')
+            // .setText("60")
+            .setDepth(6)
+            .setFontSize(fontSize + 'px')
+            .setScrollFactor(0)
+
+            this.textScore = this.add.text(posUI, this.cameras.main.centerY,"".padStart(10,"0"),{fontFamily: 'aku-kamu'})
+            .setOrigin(1,5)
+            .setStroke('#000000ff', 6)
+            .setFill('#ffffffff')
+            .setDepth(6)
+            .setFontSize(fontSize + 'px')
+            .setScrollFactor(0);
+
+            this.textCoins = this.add.text(posUI, this.cameras.main.centerY, "".padStart(2,"0"),{fontFamily: 'aku-kamu'})
+            .setOrigin(1,4)
+            .setStroke('#000000ff', 6)
+            .setFill('#DBC716')
+            .setDepth(6)
+            .setFontSize(fontSize + 'px')
+            .setScrollFactor(0);
+
+            this.textPurpleCoins = this.add.text(posUI, this.cameras.main.centerY, this.purpleCoinScore.toString().padStart(1, '0'),{fontFamily: 'aku-kamu'})
+            .setOrigin(1,3)
+            .setFontSize(fontSize + 'px')
+            .setAlign('center')
+            .setStroke('#000000ff', 6)
+            .setFill('#621C87')
+            .setDepth(6)
+            .setScrollFactor(0);
+
+            this.timerMethod();
+        });
+    }
     createObjectsFromLayer(layerName) {
         const objects = this.map.getObjectLayer(layerName)?.objects;
         if (objects)
@@ -303,6 +410,31 @@ class EscenaBase extends Phaser.Scene {
 
             objects.forEach(obj => {
                 const instance = new ClassRef(this, obj);
+                group.add(instance);
+            });
+            return group;
+        }
+    }
+
+    createsCoinsFromLayer(layerName) {
+        const objects = this.map.getObjectLayer(layerName)?.objects;
+        if (objects)
+        {
+            const ClassRef = CLASS_MAP[layerName];
+
+            const group = this.add.group();
+
+            let alreadyCollected = false;
+
+            objects.forEach(obj => {
+                 if (obj.name === 'purple') {
+                    const levelKey = this.level;
+                    const collectedIds = collectedPurpleCoinsByLevel[levelKey] || [];
+                    alreadyCollected = collectedIds.includes(obj.id);
+                }
+
+                const instance = new ClassRef(this, obj, alreadyCollected);
+
                 group.add(instance);
             });
             return group;
@@ -326,8 +458,6 @@ class EscenaBase extends Phaser.Scene {
         }
     }
     update(time, delta) {
-        if (!this.fpsText || !this.fpsText.scene || this.fpsText._destroyed) return;
-
         if (!this.endTimer)
         {
             this.fpsText?.setText(Math.floor(this?.game?.loop?.actualFps));

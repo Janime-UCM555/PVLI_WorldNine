@@ -61,70 +61,9 @@ class Nivel_D extends GameScenes
         });
     }
 
-    createText()
-    {
-        // Este gráfico representa la línea dónde se alinea la UI por la derecha
-
-        // var graphics = this.add.graphics();
-
-        const posUI = this.cameras.main.centerX+this.cameras.main.centerX/2; // Posición UI por la derecha
-        // graphics.lineStyle(1, 0xffffff, 1);
-        // graphics.lineBetween(posUI, 0,posUI, 600);
-        // graphics.setScrollFactor(0);
-
-        const fontSize = 29; // 50 / 1.65 ≈ 29
-        document.fonts.load('32px aku-kamu').then(() => {
-
-            this.fpsText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -',{fontFamily: 'aku-kamu'})
-            .setOrigin(-2,5)
-            .setStroke('#000000ff', 6)
-            .setFill('#38b762ff')
-            .setFontSize(fontSize + 'px')
-            .setDepth(6)
-            // .setText("60")
-            .setScrollFactor(0);
-
-            this.textTimer = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '00',{fontFamily: 'aku-kamu'})
-            .setOrigin(0.5,5)
-            .setStroke('#000000ff', 6)
-            .setFill('#ffffffff')
-            // .setText("60")
-            .setDepth(6)
-            .setFontSize(fontSize + 'px')
-            .setScrollFactor(0)
-
-            this.textScore = this.add.text(posUI, this.cameras.main.centerY,"".padStart(10,"0"),{fontFamily: 'aku-kamu'})
-            .setOrigin(1,5)
-            .setStroke('#000000ff', 6)
-            .setFill('#ffffffff')
-            .setDepth(6)
-            .setFontSize(fontSize + 'px')
-            .setScrollFactor(0);
-
-            this.textCoins = this.add.text(posUI, this.cameras.main.centerY, "".padStart(2,"0"),{fontFamily: 'aku-kamu'})
-            .setOrigin(1,4)
-            .setStroke('#000000ff', 6)
-            .setFill('#DBC716')
-            .setDepth(6)
-            .setFontSize(fontSize + 'px')
-            .setScrollFactor(0);
-
-            this.textPurpleCoins = this.add.text(posUI, this.cameras.main.centerY,"".padStart(1,"0"),{fontFamily: 'aku-kamu'})
-            .setOrigin(1,3)
-            .setFontSize(fontSize + 'px')
-            .setAlign('center')
-            .setStroke('#000000ff', 6)
-            .setFill('#621C87')
-            .setDepth(6)
-            .setScrollFactor(0);
-
-            this.timerMethod();
-        });
-    }
-
     timerMethod ()
     {
-        let timer =80;
+        let timer = 80;
         this.endTimer = false;
         this.timerEvent = this.time.addEvent({
         delay: 1000,

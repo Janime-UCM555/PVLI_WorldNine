@@ -89,78 +89,9 @@ ganasPartida() {
     });
 }
 
-createText()
-{
-    // Este gráfico representa la línea dónde se alinea la UI por la derecha
-
-    // var graphics = this.add.graphics();
-
-    const posUI = this.cameras.main.centerX+this.cameras.main.centerX/2; // Posición UI por la derecha
-    // graphics.lineStyle(1, 0xffffff, 1);
-    // graphics.lineBetween(posUI, 0,posUI, 600);
-    // graphics.setScrollFactor(0);
-
-    const fontSize = 29; // 50 / 1.65 ≈ 29
-
-    this.fpsText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '00',{fontFamily: 'aku-kamu'})
-    .setOrigin(-2,5)
-    .setStroke('#000000ff', 6)
-    .setFill('#38b762ff')
-    .setFontSize(fontSize + 'px')
-    .setDepth(10)
-    // .setText("60")
-    .setScrollFactor(0);
-
-
-    this.textTimer = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '00',{fontFamily: 'aku-kamu'})
-    .setOrigin(0.5,5)
-    .setStroke('#000000ff', 6)
-    .setFill('#ffffffff')
-    // .setText("60")
-    .setDepth(10)
-    .setFontSize(fontSize + 'px')
-    .setScrollFactor(0)
-
-
-
-    this.textScore = this.add.text(posUI, this.cameras.main.centerY,"".padStart(10,"0"),{fontFamily: 'aku-kamu'})
-    .setOrigin(1,5)
-    .setStroke('#000000ff', 6)
-    .setFill('#ffffffff')
-    .setDepth(10)
-    .setFontSize(fontSize + 'px')
-    .setScrollFactor(0);
-    // textScore.setShadow(10, 10, 'rgba(0,0,0,0.5)', 10); 
-    // this.textScore.setText("".padStart(10,"0"))
-
-    this.textCoins = this.add.text(posUI, this.cameras.main.centerY, "".padStart(2,"0"),{fontFamily: 'aku-kamu'})
-    .setOrigin(1,4)
-    .setStroke('#000000ff', 6)
-    .setFill('#DBC716')
-    // .setText("".padStart(2,"0"))
-    .setDepth(10)
-    .setFontSize(fontSize + 'px')
-    .setScrollFactor(0);
-    // this.textCoins.setText("".padStart(2,"0"));
-
-    this.textPurpleCoins = this.add.text(posUI, this.cameras.main.centerY,"".padStart(1,"0"),{fontFamily: 'aku-kamu'})
-    .setOrigin(1,3)
-    .setFontSize(fontSize + 'px')
-    .setAlign('center')
-    .setStroke('#000000ff', 6)
-    .setFill('#621C87')
-    .setDepth(10)
-    .setScrollFactor(0);
-
-    // this.textPurpleCoins.setText("".padStart(1,"0"));
-
-    this.timerMethod();
-    // this.ui.add([this.fpsText,this.textPurpleCoins,this.textCoins,this.textScore,this.textTimer]);
-}
-
 timerMethod ()
 {
-    let timer =60;
+    let timer = 60;
     this.endTimer = false;
     this.timerEvent = this.time.addEvent({
     delay: 1000,
