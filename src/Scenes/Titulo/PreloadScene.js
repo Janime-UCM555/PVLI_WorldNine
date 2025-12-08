@@ -255,6 +255,7 @@ class PreloadScene extends Phaser.Scene {
     this.load.audio('bubbleCreate', 'sonidos/SE/Mario/Acciones/BubbleCreate.wav');
     this.load.audio('coinPath', 'sonidos/SE/Items/Bloques/CoinPath.wav');
     this.load.audio('JupiterLightningSound', 'sonidos/SE/JupiterSFX/JupiterLightning.wav');
+    this.load.audio('StormSound', 'sonidos/SE/JupiterSFX/PilarNube.wav');
 
     // Música
     this.load.audio('level_music', 'sonidos/BGM/level_theme.mp3');

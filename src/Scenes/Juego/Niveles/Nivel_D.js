@@ -1,4 +1,4 @@
-import GameScenes from '../GameScenes.js'
+import GameScenes from './GameScenes.js'
 import { PowerUp, POWERUP_TYPES } from '../../../gameObjects/PowerUps/PowerUps.js';
 import spawnPowerUp from '../../../gameObjects/PowerUps/PowerUpSpawn.js';
 

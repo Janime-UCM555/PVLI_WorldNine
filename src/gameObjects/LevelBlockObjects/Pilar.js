@@ -51,6 +51,7 @@ export class Pilar extends SceneBlocks
 
             if (player && !this.scene.endTimer) {
                 this.scene.jugador.hurt();
+                this.scene.play('StormSound');
                 this.scene.endTimer=true;
                 this.scene.jugador.setStatic(true);
                 this.scene.doubleEndTransition(()=>{
