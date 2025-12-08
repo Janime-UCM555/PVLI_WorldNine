@@ -83,6 +83,7 @@ export class FallBlock extends SceneBlocks {
             {
                 if (this.scene.jugador.body.velocity.y > 0 && this.scene.jugador.body.position.y < this.y)
                 {
+                    this.scene.jugador.setVelocityX(-0.05);
                     if (!this.fallActive)
                     {
                         this.setCollidesWith([CATEGORY_ENEMY, CATEGORY_PLAYER, CATEGORY_POWERUP]);

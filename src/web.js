@@ -1,7 +1,7 @@
 // Archivo: src/web.js
 // Funciones para actualizar la interfaz web desde Phaser
 
-import { purpleCoinsByLevel } from "./Scenes/Juego/Niveles/GameScenes.js";
+import { purpleCoinsByLevel } from "./Scenes/Juego/GameScenes.js";
 
 /**
  * Mapa del progreso de monedas moradas por nivel.

@@ -1,7 +1,7 @@
 import { DIE_TYPES } from '../../../gameObjects/Enemies/Goomba.js';
 import spawnPowerUp from '../../../gameObjects/PowerUps/PowerUpSpawn.js';
 import { POWERUP_TYPES } from '../../../gameObjects/PowerUps/PowerUps.js';
-import GameScenes from './GameScenes.js'
+import GameScenes from '../GameScenes.js'
 
 const M = Phaser.Physics.Matter.Matter;
 

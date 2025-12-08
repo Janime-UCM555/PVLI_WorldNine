@@ -56,8 +56,8 @@ export class Spikes extends SceneBlocks {
                         if (player.bubblesLeft > 0) {
                             player.Bubble(); // Entra en burbuja
                         } else {
-                            player.hurt();
-                            player.setStatic(true);
+                            this.scene?.jugador.hurt();
+                            this.scene?.jugador.setStatic(true);
                             this.body.collisionFilter.mask = 0; // Desactivar completamente las colisiones
                             this.setStatic(true);
                             this.scene.doubleEndTransition(()=>{this.scene.scene.launch('MainMenu');
@@ -66,7 +66,7 @@ export class Spikes extends SceneBlocks {
                     }
                     else
                     {
-                        this.scene.jugador.hurt();
+                        this.scene?.jugador.hurt();
                         this.scene.endTimer=true;
                         this.scene.jugador.setStatic(true);
                         this.scene.doubleEndTransition(()=>{

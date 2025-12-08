@@ -1,4 +1,4 @@
-import GameScenes from '../Niveles/GameScenes.js '
+import GameScenes from '../GameScenes.js'
 import Pilar from '../../../gameObjects/LevelBlockObjects/Pilar.js';
 import JupiterBoss from '../../../gameObjects/BossesObjects/JupiterBoss.js';
 import spawnPowerUp from '../../../gameObjects/PowerUps/PowerUpSpawn.js';
@@ -45,8 +45,8 @@ class BossJ extends GameScenes
     }
    create(){
         super.create();
-        spawnPowerUp(this,25, 600, POWERUP_TYPES.MUSHROOM);
         // Música de fondo del nivel
+        spawnPowerUp(this,40, 600, POWERUP_TYPES.MUSHROOM);
         if ((!this.levelMusic || !this.levelMusic.isPlaying) && !this.endTimer) {
             this.levelMusic = this.sound.add('Boss_Jupiter', { loop: false, volume: 1 });
             this.levelMusic.play();

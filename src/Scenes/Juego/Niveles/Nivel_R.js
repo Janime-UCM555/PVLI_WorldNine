@@ -8,7 +8,7 @@
 // import TransitionCode from '../../../gameObjects/UI/Transition.js'
 // import { PowerUp, POWERUP_TYPES } from '../../../gameObjects/PowerUps/PowerUps.js';
 // import { DIE_TYPES } from '../../../gameObjects/Enemies/Goomba.js';
-import GameScenes from './GameScenes.js'
+import GameScenes from '../GameScenes.js'
 
 class Nivel_R extends GameScenes
 {

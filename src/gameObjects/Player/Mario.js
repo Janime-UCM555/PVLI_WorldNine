@@ -3,7 +3,8 @@ import{
     CATEGORY_PLAYER,
     CATEGORY_ENEMY,
     CATEGORY_POWERUP,
-    CATEGORY_TERRAIN
+    CATEGORY_TERRAIN,
+    CATEGORY_SENSOR
 } from "../collisionCategories.js"
 class Mario extends Phaser.GameObjects.Sprite
 {
@@ -106,7 +107,7 @@ class Mario extends Phaser.GameObjects.Sprite
         this.body.label="Mario";
         this.setExistingBody(compoundBody);
         this.setCollisionCategory(CATEGORY_PLAYER);
-        this.setCollidesWith([CATEGORY_TERRAIN, CATEGORY_ENEMY, CATEGORY_POWERUP]);
+        this.setCollidesWith([CATEGORY_TERRAIN, CATEGORY_ENEMY, CATEGORY_POWERUP, CATEGORY_SENSOR]);
         // Configuración de física
         if (this.body) {
             this.setFriction(0);
@@ -578,7 +579,7 @@ class Mario extends Phaser.GameObjects.Sprite
         // Empujar a Mario hacia la izquierda
         const pushSpeed = Phaser.Math.Clamp(15, -40, 40); // Velocidad alta para el empuje
         this.setVelocityX(0);
-        this.setCollidesWith([CATEGORY_TERRAIN]);
+        this.setCollidesWith([CATEGORY_TERRAIN,CATEGORY_SENSOR]);
 
 
         // Parpadeo visual
@@ -607,7 +608,7 @@ class Mario extends Phaser.GameObjects.Sprite
             if (this.isHurt) {
                 this.isHurt = false;
             }
-            this.setCollidesWith([CATEGORY_TERRAIN, CATEGORY_ENEMY, CATEGORY_POWERUP]);
+            this.setCollidesWith([CATEGORY_TERRAIN, CATEGORY_ENEMY, CATEGORY_POWERUP,CATEGORY_SENSOR]);
         });
     }
 

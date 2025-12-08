@@ -18,6 +18,7 @@ export class OneWay extends SceneBlocks {
             type: 'rectangle',
             width: obj.width * 2,
             height: obj.height,
+            y: obj.y-15,
         });
         const frame = obj.gid - this.scene.tile.firstgid;
         this.setTexture('mi_tileset',frame);
@@ -60,10 +61,12 @@ export class OneWay extends SceneBlocks {
                 if (this.scene.jugador.body.velocity.y > 0 && this.scene.jugador.body.position.y < this.y)
                 {
                     this.setCollidesWith([CATEGORY_ENEMY, CATEGORY_PLAYER]);
+                    // this.scene?.jugador.setVelocityX(-0.1);
                     this.hasPlayer = true;
-                    // this.scene.time.delayedCall(300, () => {
-                    // this.hasPlayer=false;
-                    // this.setCollidesWith([CATEGORY_ENEMY]);});
+                }
+                else{
+                    this.hasPlayer=false;
+                    this.setCollidesWith([CATEGORY_ENEMY]);
                 }
             }
         }
@@ -71,11 +74,7 @@ export class OneWay extends SceneBlocks {
             this.hasPlayer=false;
             this.setCollidesWith([CATEGORY_ENEMY]);
         });
-        // const exitHandle = (event, bodyA, bodyB) => {
-
-        // }
         this.scene.matter.world.on('collisionstart', handle);
-        // this.scene.matter.world.on('collisionend', exitHandle);
     }
 }
 export default OneWay;

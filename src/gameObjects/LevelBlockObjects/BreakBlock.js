@@ -89,6 +89,7 @@ export class Block extends SceneBlocks {
                 // const aim = this.findSpawnBlockAbovePlayer(this.jugador, 20, 20); // (toleranciaX, toleranciaY)
                 // const target = aim || bodyB.gameObject; // prioriza spawn si hay uno “casi”
                 this.blockHit(this.scene?.jugador);
+                this.scene?.jugador.setVelocityX(-0.05);
             }
         });
     }

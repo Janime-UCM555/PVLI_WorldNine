@@ -2,7 +2,7 @@ import{
     CATEGORY_PLAYER,
 } from "../collisionCategories.js"
 import SceneBlocks from "./SceneBlocks.js";
-import { purpleCoinsByLevel, collectedPurpleCoinsByLevel } from "../../Scenes/Juego/Niveles/GameScenes.js";
+import { purpleCoinsByLevel, collectedPurpleCoinsByLevel } from "../../Scenes/Juego/GameScenes.js";
 /**
  * Tipos de CoinPath:
  * - PasoMonedasAr: Arriba

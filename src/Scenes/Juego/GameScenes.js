@@ -2,54 +2,54 @@
  * Importación del botón de UI.
  * @module UI/Button
  */
-import Button from '../../../gameObjects/UI/Button.js';
+import Button from '../../gameObjects/UI/Button.js';
 
 /**
  * Importación del jugador Mario.
  * @module Player/Mario
  */
-import Mario from '../../../gameObjects/Player/Mario.js';
+import Mario from '../../gameObjects/Player/Mario.js';
 
 /**
  * Bloque final del nivel.
  * @module LevelBlockObjects/BarraFin
  */
-import Fin from '../../../gameObjects/LevelBlockObjects/BarraFin.js';
+import Fin from '../../gameObjects/LevelBlockObjects/BarraFin.js';
 
 /**
  * Enemigos
  * @module Enemies
  */
-import Goomba from '../../../gameObjects/Enemies/Goomba.js';
-import Koopa from '../../../gameObjects/Enemies/Koopa.js';
-import PiranhaPlant from '../../../gameObjects/Enemies/PiranhaPlant.js';
-import Pokey from '../../../gameObjects/Enemies/Pokey.js';
+import Goomba from '../../gameObjects/Enemies/Goomba.js';
+import Koopa from '../../gameObjects/Enemies/Koopa.js';
+import PiranhaPlant from '../../gameObjects/Enemies/PiranhaPlant.js';
+import Pokey from '../../gameObjects/Enemies/Pokey.js';
 
 /**
  * Transición visual entre escenas.
  * @module UI/Transition
  */
-import TransitionCode from '../../../gameObjects/UI/Transition.js';
+import TransitionCode from '../../gameObjects/UI/Transition.js';
 
 /**
  * Bloques del mapa.
  * @module LevelBlockObjects
  */
-import SceneBlocks from '../../../gameObjects/LevelBlockObjects/SceneBlocks.js';
-import Block from '../../../gameObjects/LevelBlockObjects/BreakBlock.js';
-import PauseBlock from '../../../gameObjects/LevelBlockObjects/PauseBlock.js';
-import OneWay from '../../../gameObjects/LevelBlockObjects/OneWay.js';
-import Spikes from '../../../gameObjects/LevelBlockObjects/Spikes.js';
-import Coins from '../../../gameObjects/LevelBlockObjects/Coins.js';
-import Impulse from '../../../gameObjects/LevelBlockObjects/Impulse.js';
-import CoinPath from '../../../gameObjects/LevelBlockObjects/CoinPath.js';
-import FallBlock from '../../../gameObjects/LevelBlockObjects/FallBlock.js';
+import SceneBlocks from '../../gameObjects/LevelBlockObjects/SceneBlocks.js';
+import Block from '../../gameObjects/LevelBlockObjects/BreakBlock.js';
+import PauseBlock from '../../gameObjects/LevelBlockObjects/PauseBlock.js';
+import OneWay from '../../gameObjects/LevelBlockObjects/OneWay.js';
+import Spikes from '../../gameObjects/LevelBlockObjects/Spikes.js';
+import Coins from '../../gameObjects/LevelBlockObjects/Coins.js';
+import Impulse from '../../gameObjects/LevelBlockObjects/Impulse.js';
+import CoinPath from '../../gameObjects/LevelBlockObjects/CoinPath.js';
+import FallBlock from '../../gameObjects/LevelBlockObjects/FallBlock.js';
 
 /**
  * Generador de PowerUps.
  * @module PowerUps/Spawn
  */
-import spawnPowerUp from '../../../gameObjects/PowerUps/PowerUpSpawn.js';
+import spawnPowerUp from '../../gameObjects/PowerUps/PowerUpSpawn.js';
 
 /**
  * Categorías de colisión de Matter.js
@@ -61,21 +61,21 @@ import{
     CATEGORY_POWERUP,
     CATEGORY_TERRAIN,
     CATEGORY_FALLOFF
-} from "../../../gameObjects/collisionCategories.js"
+} from "../../gameObjects/collisionCategories.js"
 
 /**
  * PowerUps y sus tipos.
  * @module PowerUps
  */
-import { PowerUp, POWERUP_TYPES } from '../../../gameObjects/PowerUps/PowerUps.js';
+import { PowerUp, POWERUP_TYPES } from '../../gameObjects/PowerUps/PowerUps.js';
 
-import Star from '../../../gameObjects/PowerUps/Star.js';
+import Star from '../../gameObjects/PowerUps/Star.js';
 
 /**
  * Tipos de muerte del Goomba.
  * @module Enemies/Goomba
  */
-import { DIE_TYPES } from '../../../gameObjects/Enemies/Goomba.js';
+import { DIE_TYPES } from '../../gameObjects/Enemies/Goomba.js';
 
 export const purpleCoinsByLevel = {
     Nivel_R: 0,
