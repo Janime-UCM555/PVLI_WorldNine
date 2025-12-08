@@ -525,6 +525,10 @@ class EscenaBase extends Phaser.Scene {
         if (this.jugador.y > this.map.heightInPixels + 50) {
             if (this.isBoss)
             {
+                if(this.level == "BossJ")
+                {
+                    this.sound.play("fallWater");
+                }
                 this.jugador.hurt();
                 this.endTimer=true;
                 this.jugador.setStatic(true);
