@@ -20,7 +20,13 @@ class MainMenu extends Phaser.Scene
     }
 
     create(){
-
+         
+        if (window.updateWebStatus) {
+            window.updateWebStatus({
+            sceneKey: this.level, 
+            purpleCoins: this.purpleCoinScore ?? 0
+        });
+        }
 
     TransitionCode.invoke(this, this.cameras.main, 1000,{x: this.cameras.main.width/2, y:  this.cameras.main.height/2} , 0, this.cameras.main.width, ()=>{});
 
