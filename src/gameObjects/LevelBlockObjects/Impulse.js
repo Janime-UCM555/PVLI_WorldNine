@@ -17,7 +17,8 @@ export class Impulse extends SceneBlocks {
         this.setBody({
             type: 'rectangle',
             width: obj.width * 2,
-            height: obj.height * 2,
+            height: obj.height * 2.5,
+            y: this.y-30,
         });
 
         this.setSensor(true);

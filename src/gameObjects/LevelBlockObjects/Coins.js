@@ -18,8 +18,9 @@ export class Coins extends SceneBlocks {
     constructor(scene, obj, collected = false) {
         super(scene, obj, 'CoinPassD');
 
-        this.setStatic(true);
+        this.setStatic(false);
         this.setSensor(true);
+        this.setIgnoreGravity(true);
 
         // this.setCollisionCategory(CATEGORY_FALLOFF);
         this.setCollidesWith([CATEGORY_PLAYER]);

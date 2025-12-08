@@ -106,7 +106,8 @@ class Pokey extends Phaser.GameObjects.Container
             }
 
             // verificamos si esta tocando pared derecha
-            if ((bodyA === this.sensors.right && bodyB.isStatic) || (bodyB === this.sensors.right && bodyA.isStatic))
+            if ((bodyA === this.sensors.right && (bodyB.isStatic||bodyB.label == "Pokey" ||bodyB.label == "Goomba" || bodyB.label == "Koopa")) ||
+             (bodyB === this.sensors.right && (bodyA.isStatic ||bodyA.label == "Pokey" ||bodyA.label == "Goomba" || bodyA.label == "Koopa")))
             {
                 this.numTouching.right += 1;
             }
@@ -275,6 +276,7 @@ class Pokey extends Phaser.GameObjects.Container
                 isHead: false,
                 height: this.bodySegmentHeight
             });
+            segment.setDepth(3);
             
             currentY += this.bodySegmentHeight; // Avanzar según altura del cuerpo
         }
