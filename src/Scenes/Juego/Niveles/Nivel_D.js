@@ -5,9 +5,15 @@ import spawnPowerUp from '../../../gameObjects/PowerUps/PowerUpSpawn.js';
 class Nivel_D extends GameScenes
 {
     constructor(){
-        super('Nivel_D', 'bg_tileset_D');
+        super('Nivel_D', ()=>
+            {
+            const tilesetBGD = this.map?.addTilesetImage('bg', 'bg_tileset_D');
+            const tilesetBGP = this.map?.addTilesetImage('Pyramid_BG', 'bg_tileset_P');
+            // Capa de suelo
+            const bgLayer = this.map?.createLayer('CapaFondo', [tilesetBGD, tilesetBGP], 0, 0);
+            }, false);
     }
-    
+
     init(){
 //
     }

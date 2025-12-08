@@ -136,10 +136,11 @@ export const CLASS_MAP = {
     BarraFin: Fin,
 };
 class EscenaBase extends Phaser.Scene {
-    constructor(key, bgTexture) {
-        super(key, bgTexture);
+    constructor(key, callback, IsBoss) {
+        super(key, callback, IsBoss);
         this.level = key;
-        this.textureBG = bgTexture;
+        this.isBoss = IsBoss;
+        this.customLayer = callback;
     }
 
     preload() {
@@ -160,19 +161,7 @@ class EscenaBase extends Phaser.Scene {
 
         this.map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
         const tileset = this.map.addTilesetImage('MapaTiles', 'mi_tileset');
-        if (this.level== 'Nivel_D')
-        {
-            const tilesetBGD = this.map?.addTilesetImage('bg', 'bg_tileset_D');
-            const tilesetBGP = this.map?.addTilesetImage('Pyramid_BG', 'bg_tileset_P');
-            // Capa de suelo
-            const bgLayer = this.map?.createLayer('CapaFondo', [tilesetBGD, tilesetBGP], 0, 0);
-        }
-        else{
-            const tilesetBG = this.map.addTilesetImage('bg', this.textureBG);
-
-            // Capa de suelo
-            const bgLayer = this.map.createLayer('CapaFondo', tilesetBG, 0, 0);
-        }
+        this.customLayer();
         // aquí llamarás al factory
         this.fallBlock  = this.createObjectsFromLayer('FallOffs');
         this.spikes     = this.createObjectsFromLayer('Pinchos');
@@ -190,7 +179,7 @@ class EscenaBase extends Phaser.Scene {
          if (this.map.getLayer('CapaFrente'))
         {       
             this.frontLayer = this.map.createLayer('CapaFrente', tileset, 0, 0);
-            this.frontLayer.setDepth(3);
+            this.frontLayer.setDepth(4);
         }
         if (this.map.getLayer('CapaDecoraciones'))
         {
@@ -224,15 +213,16 @@ class EscenaBase extends Phaser.Scene {
         });
 
         
-
-        this.jugador = new Mario(this, 25, 625, 'mario_run', 3.5, -3.75, true, false);
+        if (!this.isBoss)
+        {
+            this.jugador = new Mario(this, 25, 625, 'mario_run', 3.5, -3.75, true, false);
+        }
         this.jugador.setDepth(3);
 
         // Forzar la inicialización de animaciones
         if (this.anims.exists('mario_run')) {
             this.jugador.play('mario_run');
         }
-        const frontLayer = this.map.createLayer('CapaFrente', tileset, 0, 0);
         this.setupCollisions();
 
         this.powerups = this.add.group();
@@ -501,15 +491,10 @@ class EscenaBase extends Phaser.Scene {
         this.individualUpdates(this.fallBlock, time,delta)
         this.individualUpdates(this.pausa, time,delta)
         this.individualUpdates(this.pokey, time,delta)
-    }
-    ganasPartida() {
-        console.log("¡Has ganado la partida!");
-        // Lógica común: sonidos, animaciones, eventos globales…
-    }
-
-    pierdesPartida() {
-        console.log("Has perdido la partida");
-        // Lógica común
+        if(this.pilar)
+        {
+        this.individualUpdates(this.pilar, time,delta)    
+        }
     }
     moveCameraToBottomRight() {
         const camera = this.cameras.main;

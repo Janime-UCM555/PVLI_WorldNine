@@ -320,13 +320,6 @@ class Mario extends Phaser.GameObjects.Sprite
                         
             if ((pointer.leftButtonDown() && this.scene.scene.isActive()))
             {
-                this.canSunJump = true;
-                // console.log("on");
-                this.scene.time.delayedCall(100, ()=>{this.canSunJump=false;/*console.log("off")*/});
-                if (this.inImpulse)
-                {
-                    return;
-                }
                 // Si está en burbuja y puede salir, manejar la salida
                 if (this.isInBubble && this.canDrop) {
                     this.scene.sound.play("bubblePop");
@@ -335,6 +328,13 @@ class Mario extends Phaser.GameObjects.Sprite
                 }
                 // Comportamiento normal de salto
                 if (!this.isInBubble) {
+                    this.canSunJump = true;
+                    // console.log("on");
+                    this.scene.time.delayedCall(100, ()=>{this.canSunJump=false;/*console.log("off")*/});
+                    if (this.inImpulse)
+                    {
+                        return;
+                    }
                     this.jumpRequested = true;
                     this.jumpHeld = true;
                     // Activar el buffer de salto cuando se presiona el botón en el aire

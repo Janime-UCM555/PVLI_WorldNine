@@ -202,6 +202,8 @@ class PreloadScene extends Phaser.Scene {
     this.load.image('bg_tileset', 'GameSprites/Tilesets/Rome_BG.png');
     this.load.image('bg_tileset_D', 'GameSprites/Tilesets/Dessert_BG.png');
     this.load.image('bg_tileset_P', 'GameSprites/Tilesets/Pyramid_BG.png');
+    this.load.image('bg_tileset_BJ', 'GameSprites/Tilesets/Colosseum_BG.png');
+    this.load.image('bg_tileset_Nube', 'GameSprites/Tilesets/Cloud_BG.png');
     this.load.spritesheet('barra_tileset', 'GameSprites/Items/barraFin.png', {
         frameWidth: 64,
         frameHeight: 32
@@ -216,6 +218,12 @@ class PreloadScene extends Phaser.Scene {
         frameWidth: 128,
         frameHeight: 126
     });
+    this.load.spritesheet('water_tileset', 'GameSprites/Tilesets/Water.png', {
+        frameWidth: 32,
+        frameHeight: 32
+    });
+    this.load.image('water', 'GameSprites/Tilesets/Water.png');
+    this.load.tilemapTiledJSON('water_ts', 'MapaDeTiled/Water.tsx')
 
     //Logo
     this.load.image('TitleName', 'web/TituloPNG.png');

@@ -13,7 +13,13 @@ import GameScenes from './GameScenes.js'
 class Nivel_R extends GameScenes
 {
     constructor(){
-        super('Nivel_R', 'bg_tileset');
+        super('Nivel_R', ()=>
+            {
+            const tilesetBG = this.map.addTilesetImage('bg', 'bg_tileset');
+
+            // Capa de suelo
+            const bgLayer = this.map.createLayer('CapaFondo', tilesetBG, 0, 0);
+            }, false);
     }
     
     init(){

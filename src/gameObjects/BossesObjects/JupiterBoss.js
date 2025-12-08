@@ -14,7 +14,7 @@ export default class JupiterBoss extends BossBase {
             // Valores por defecto específicos de Júpiter:
             introDuration: 750,   // duración de la animación de entrada
             neutralMoveSpeed: 0.075,   // Velocidad de Júpiter
-        });
+        },attackZones);
         this.attackZones = attackZones; // Guardamos el array de zonas
 
         // Precargar el sonido del rayo

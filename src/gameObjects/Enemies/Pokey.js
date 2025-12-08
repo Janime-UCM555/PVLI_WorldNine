@@ -48,6 +48,8 @@ class Pokey extends Phaser.GameObjects.Container
         // Configurar Matter.js para todo el Pokey
         this.setupPhysics();
 
+        this.setDepth(3);
+
         this.hitSound = scene.sound.add('aplastar');
         
         // Configurar colisión con los bordes del mundo

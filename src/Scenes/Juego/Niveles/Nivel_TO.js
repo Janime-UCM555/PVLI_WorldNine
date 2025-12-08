@@ -8,7 +8,13 @@ const M = Phaser.Physics.Matter.Matter;
 class Nivel_TO extends GameScenes
 {
     constructor(){
-        super('Nivel_TO', 'bg_tileset');
+        super('Nivel_TO', ()=>
+            {
+            const tilesetBG = this.map.addTilesetImage('bg', 'bg_tileset');
+
+            // Capa de suelo
+            const bgLayer = this.map.createLayer('CapaFondo', tilesetBG, 0, 0);
+            }, false);
     }
     
     init(){
