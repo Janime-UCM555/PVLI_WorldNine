@@ -13,12 +13,15 @@ export class OneWay extends SceneBlocks {
      * @param {gameObject} obj 
      */
     constructor(scene, obj) {
-        super(scene, obj, 'Resume');
+        super(scene, obj);
         this.setBody({
             type: 'rectangle',
             width: obj.width * 2,
             height: obj.height,
         });
+        const frame = obj.gid - this.scene.tile.firstgid;
+        this.setTexture('mi_tileset',frame);
+        
         this.setStatic(true);
         this.setSensor(false);
         this.setCollisionCategory([CATEGORY_TERRAIN]);

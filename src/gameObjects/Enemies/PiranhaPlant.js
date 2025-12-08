@@ -186,16 +186,28 @@ class PiranhaPlant extends Phaser.GameObjects.Sprite
                     player.body.velocity.y = 0;
                 }
 
-                if (player.bubblesLeft > 0) {
-                    player.Bubble(); // Entra en burbuja sin empuje
-                } else {
-                    player.hurt();
-                    player.setStatic(true);
-                    this.body.collisionFilter.mask = 0; // Desactivar completamente las colisiones
-                    this.setStatic(true);
-                    this.scene.doubleEndTransition(()=>{this.scene.scene.launch('MainMenu');
-                        this.scene.scene.stop();});
+                if (!this.scene.isBoss)
+                {
+                    if (player.bubblesLeft > 0) {
+                        player.Bubble(); // Entra en burbuja
+                    } else {
+                        player.hurt();
+                        player.setStatic(true);
+                        this.body.collisionFilter.mask = 0; // Desactivar completamente las colisiones
+                        this.setStatic(true);
+                        this.scene.doubleEndTransition(()=>{this.scene.scene.launch('MainMenu');
+                            this.scene.scene.stop();});
                     }
+                }
+                else
+                {
+                    this.scene.jugador.hurt();
+                    this.scene.endTimer=true;
+                    this.scene.jugador.setStatic(true);
+                    this.scene.doubleEndTransition(()=>{
+                        this.scene.scene.restart();
+                    });
+                }
             }
 
             this.biteSound.play();

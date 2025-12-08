@@ -198,7 +198,10 @@ class PreloadScene extends Phaser.Scene {
     });
 
     // Tilesets
-    this.load.image('mi_tileset', 'GameSprites/Tilesets/base_tileset.png');
+    this.load.spritesheet('mi_tileset', 'GameSprites/Tilesets/base_tileset.png',{
+        frameWidth:32,
+        frameHeight:32
+    });
     this.load.image('bg_tileset', 'GameSprites/Tilesets/Rome_BG.png');
     this.load.image('bg_tileset_D', 'GameSprites/Tilesets/Dessert_BG.png');
     this.load.image('bg_tileset_P', 'GameSprites/Tilesets/Pyramid_BG.png');

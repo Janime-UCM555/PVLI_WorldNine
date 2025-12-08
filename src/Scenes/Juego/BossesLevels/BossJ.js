@@ -1,5 +1,8 @@
 import GameScenes from '../Niveles/GameScenes.js '
 import Pilar from '../../../gameObjects/LevelBlockObjects/Pilar.js';
+import JupiterBoss from '../../../gameObjects/BossesObjects/JupiterBoss.js';
+import spawnPowerUp from '../../../gameObjects/PowerUps/PowerUpSpawn.js';
+import { PowerUp, POWERUP_TYPES } from '../../../gameObjects/PowerUps/PowerUps.js';
 /**
  * Importación del jugador Mario.
  * @module Player/Mario
@@ -16,9 +19,9 @@ class BossJ extends GameScenes
         bgLayer.setDepth(0);
 
         const tilesetWater = this.map?.addTilesetImage('Water', 'water');
-        const tilesetNube = this.map?.addTilesetImage('bg', 'bg_tileset_Nube');
+        const tilesetNube = this.map?.addTilesetImage('Cloud_BG', 'bg_tileset_Nube');
         let frontLayer = this.map?.createLayer('CapaFondo2', [tilesetNube, tilesetWater], 0, 0);
-        frontLayer.setDepth(1);
+        frontLayer.setDepth(5);
         
         this.jugador = new Mario(this, 75, 600, 'mario_run', 5, -3.75, true, true);
         
@@ -42,6 +45,7 @@ class BossJ extends GameScenes
     }
    create(){
         super.create();
+        spawnPowerUp(this,25, 600, POWERUP_TYPES.MUSHROOM);
         // Música de fondo del nivel
         if ((!this.levelMusic || !this.levelMusic.isPlaying) && !this.endTimer) {
             this.levelMusic = this.sound.add('Boss_Jupiter', { loop: false, volume: 1 });
@@ -50,7 +54,27 @@ class BossJ extends GameScenes
         else if(this.levelMusic){
             this.levelMusic.stop();
         }
-        this.pilar = new Pilar(this,-903,625,'pilar_ny');            
+        this.pilar = new Pilar(this,-903,625,'pilar_ny');  
+        const bossAttacks = this.map.getObjectLayer('ApareceJefe').objects;
+        let id = 0;
+        let attackZones = [];
+        for (const bossAttack of bossAttacks)
+        {
+            attackZones[id] = {minX: bossAttack.x, maxX:bossAttack.x+1150, id: id};
+            ++id;
+        }
+        this.jupiterBoss = new JupiterBoss(this, 550, 575, {
+            player: this.jugador
+        }, attackZones);          
+        this.time.delayedCall(2000, () => {
+            this.jupiterBoss.startBattle();
+        });
+
+        this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+            if (this.jupiterBoss) {
+                this.jupiterBoss.destroy();
+            }
+        });
    }
     ganasPartida(barra) {
         this.endTimer=true;
@@ -59,6 +83,11 @@ class BossJ extends GameScenes
 
         this.jugador.win();
         this.jugador.play('mario_stop', true);
+
+        if (this.jupiterBoss) {
+            this.jupiterBoss.defeat();
+        }
+
 
         // Detener música de nivel al ganar
         if (this.levelMusic && this.levelMusic.isPlaying) {

@@ -161,6 +161,7 @@ class EscenaBase extends Phaser.Scene {
 
         this.map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
         const tileset = this.map.addTilesetImage('MapaTiles', 'mi_tileset');
+        this.tile = tileset;
         this.customLayer();
         // aquí llamarás al factory
         this.fallBlock  = this.createObjectsFromLayer('FallOffs');
@@ -176,7 +177,7 @@ class EscenaBase extends Phaser.Scene {
         this.coins.setDepth(2);
 
         // const enemies = this.map.getObjectLayer('Enemigos').objects;
-         if (this.map.getLayer('CapaFrente'))
+        if (this.map.getLayer('CapaFrente'))
         {       
             this.frontLayer = this.map.createLayer('CapaFrente', tileset, 0, 0);
             this.frontLayer.setDepth(4);
@@ -448,6 +449,7 @@ class EscenaBase extends Phaser.Scene {
         }
     }
     update(time, delta) {
+        if (!this.fpsText || !this.fpsText.scene || this.fpsText._destroyed) return;
         if (!this.endTimer)
         {
             this.fpsText?.setText(Math.floor(this?.game?.loop?.actualFps));
@@ -491,10 +493,9 @@ class EscenaBase extends Phaser.Scene {
         this.individualUpdates(this.fallBlock, time,delta)
         this.individualUpdates(this.pausa, time,delta)
         this.individualUpdates(this.pokey, time,delta)
-        if(this.pilar)
-        {
-        this.individualUpdates(this.pilar, time,delta)    
-        }
+        this.individualUpdates(this.pilar, time,delta)  
+        this.individualUpdates(this.jupiterBoss, time,delta)  
+        this.individualUpdates(this.hadesBoss, time,delta)  
     }
     moveCameraToBottomRight() {
         const camera = this.cameras.main;
@@ -521,17 +522,31 @@ class EscenaBase extends Phaser.Scene {
         });
     }
     checkPlayerFell() {
-        if (this.jugador.y > this.map.heightInPixels + 50 && !this.jugador.isInBubble && !this.jugador.canDrop && this.jugador.bubblesLeft > 0) {
-            this.sound.play('muerte');
-            this.jugador.Bubble();
-        } else if (this.jugador.y > this.map.heightInPixels + 50 && this.jugador.bubblesLeft <= 0 && !this.jugador.isInBubble && !this.endTimer) {
-            this.sound.play('muerte');
-            this.endTimer=true;
-            this.jugador.y = this.map.heightInPixels + 45;
-            this.jugador.hurt();
-            this.jugador.setStatic(true);
-            this.doubleEndTransition(()=>{this.scene.launch('MainMenu');
-                this.scene.stop();});
+        if (this.jugador.y > this.map.heightInPixels + 50) {
+            if (this.isBoss)
+            {
+                this.jugador.hurt();
+                this.endTimer=true;
+                this.jugador.setStatic(true);
+                this.doubleEndTransition(()=>{
+                    this.scene.restart();
+                });
+            }
+            else if (!this.jugador.isInBubble && !this.jugador.canDrop && this.jugador.bubblesLeft > 0)
+            {
+                this.sound.play('muerte');
+                this.jugador.Bubble();
+            }
+            else if (this.jugador.bubblesLeft <= 0 && !this.jugador.isInBubble && !this.endTimer)
+            {
+                this.sound.play('muerte');
+                this.endTimer=true;
+                this.jugador.y = this.map.heightInPixels + 45;
+                this.jugador.hurt();
+                this.jugador.setStatic(true);
+                this.doubleEndTransition(()=>{this.scene.launch('MainMenu');
+                    this.scene.stop();});
+            }
         }
     }
     restartLevel() {

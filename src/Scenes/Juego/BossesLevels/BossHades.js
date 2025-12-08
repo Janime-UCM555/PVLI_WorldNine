@@ -364,27 +364,27 @@ class BossHades extends Phaser.Scene
         }
 
         // Crear pilar como un rectángulo de Matter
-        this.pilar = this.matter.add.rectangle(-950, 625, 500, this.cameras.main.height*1.5, {
-            isStatic: false,    // se puede mover
-            label: "Muerte",
-            frictionAir: 0.0,   // sin resistencia de aire
-            inertia: Infinity,  // evita rotaciones
-            friction: 0,
-            restitution: 0,
-            ignoreGravity:true,
-            isSensor:true,
-            depth: 3
-        });
+        // this.pilar = this.matter.add.rectangle(-950, 625, 500, this.cameras.main.height*1.5, {
+        //     isStatic: false,    // se puede mover
+        //     label: "Muerte",
+        //     frictionAir: 0.0,   // sin resistencia de aire
+        //     inertia: Infinity,  // evita rotaciones
+        //     friction: 0,
+        //     restitution: 0,
+        //     ignoreGravity:true,
+        //     isSensor:true,
+        //     depth: 3
+        // });
         // Convertirlo en un sprite visible
-        if (this.anims.exists('pilar_fuego'))
-        {
-            this.pilarSprite = this.add.sprite(200, 300, 'pilar_fuego').play('pilar_fuego');
-            this.pilarSprite.setDisplaySize(800, this.cameras.main.height*1.5);
-        }
-        this.pilarSprite.setDepth(5);
-        this.matter.add.gameObject(this.pilarSprite, this.pilar);
+        // if (this.anims.exists('pilar_fuego'))
+        // {
+        //     this.pilarSprite = this.add.sprite(200, 300, 'pilar_fuego').play('pilar_fuego');
+        //     this.pilarSprite.setDisplaySize(800, this.cameras.main.height*1.5);
+        // }
+        // this.pilarSprite.setDepth(5);
+        // this.matter.add.gameObject(this.pilarSprite, this.pilar);
 
-        this.velocidadPilar = this.jugador.speed * 0.9; // Velocidad hacia la derecha
+        // this.velocidadPilar = this.jugador.speed * 0.9; // Velocidad hacia la derecha
 
         this.time.delayedCall(2000, () => {
             this.hadesBoss.startBattle();

@@ -405,19 +405,28 @@ class Pokey extends Phaser.GameObjects.Container
                     player.body.velocity.y = 0;
                 }
 
-                if (player.bubblesLeft > 0) {
-                    player.Bubble(); // Entra en burbuja sin empuje
-                } else {
-                    player.hurt();
-                    player.setStatic(true);
-                    if (this.compoundBody)
-                    {
-                        this.compoundBody.collisionFilter.mask = 0;
-                        Phaser.Physics.Matter.Matter.Body.setStatic(this.compoundBody, true);
+                if (!this.scene.isBoss)
+                {
+                    if (player.bubblesLeft > 0) {
+                        player.Bubble(); // Entra en burbuja
+                    } else {
+                        player.hurt();
+                        player.setStatic(true);
+                        this.body.collisionFilter.mask = 0; // Desactivar completamente las colisiones
+                        this.setStatic(true);
+                        this.scene.doubleEndTransition(()=>{this.scene.scene.launch('MainMenu');
+                            this.scene.scene.stop();});
                     }
-                    this.scene.doubleEndTransition(()=>{this.scene.scene.launch('MainMenu');
-                        this.scene.scene.stop();});
-                    }
+                }
+                else
+                {
+                    this.scene.jugador.hurt();
+                    this.scene.endTimer=true;
+                    this.scene.jugador.setStatic(true);
+                    this.scene.doubleEndTransition(()=>{
+                        this.scene.scene.restart();
+                    });
+                }
             }
 
             this.hitSound.play();

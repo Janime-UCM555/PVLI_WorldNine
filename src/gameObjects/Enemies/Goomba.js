@@ -285,17 +285,28 @@ class Goomba extends Phaser.GameObjects.Sprite
                     player.body.velocity.x = 0;
                     player.body.velocity.y = 0;
                 }
-
-                if (player.bubblesLeft > 0) {
-                    player.Bubble(); // Entra en burbuja
-                } else {
-                    player.hurt();
-                    player.setStatic(true);
-                    this.body.collisionFilter.mask = 0; // Desactivar completamente las colisiones
-                    this.setStatic(true);
-                    this.scene.doubleEndTransition(()=>{this.scene.scene.launch('MainMenu');
-                        this.scene.scene.stop();});
+                if (!this.scene.isBoss)
+                {
+                    if (player.bubblesLeft > 0) {
+                        player.Bubble(); // Entra en burbuja
+                    } else {
+                        player.hurt();
+                        player.setStatic(true);
+                        this.body.collisionFilter.mask = 0; // Desactivar completamente las colisiones
+                        this.setStatic(true);
+                        this.scene.doubleEndTransition(()=>{this.scene.scene.launch('MainMenu');
+                            this.scene.scene.stop();});
                     }
+                }
+                else
+                {
+                    this.scene.jugador.hurt();
+                    this.scene.endTimer=true;
+                    this.scene.jugador.setStatic(true);
+                    this.scene.doubleEndTransition(()=>{
+                        this.scene.scene.restart();
+                    });
+                }
             } else {
                 // Colisión lateral
                 let pushDirection = 0; // Determinar dirección del empuje
