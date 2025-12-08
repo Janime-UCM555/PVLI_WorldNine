@@ -4,21 +4,185 @@
   <meta charset="utf-8">
   <title>Super Mario: Lost Kingdoms</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Proyecto final de PVLI. Runner de Super Mario desarrollado con Phaser 3 por donde Mario debe avanzar sorteando obstáculos y enemigos para salvar a Zagreus en diferentes mitologías.">
+  <meta name="author" content="World-9 Studios">
   <link rel="stylesheet" href="./css/estilo.css">
   <script src="./lib/phaser.min.js"></script>
+  <script src="./src/web.js" type="module"></script>
 	<script src="./src/Game.js" type="module"></script>
 	<link rel="icon" type="image/x-icon" href="https://labs.phaser.io/assets/sprites/star.png">
 </head>
 
 <body>
-  <header class="hud">
+  <header>
+    <div class="nav-container">
     <div class="brand">
-      <div><img class="logo-img" src="./assets/web/Logo.png"></div>
-      <div class="Titulo">  
-      SUPER MARIO: <span id = "titulo" class="gradient-cycle-aurora">Lost Kingdoms</span></div>
+      <div>
+        <img class="brand-logo" src="./assets/web/Logo.png"></div>
+      <div>
+        <div class="brand-text-title">  
+          SUPER MARIO: <span id = "titulo" class="gradient-cycle-aurora">Lost Kingdoms</span>
+        </div>
+        <div class="brand-text-sub">
+          World Nine · Proyecto PVLI
+        </div>
+      </div>
+    </div>
+
+      <nav class="nav-links">
+        <a href="#juego">Juego</a>
+        <a href="#detalles">Detalles</a>
+        <a href="#creditos">Creditos</a>
+      </nav>
     </div>
   </header>
-  <div class = "bg-greek"></div>
+
+  <main id="juego">
+  
+    <div class="game-wrapper">
+      <div id="game"></div>
+      <p class="game-note">
+        Mario correrá automáticamente hacia la meta del nivel. Para controlarlo:
+        Haz clic izquierdo para saltar y clic derecho para usar el power-up activo.
+      </p>
+      
+    </div>
+
+     <div class="game-area">
+        <div class="status-bar">
+          <div class="status-level">
+            <div id="myth-pill" class="myth-pill" data-myth="roma">
+              <span id="myth-dot" class="myth-dot myth-dot--roma"></span>
+              <span id="myth-label">Roma</span>
+            </div>
+            <div class="level-texts">
+              <div id="current-level-name" class="current-level-name">
+                Reino de Roma:
+              </div>
+              <div id="current-level-description" class="level-description">
+                Mario a sido transportado a este reino misterioso. Recorre estas tierras
+                y descubre que lo ha llevado hasta aquí.
+              </div>
+            </div>
+          </div>
+
+          <div class="status-metrics">
+            <div class="stat-pill">
+              <span class="stat-label">Monedas Especiales:</span>
+              <span id="stat-purple" class="stat-value stat-value--purple">0</span>
+            </div>
+          </div>
+        </div>
+ <div class="hero-text">
+        <h1 class="hero-main-title">
+          Corre sin mirar atrás por los
+          <span>reinos perdidos de Roma, Egipto y Grecia</span>.
+        </h1>
+        <p class="hero-subtitle">
+          Mario ha sido transportado a un mundo desconocido lleno de mitos y leyendas.
+          Recorre los reinos y descubre que esta pasando en estos mundos. Tal vez haya alguien
+          que necesite tu ayuda...
+        </p>
+      </div>
+    </section>
+
+    <!-- DETALLES DE DISEÑO -->
+    <section id="detalles">
+      <h2 class="section-title">Detalles de diseño</h2>
+      <p class="section-subtitle">
+        Bucle jugable, estructura de mundos y papel de las monedas moradas.
+      </p>
+
+      <div class="details-grid">
+        <div class="card">
+          <h3>Loop de juego</h3>
+          <ul class="clean">
+            <li>• Mario corre automáticamente hacia la derecha.</li>
+            <li>• El jugador controla salto y uso de power-ups.</li>
+            <li>• Las burbujas actúan como “vidas” móviles.</li>
+            <li>• Monedas doradas y moradas aumentan la puntuación total.</li>
+            <li>• Los bosses cierran cada bloque de mundos.</li>
+          </ul>
+
+          <div class="pill-row">
+            <span class="pill">Runner de precisión</span>
+            <span class="pill">Monedas moradas coleccionables</span>
+            <span class="pill">Físicas Matter</span>
+            <span class="pill">Jefe Júpiter &amp; Jefe Horus &amp; Jefe Hades</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Reinos y bosses</h3>
+          <ul class="clean">
+            <li>
+              <span style="color: var(--mario-red);">Mitos de Roma:</span> bosque inicial con enemigos
+              clásicos y primera toma de contacto con burbujas y monedas.
+            </li>
+            <li>
+              <span style="color: var(--mario-yellow);">Mitos de Egipto:</span> zona árida con
+              plataformas, columnas y énfasis en el uso de power-ups.
+            </li>
+            <li>
+              <span style="color: var(--mario-green);">Mitos de Grecia:</span> zona volcánica con
+              saltos precisos y enemigos que requieren timing.
+            </li>
+            <li>
+              <span style="color: var(--mario-red);">Jefe Júpiter:</span> jefe romano con arena propia
+              y ataque basado en rayos y plataformas.
+            </li>
+            <li>
+              <span style="color: var(--mario-yellow);">Jefe Horus:</span> jefe egipcio con ataques
+              basados en viento y columnas de arena.
+            </li>
+            <li>
+              <span style="color: var(--mario-green);">Jefe Hades:</span> jefe griego con ataques
+              basados en fuego y teletransportes.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- CRÉDITOS -->
+    <section id="creditos">
+      <h2 class="section-title">Créditos</h2>
+      <p class="section-subtitle">
+        Proyecto para la asignatura de Programación de Videojuegos (PVLI). Los
+        recursos gráficos y sonoros de Mario se usan con fines educativos.
+      </p>
+
+      <div class="card">
+        <h3>Desarrolladores del equipo Ninetendo, World-<span style="font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif; font-size: 1.3rem;">9</span> Studios:</h3>
+        <ul class="clean">
+          <li>• Guillermo Isaac Ramos Medina</li>
+          <li>• Ferran Escribá Cufí</li>
+          <li>• Rodrigo Ceña Álvarez</li>
+          <li>• Jaime Nieto Méndez</li>
+        </ul>
+
+        <div class="pill-row">
+          <span class="pill">Diseño de niveles</span>
+          <span class="pill">Programación Phaser<span style="font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif; font-size: 0.8rem;"> 3</span></span>
+          <span class="pill">Integración de tilemaps</span>
+          <span class="pill">Sistemas de enemigos y bosses</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div>
+        ©<span class="Descripcion"> 2025 </span>· World Nine – Super Mario: Lost Kingdoms · Proyecto académico sin ánimo de lucro.
+      </div>
+      <div>
+        <a href="https://x.com/world9_tendo"><img class="icon" src="./assets/web/Logo_twitter.png"></a>
+        <a href="https://github.com/Janime-UCM555/PVLI_WorldNine"><img class="icon" src="./assets/web/Logo_GitHub.png"></a>
+      </div>
+    </div>
+  </footer>
+  <!-- <div class = "bg-greek"></div>
   <div id="game"></div>
   <main class="section">
     <div class="grid">
@@ -56,7 +220,7 @@
       <article class="card" style="margin-top: 15px;">
     <br>
     <footer>Todos los derechos reservados a Nintendo, este es un proyecto de aprendizaje no lucrativo</footer>
-  </main>
+  </main> -->
   <!-- <div class="Caja">
     <h1>
    

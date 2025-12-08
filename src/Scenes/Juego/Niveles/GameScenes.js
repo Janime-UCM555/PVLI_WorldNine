@@ -105,6 +105,15 @@ class EscenaBase extends Phaser.Scene {
     }
 
     create() {
+
+        // Actualizar la interfaz web
+        if (window.updateWebStatus) {
+            window.updateWebStatus({
+            sceneKey: this.level, 
+            purpleCoins: this.purpleCoinScore ?? 0
+        });
+        }
+
         this.map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
         const tileset = this.map.addTilesetImage('MapaTiles', 'mi_tileset');
         if (this.level== 'Nivel_D')

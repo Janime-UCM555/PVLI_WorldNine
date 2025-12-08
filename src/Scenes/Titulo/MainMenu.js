@@ -71,7 +71,7 @@ class MainMenu extends Phaser.Scene
         this.sound.play('coin_sound', { volume: 0 });
         this.buttonMove.input.enabled = false;
         TransitionCode.invoke(this, this.cameras.main, 1000,{x: this.cameras.main.width/2, y:  this.cameras.main.height/2}, 1500, 0,
-        ()=>{this.scene.launch('Nivel_TO');
+        ()=>{this.scene.launch('Nivel_D');
             this.scene.stop();
         });
     })

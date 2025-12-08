@@ -59,6 +59,15 @@ export class Coins extends SceneBlocks {
         if (this.coinValue === 500)
         {
             this.scene.increaseScore(1, 'purple_coin');
+            
+            // Actualizar la interfaz web
+            if (window.updateWebStatus) {
+                console.log("Actualizando interfaz web desde Coins:", this.scene.level, this.scene.purpleCoinScore);
+                window.updateWebStatus({
+                    sceneKey: this.scene.level,
+                    purpleCoins: this.scene.purpleCoinScore || 0
+                });
+            }
         }
         else
         {
