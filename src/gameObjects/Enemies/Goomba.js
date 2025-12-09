@@ -5,37 +5,31 @@ export const DIE_TYPES = {
     STAR:    'STAR',     // Golpeado mientras Mario es invencible
     FALL:    'FALL',     // Caída al vacío
 };
+import{
+    CATEGORY_PLAYER,
+    CATEGORY_ENEMY,
+    CATEGORY_POWERUP,
+    CATEGORY_TERRAIN,
+    CATEGORY_FALLOFF
+} from "../collisionCategories.js"
+import Enemies from "./Enemies.js";
 
 
-class Goomba extends Phaser.GameObjects.Sprite
+class Goomba extends Enemies
 {
-    constructor(scene, x, y, texture, speed = 50, isRome) {
-        super(scene, x, y, texture);
+    constructor(scene, x, y, texture, speed = 50, currentScene) {
+        super(scene, x, y, texture, speed, currentScene, "Goomba");
 
-        scene.add.existing(this);
-        scene.matter.add.gameObject(this);
+        // scene.add.existing(this);
+        // scene.matter.add.gameObject(this);
 
-        this.speed = speed; // Velocidad del Goomba
-        this.isRome = isRome; // Es romano o no
         this.direction = 1; // 1 = derecha, -1 = izquierda
-        this.isAlive = true; // Estado de vivo o muerto
-        this.currentlyVisible = false; // Estado actual de visibilidad
-        this.shouldBeDestroyed = false; // Control de destrucción
-        this.isEnemy = true; // Marca como enemigo
 
         // Configuración de física
         //Sensores
-        this.blocked= {
-            left: false,
-            right: false,
-        };
-        this.numTouching= {
-            left: 0,
-            right: 0,
-        }; 
-        const CATEGORY_PLAYER  = 0x0001;
-        const CATEGORY_TERRAIN = 0x0004;
-        this.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN]);
+        this.setDepth(2);
+        this.setCollisionCategory([CATEGORY_ENEMY]);
+        this.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN, CATEGORY_ENEMY]);
 
         const sx = this.width/2;
         const sy = this.height/2;
@@ -54,7 +48,6 @@ class Goomba extends Phaser.GameObjects.Sprite
         restitution: 0.05, // El jugador no se pega a paredes
         label:"Goomba"
         });
-        this.body.label="Goomba";
         this.setExistingBody(compoundBody);
         if (this.body) {
             // this.body.setCollideWorldBounds(false); // Desactivar colisión con bordes del mundo
@@ -93,13 +86,17 @@ class Goomba extends Phaser.GameObjects.Sprite
                 {
                     continue;
                 }
-                if (bodyA === this.sensors.left || bodyB === this.sensors.left)
+                if ((bodyA === this.sensors.left && (bodyB.isStatic||bodyB.label == "Pokey" ||bodyB.label == "Goomba" || bodyB.label == "Koopa")) ||
+                (bodyB === this.sensors.left && (bodyA.isStatic ||bodyA.label == "Pokey" ||bodyA.label == "Goomba" || bodyA.label == "Koopa")))
                 {
-                this.numTouching.left++;
+                    this.numTouching.left += 1;
                 }
-                if (bodyA === this.sensors.right || bodyB === this.sensors.right)
+
+                // verificamos si esta tocando pared derecha
+                if ((bodyA === this.sensors.right && (bodyB.isStatic||bodyB.label == "Pokey" ||bodyB.label == "Goomba" || bodyB.label == "Koopa")) ||
+                (bodyB === this.sensors.right && (bodyA.isStatic ||bodyA.label == "Pokey" ||bodyA.label == "Goomba" || bodyA.label == "Koopa")))
                 {
-                this.numTouching.right++;
+                    this.numTouching.right += 1;
                 }
             }
             });
@@ -114,19 +111,7 @@ class Goomba extends Phaser.GameObjects.Sprite
         this.stomp();
     }
 
-    // Verificar visibilidad
-    checkVisibility() {
-        // Si está marcado para destrucción, no verificar visibilidad
-        if (this.shouldBeDestroyed) return false;
-        
-        const camera = this.scene.cameras.main;
-        
-        // Verificar si está dentro de los límites de la cámara con un margen
-        const margin = 15;
-        const isVisible = this.x >= camera.scrollX - margin && this.x <= camera.scrollX + camera.width + margin && this.y >= camera.scrollY - margin && this.y <= camera.scrollY + camera.height + margin;
-        
-        return isVisible;
-    }
+
 
     // Actualizar movimiento basado en visibilidad y dirección
     updateMovement() {
@@ -146,9 +131,9 @@ class Goomba extends Phaser.GameObjects.Sprite
                     this.setVelocityX(targetVelocity);
                 }
             
-                if (!this.anims.isPlaying || (this.isRome && this.anims.currentAnim.key !== 'gombrome_walk')) {
+                if (!this.anims.isPlaying || (this.currentScene==="Rome" && this.anims.currentAnim.key !== 'gombrome_walk')) {
                     this.play('gombrome_walk');
-                } else if (!this.anims.isPlaying || (!this.isRome && this.anims.currentAnim.key !== 'Gomb_Walk')) {
+                } else if (!this.anims.isPlaying || (this.currentScene==="Normal"&& this.anims.currentAnim.key !== 'Gomb_Walk')) {
                     this.play('Gomb_Walk');
                 }
             } else {
@@ -333,8 +318,11 @@ class Goomba extends Phaser.GameObjects.Sprite
         }
         
         // Cambiar a sprite de aplastado si existe
-        if (this.scene.textures.exists('GombRome_Stomp')) {
+        if (this.scene.textures.exists('GombRome_Stomp') && this.currentScene==="Rome") {
             this.setTexture('GombRome_Stomp');
+        }else if (this.scene.textures.exists('Gomb_Stomp')&& this.currentScene==="Normal")
+        {
+            this.setTexture('Gomb_Stomp');            
         }
 
         this.scene.increaseScore(200, 'score');
@@ -433,6 +421,20 @@ class Goomba extends Phaser.GameObjects.Sprite
         
         // Destruir el objeto
         this.destroy();
+    }
+
+    // Verificar visibilidad
+    checkVisibility() {
+        // Si está marcado para destrucción, no verificar visibilidad
+        if (this.shouldBeDestroyed) return false;
+        
+        const camera = this.scene.cameras.main;
+        
+        // Verificar si está dentro de los límites de la cámara con un margen
+        const margin = 15;
+        const isVisible = this.x >= camera.scrollX - margin && this.x <= camera.scrollX + camera.width + margin && this.y >= camera.scrollY - margin && this.y <= camera.scrollY + camera.height + margin;
+        
+        return isVisible;
     }
 
     update(time, delta) {

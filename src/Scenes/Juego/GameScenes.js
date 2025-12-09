@@ -134,6 +134,7 @@ export const CLASS_MAP = {
     CaminoMonedas: CoinPath,
     Monedas: Coins,
     BarraFin: Fin,
+    Goomba, 
 };
 class EscenaBase extends Phaser.Scene {
     constructor(key, callback, IsBoss) {
@@ -141,9 +142,22 @@ class EscenaBase extends Phaser.Scene {
         this.level = key;
         this.isBoss = IsBoss;
         this.customLayer = callback;
+        this.levelType = "Normal";
+        if (this.level == "Nivel_R"||this.level=="BossJ")
+        {
+            this.levelType="Roma";
+        }
+        else if (this.level=="Nivel_D"||this.level == "BossHTest")
+        {
+            this.levelType="Egipto";
+        }
+        else{
+            this.levelType="Grecia";
+        }
     }
 
     preload() {
+        console.log('=== INICIO ===');
         // Preload común
     }
 
@@ -154,29 +168,29 @@ class EscenaBase extends Phaser.Scene {
         // Actualizar la interfaz web
         if (window.updateWebStatus) {
             window.updateWebStatus({
-            sceneKey: this.level, 
-            purpleCoins: this.purpleCoinScore ?? 0
-        });
+                sceneKey: this.level, 
+                purpleCoins: this.purpleCoinScore ?? 0
+            });
         }
 
         this.map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
         const tileset = this.map.addTilesetImage('MapaTiles', 'mi_tileset');
         this.tile = tileset;
         this.customLayer();
-        // aquí llamarás al factory
-        this.fallBlock  = this.createObjectsFromLayer('FallOffs');
-        this.spikes     = this.createObjectsFromLayer('Pinchos');
-        this.impulsos   = this.createObjectsFromLayer('Impulsos');
 
+        // Aquí se llama al factory
+        this.fallBlock = this.createObjectsFromLayer('FallOffs');
+        this.spikes = this.createObjectsFromLayer('Pinchos');
+        this.impulsos = this.createObjectsFromLayer('Impulsos');
         this.blocks = this.createObjectsFromLayer('Bloques');
         this.pausa = this.createObjectsFromLayer('PauseBlocks');
         this.oneWay = this.createObjectsFromLayer('OneWays');
         this.coinPath = this.createObjectsFromLayer('CaminoMonedas');
 
+
         this.coins = this.createsCoinsFromLayer('Monedas');
         this.coins.setDepth(2);
 
-        // const enemies = this.map.getObjectLayer('Enemigos').objects;
         if (this.map.getLayer('CapaFrente'))
         {       
             this.frontLayer = this.map.createLayer('CapaFrente', tileset, 0, 0);
@@ -332,300 +346,356 @@ class EscenaBase extends Phaser.Scene {
     }
     createText()
     {
-        // Este gráfico representa la línea dónde se alinea la UI por la derecha
+    // Este gráfico representa la línea dónde se alinea la UI por la derecha
 
-        // var graphics = this.add.graphics();
+    // var graphics = this.add.graphics();
 
-        const posUI = this.cameras.main.centerX+this.cameras.main.centerX/2; // Posición UI por la derecha
-        // graphics.lineStyle(1, 0xffffff, 1);
-        // graphics.lineBetween(posUI, 0,posUI, 600);
-        // graphics.setScrollFactor(0);
+    const posUI = this.cameras.main.centerX+this.cameras.main.centerX/2; // Posición UI por la derecha
+    // graphics.lineStyle(1, 0xffffff, 1);
+    // graphics.lineBetween(posUI, 0,posUI, 600);
+    // graphics.setScrollFactor(0);
 
-        const fontSize = 29; // 50 / 1.65 ≈ 29
-        document.fonts.load('32px aku-kamu').then(() => {
-           if(this.game.config.physics?.matter?.debug){
-            this.fpsText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -',{fontFamily: 'aku-kamu'})
-                .setOrigin(-2,5)
-                .setStroke('#000000ff', 6)
-                .setFill('#38b762ff')
-                .setFontSize(fontSize + 'px')
-                .setDepth(6)
-                .setScrollFactor(0);
-            
-           }
-                
-            
-
-            this.textTimer = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '00',{fontFamily: 'aku-kamu'})
-            .setOrigin(0.5,5)
+    const fontSize = 29; // 50 / 1.65 ≈ 29
+        if(this.game.config.physics?.matter?.debug){
+        this.fpsText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -',{fontFamily: 'aku-kamu'})
+            .setOrigin(-2,5)
             .setStroke('#000000ff', 6)
-            .setFill('#ffffffff')
-            // .setText("60")
-            .setDepth(6)
+            .setFill('#38b762ff')
             .setFontSize(fontSize + 'px')
-            .setScrollFactor(0)
-
-            this.textScore = this.add.text(posUI, this.cameras.main.centerY,"".padStart(10,"0"),{fontFamily: 'aku-kamu'})
-            .setOrigin(1,5)
-            .setStroke('#000000ff', 6)
-            .setFill('#ffffffff')
-            .setDepth(6)
-            .setFontSize(fontSize + 'px')
-            .setScrollFactor(0);
-
-            this.textCoins = this.add.text(posUI, this.cameras.main.centerY, "".padStart(2,"0"),{fontFamily: 'aku-kamu'})
-            .setOrigin(1,4)
-            .setStroke('#000000ff', 6)
-            .setFill('#DBC716')
-            .setDepth(6)
-            .setFontSize(fontSize + 'px')
-            .setScrollFactor(0);
-
-            this.textPurpleCoins = this.add.text(posUI, this.cameras.main.centerY, this.purpleCoinScore.toString().padStart(1, '0'),{fontFamily: 'aku-kamu'})
-            .setOrigin(1,3)
-            .setFontSize(fontSize + 'px')
-            .setAlign('center')
-            .setStroke('#000000ff', 6)
-            .setFill('#621C87')
             .setDepth(6)
             .setScrollFactor(0);
-
-            this.timerMethod();
-        });
-    }
-    createObjectsFromLayer(layerName) {
-        const objects = this.map.getObjectLayer(layerName)?.objects;
-        if (objects)
-        {
-            const ClassRef = CLASS_MAP[layerName];
-
-            const group = this.add.group();
-
-            objects.forEach(obj => {
-                const instance = new ClassRef(this, obj);
-                group.add(instance);
-            });
-            return group;
+        
         }
+            
+        
+
+        this.textTimer = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '00',{fontFamily: 'aku-kamu'})
+        .setOrigin(0.5,5)
+        .setStroke('#000000ff', 6)
+        .setFill('#ffffffff')
+        // .setText("60")
+        .setDepth(6)
+        .setFontSize(fontSize + 'px')
+        .setScrollFactor(0)
+
+        this.textScore = this.add.text(posUI, this.cameras.main.centerY,"".padStart(10,"0"),{fontFamily: 'aku-kamu'})
+        .setOrigin(1,5)
+        .setStroke('#000000ff', 6)
+        .setFill('#ffffffff')
+        .setDepth(6)
+        .setFontSize(fontSize + 'px')
+        .setScrollFactor(0);
+
+        this.textCoins = this.add.text(posUI, this.cameras.main.centerY, "".padStart(2,"0"),{fontFamily: 'aku-kamu'})
+        .setOrigin(1,4)
+        .setStroke('#000000ff', 6)
+        .setFill('#DBC716')
+        .setDepth(6)
+        .setFontSize(fontSize + 'px')
+        .setScrollFactor(0);
+
+        this.textPurpleCoins = this.add.text(posUI, this.cameras.main.centerY, this.purpleCoinScore.toString().padStart(1, '0'),{fontFamily: 'aku-kamu'})
+        .setOrigin(1,3)
+        .setFontSize(fontSize + 'px')
+        .setAlign('center')
+        .setStroke('#000000ff', 6)
+        .setFill('#621C87')
+        .setDepth(6)
+        .setScrollFactor(0);
+
+        this.timerMethod();
     }
 
-    createsCoinsFromLayer(layerName) {
-        const objects = this.map.getObjectLayer(layerName)?.objects;
-        if (objects)
-        {
-            const ClassRef = CLASS_MAP[layerName];
-
-            const group = this.add.group();
-
-            let alreadyCollected = false;
-
-            objects.forEach(obj => {
-                 if (obj.name === 'purple') {
-                    const levelKey = this.level;
-                    const collectedIds = collectedPurpleCoinsByLevel[levelKey] || [];
-                    alreadyCollected = collectedIds.includes(obj.id);
-                }
-
-                const instance = new ClassRef(this, obj, alreadyCollected);
-
-                group.add(instance);
-            });
-            return group;
-        }
-    }
-    doubleEndTransition(callback)
+    createEnemies()
     {
-        if (this.levelMusic && this.levelMusic.isPlaying) {
-            this.levelMusic.stop();
+        const enemies = this.map.getObjectLayer('Enemigos').objects;
+        this.goombas = this.add.group();
+        this.koopas = this.add.group();
+        this.piranhas = this.add.group();
+        this.pokeys = this.add.group();
+        for (const enemie of enemies)
+        {
+            if (enemie.name === 'Goomba')
+            {
+                const goomba = new Goomba(
+                    this,
+                    enemie.x,
+                    enemie.y -16, 
+                    'gombrome_walk',
+                    1.0,
+                    1,
+                    this.levelType
+                );
+                goomba.direction = 1;
+                this.goombas.add(goomba);
+            }
+            else if (enemie.name === 'Koopa')
+            {
+                const koopa = new Koopa(
+                    this,
+                    enemie.x,
+                    enemie.y - 32, 
+                    'Koopa_walk_R',
+                    1,
+                    true
+                );
+                koopa.direction = -1;
+                this.koopas.add(koopa);
+            }
+            else if (enemie.name === 'Piranha')
+            {
+                const piranha = new PiranhaPlant(
+                    this,
+                    enemie.x + 33,
+                    enemie.y - 35, 
+                    'Piranha_plant',
+                    2000,
+                    2000
+                );
+                this.piranhas.add(piranha);
+            }
+            else if (enemie.name === 'Pokey')
+            {
+                const segments = enemie.properties?.find(p => p.name === 'segments')?.value || 5;
+                const pokey = new Pokey(this, enemie.x, enemie.y, segments, 1);
+                this.pokeys.add(pokey);                
+            }
         }
-        TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador.getCenter(), this.cameras.main.width, 120,
+    }
+
+createObjectsFromLayer(layerName) {
+    const objects = this.map.getObjectLayer(layerName)?.objects;
+    if (objects)
+    {
+        const ClassRef = CLASS_MAP[layerName];
+
+        const group = this.add.group();
+
+        objects.forEach(obj => {
+            const instance = new ClassRef(this, obj);
+            group.add(instance);
+        });
+        return group;
+    }
+}
+
+createsCoinsFromLayer(layerName) {
+    const objects = this.map.getObjectLayer(layerName)?.objects;
+    if (objects)
+    {
+        const ClassRef = CLASS_MAP[layerName];
+
+        const group = this.add.group();
+
+        let alreadyCollected = false;
+
+        objects.forEach(obj => {
+                if (obj.name === 'purple') {
+                const levelKey = this.level;
+                const collectedIds = collectedPurpleCoinsByLevel[levelKey] || [];
+                alreadyCollected = collectedIds.includes(obj.id);
+            }
+
+            const instance = new ClassRef(this, obj, alreadyCollected);
+
+            group.add(instance);
+        });
+        return group;
+    }
+}
+doubleEndTransition(callback)
+{
+    if (this.levelMusic && this.levelMusic.isPlaying) {
+        this.levelMusic.stop();
+    }
+    TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador.getCenter(), this.cameras.main.width, 120,
+    ()=>{
+        this.sound.play('iris-out')
+        transition2();
+    });
+    const transition2 = () => {
+        TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador.getCenter(), 120, 0,
         ()=>{
-            this.sound.play('iris-out')
-            transition2();
+            callback();
         });
-        const transition2 = () => {
-            TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador.getCenter(), 120, 0,
-            ()=>{
-                callback();
-            });
-        }
     }
-    update(time, delta) {
-        if (!this.fpsText || !this.fpsText.scene || this.fpsText._destroyed) return;
-        if (!this.endTimer)
-        {
-            this.fpsText?.setText(Math.floor(this?.game?.loop?.actualFps));
-            // Actualizar jugador
-            this.jugador.update(time,delta);
-
-            // Actualizar objetos
-            this.updateObjects(time, delta);
-
-            // Posicionar bien la cámara respecto al jugador
-            this.jugador.centerCameraOnPlayer();
-
-            // Comprobar si el jugador se ha caído
-            this.checkPlayerFell();
-        }
-    }
-    individualUpdates(obj,time,delta)
+}
+update(time, delta) {
+    if (!this.fpsText || !this.fpsText.scene || this.fpsText._destroyed) return;
+    if (!this.endTimer)
     {
-        if(!obj) {return;}
+        this.fpsText?.setText(Math.floor(this?.game?.loop?.actualFps));
+        // Actualizar jugador
+        this.jugador.update(time,delta);
 
-        if(obj.getChildren)
-        {
-            obj.getChildren().forEach(child=>{
-                if(child.update){child.update(time,delta);}
-            });
-        }
-        if(obj.update)
-        {
-            obj.update(time,delta);
-        }
+        // Actualizar objetos
+        this.updateObjects(time, delta);
+
+        // Posicionar bien la cámara respecto al jugador
+        this.jugador.centerCameraOnPlayer();
+
+        // Comprobar si el jugador se ha caído
+        this.checkPlayerFell();
     }
-    // Actualizar objetos
-    updateObjects(time, delta) {
-        // Actualizar barra final
-        this.individualUpdates(this.barraFinLayer, time,delta)
-        this.individualUpdates(this.impulsos, time,delta)
-        this.individualUpdates(this.goombas, time,delta)
-        this.individualUpdates(this.koopas, time,delta)
-        this.individualUpdates(this.piranhas, time,delta)
-        this.individualUpdates(this.pokeys, time,delta)
-        this.individualUpdates(this.fallBlock, time,delta)
-        this.individualUpdates(this.pausa, time,delta)
-        this.individualUpdates(this.pokey, time,delta)
-        this.individualUpdates(this.pilar, time,delta)  
-        this.individualUpdates(this.jupiterBoss, time,delta)  
-        this.individualUpdates(this.hadesBoss, time,delta)  
-    }
-    moveCameraToBottomRight() {
-        const camera = this.cameras.main;
-    
-        // Calcular las dimensiones de la vista de la cámara considerando el zoom
-        const cameraViewWidth = camera.width / camera.zoom;
-        const cameraViewHeight = camera.height / camera.zoom;
-    
-        // Calcular la posición objetivo (esquina inferior derecha)
-        const targetX = this.map.widthInPixels - cameraViewWidth;
-        const targetY = this.map.heightInPixels - cameraViewHeight;
-    
-        // Asegurarse de no salirse de los límites del mapa
-        const clampedX = Phaser.Math.Clamp(targetX, 0, this.map.widthInPixels - cameraViewWidth);
-        const clampedY = Phaser.Math.Clamp(targetY, 0, this.map.heightInPixels - cameraViewHeight);
-    
-        // Movimiento suave
-        this.tweens.add({
-            targets: camera,
-            scrollX: clampedX,
-            scrollY: clampedY,
-            duration: 4000, // 4 segundos para el movimiento
-            ease: 'Cubic.Out', // Suavizado al final
+}
+individualUpdates(obj,time,delta)
+{
+    if(!obj) {return;}
+
+    if(obj.getChildren)
+    {
+        obj.getChildren().forEach(child=>{
+            if(child.update){child.update(time,delta);}
         });
     }
-    checkPlayerFell() {
-        if (this.jugador.y > this.map.heightInPixels + 50) {
-            if (this.isBoss)
+    if(obj.update)
+    {
+        obj.update(time,delta);
+    }
+}
+// Actualizar objetos
+updateObjects(time, delta) {
+    // Actualizar barra final
+    this.individualUpdates(this.barraFinLayer, time,delta)
+    this.individualUpdates(this.impulsos, time,delta)
+    this.individualUpdates(this.goombas, time,delta)
+    this.individualUpdates(this.koopas, time,delta)
+    this.individualUpdates(this.piranhas, time,delta)
+    this.individualUpdates(this.pokeys, time,delta)
+    this.individualUpdates(this.fallBlock, time,delta)
+    this.individualUpdates(this.pausa, time,delta)
+    this.individualUpdates(this.pokey, time,delta)
+    this.individualUpdates(this.pilar, time,delta)  
+    this.individualUpdates(this.jupiterBoss, time,delta)  
+    this.individualUpdates(this.hadesBoss, time,delta)  
+}
+moveCameraToBottomRight() {
+    const camera = this.cameras.main;
+
+    // Calcular las dimensiones de la vista de la cámara considerando el zoom
+    const cameraViewWidth = camera.width / camera.zoom;
+    const cameraViewHeight = camera.height / camera.zoom;
+
+    // Calcular la posición objetivo (esquina inferior derecha)
+    const targetX = this.map.widthInPixels - cameraViewWidth;
+    const targetY = this.map.heightInPixels - cameraViewHeight;
+
+    // Asegurarse de no salirse de los límites del mapa
+    const clampedX = Phaser.Math.Clamp(targetX, 0, this.map.widthInPixels - cameraViewWidth);
+    const clampedY = Phaser.Math.Clamp(targetY, 0, this.map.heightInPixels - cameraViewHeight);
+
+    // Movimiento suave
+    this.tweens.add({
+        targets: camera,
+        scrollX: clampedX,
+        scrollY: clampedY,
+        duration: 4000, // 4 segundos para el movimiento
+        ease: 'Cubic.Out', // Suavizado al final
+    });
+}
+checkPlayerFell() {
+    if (this.jugador.y > this.map.heightInPixels + 50) {
+        if (this.isBoss)
+        {
+            if(this.level == "BossJ")
             {
-                if(this.level == "BossJ")
-                {
-                    this.sound.play("fallWater");
-                }
-                this.jugador.hurt();
-                this.endTimer=true;
-                this.jugador.setStatic(true);
-                this.doubleEndTransition(()=>{
-                    this.scene.restart();
-                });
+                this.sound.play("fallWater");
             }
-            else if (!this.jugador.isInBubble && !this.jugador.canDrop && this.jugador.bubblesLeft > 0)
-            {
-                this.sound.play('muerte');
-                this.jugador.Bubble();
-            }
-            else if (this.jugador.bubblesLeft <= 0 && !this.jugador.isInBubble && !this.endTimer)
-            {
-                this.sound.play('muerte');
-                this.endTimer=true;
-                this.jugador.y = this.map.heightInPixels + 45;
-                this.jugador.hurt();
-                this.jugador.setStatic(true);
-                this.doubleEndTransition(()=>{this.scene.launch('MainMenu');
-                    this.scene.stop();});
-            }
+            this.jugador.hurt();
+            this.endTimer=true;
+            this.jugador.setStatic(true);
+            this.doubleEndTransition(()=>{
+                this.scene.restart();
+            });
+        }
+        else if (!this.jugador.isInBubble && !this.jugador.canDrop && this.jugador.bubblesLeft > 0)
+        {
+            this.sound.play('muerte');
+            this.jugador.Bubble();
+        }
+        else if (this.jugador.bubblesLeft <= 0 && !this.jugador.isInBubble && !this.endTimer)
+        {
+            this.sound.play('muerte');
+            this.endTimer=true;
+            this.jugador.y = this.map.heightInPixels + 45;
+            this.jugador.hurt();
+            this.jugador.setStatic(true);
+            this.doubleEndTransition(()=>{this.scene.launch('MainMenu');
+                this.scene.stop();});
         }
     }
-    restartLevel() {
-        // Reiniciar la escena o reposicionar el jugador
-        this.jugador.x = 25;
-        this.jugador.y = 625;
-        this.jugador.resetStates(); // Resetear estados
-        this.jugador.resume(); // Reanudar movimiento
-        if (this.jugador.body) {
-            // this.jugador.setVelocity(0, 0);
-        }
-        // Resetear estado de daño
-        this.jugador.isHurt = false;
-        // Asegurar animación correcta al reiniciar
-        this.jugador.play('mario_run', true);
-        // Resetear invulnerabilidad
-        this.jugador.isInvulnerable = false;
-        this.jugador.setVisible(true);
-        this.jugador.bubblePhase = 0;
-        this.jugador.isInBubble = false;
-        this.jugador.canDrop = false;
+}
+restartLevel() {
+    // Reiniciar la escena o reposicionar el jugador
+    this.jugador.x = 25;
+    this.jugador.y = 625;
+    this.jugador.resetStates(); // Resetear estados
+    this.jugador.resume(); // Reanudar movimiento
+    if (this.jugador.body) {
+        // this.jugador.setVelocity(0, 0);
     }
-    setupCollisions() {
-        const M = Phaser.Physics.Matter.Matter;
-        // Colisión con barra final
-        const handle = (event, bodyA, bodyB) => {
-            if ((bodyB.label=="PowerUp" && bodyA.label=="Mario") ||
-                (bodyA.label=="PowerUp" && bodyB.label=="Mario"))// && bodyA.gameObject == this.jugador)
-            {
-                const powerUp  = bodyA.label=="PowerUp"  ? bodyA.gameObject : bodyB.gameObject;
-                const player = bodyA.label=="Mario" ? bodyA.gameObject : bodyB.gameObject;
+    // Resetear estado de daño
+    this.jugador.isHurt = false;
+    // Asegurar animación correcta al reiniciar
+    this.jugador.play('mario_run', true);
+    // Resetear invulnerabilidad
+    this.jugador.isInvulnerable = false;
+    this.jugador.setVisible(true);
+    this.jugador.bubblePhase = 0;
+    this.jugador.isInBubble = false;
+    this.jugador.canDrop = false;
+}
+setupCollisions() {
+    const M = Phaser.Physics.Matter.Matter;
+    // Colisión con barra final
+    const handle = (event, bodyA, bodyB) => {
+        if ((bodyB.label=="PowerUp" && bodyA.label=="Mario") ||
+            (bodyA.label=="PowerUp" && bodyB.label=="Mario"))// && bodyA.gameObject == this.jugador)
+        {
+            const powerUp  = bodyA.label=="PowerUp"  ? bodyA.gameObject : bodyB.gameObject;
+            const player = bodyA.label=="Mario" ? bodyA.gameObject : bodyB.gameObject;
 
-                powerUp.collect(player);
-            }
-            
-            if(bodyB.label=="Goomba" && bodyA.label=="Mario"  ||
-            bodyA.label=="Goomba" && bodyB.label=="Mario"  )
-            {
-                const goomba  = bodyA.label=="Goomba"  ? bodyA.gameObject : bodyB.gameObject;
-                // const player = bodyA.label=="Mario" ? bodyA.gameObject : bodyB.gameObject;
-
-                goomba.handlePlayerCollision(this.jugador);
-            }
-            if(bodyB.label=="Goomba" && bodyA.label=="Goomba" || 
-                bodyB.label=="Koopa" && bodyA.label=="Goomba" ||
-                bodyB.label=="Koopa" && bodyA.label=="Koopa")
-            {
-                const goomba  = bodyB.label=="Goomba"  ? bodyA.gameObject : bodyB.gameObject;
-                const koopa = bodyA.label=="Koopa" ? bodyA.gameObject : bodyB.gameObject;
-
-                goomba.handleEnemyCollision(koopa);
-            }
-            if(bodyB.label=="Koopa" && bodyA.label=="Mario"  ||
-                bodyA.label=="Koopa"&& bodyB.label=="Mario" )
-            {
-                // const player  = bodyB.label=="Mario"  ? bodyA.gameObject : bodyB.gameObject;
-                const koopa = bodyA.label=="Koopa" ? bodyA.gameObject : bodyB.gameObject;
-
-                koopa.handlePlayerCollision(this.jugador);
-            }
-            if(bodyB.label=="Pokey" && bodyA.label=="Mario" ||
-            bodyA.label=="Pokey" && bodyB.label=="Mario")
-            {
-                const pokey = bodyA.label=="Pokey" ? bodyA.gameObject : bodyB.gameObject;
-                
-                pokey.handlePlayerCollision(this.jugador);
-            }
+            powerUp.collect(player);
         }
         
-       
-        this.matter.world.on('collisionstart', handle);
-        this.matter.world.on('collisionactive', handle);
+        if(bodyB.label=="Goomba" && bodyA.label=="Mario"  ||
+        bodyA.label=="Goomba" && bodyB.label=="Mario"  )
+        {
+            const goomba  = bodyA.label=="Goomba"  ? bodyA.gameObject : bodyB.gameObject;
+            // const player = bodyA.label=="Mario" ? bodyA.gameObject : bodyB.gameObject;
+
+            goomba.handlePlayerCollision(this.jugador);
+        }
+        if(bodyB.label=="Goomba" && bodyA.label=="Goomba" || 
+            bodyB.label=="Koopa" && bodyA.label=="Goomba" ||
+            bodyB.label=="Koopa" && bodyA.label=="Koopa")
+        {
+            const goomba  = bodyB.label=="Goomba"  ? bodyA.gameObject : bodyB.gameObject;
+            const koopa = bodyA.label=="Koopa" ? bodyA.gameObject : bodyB.gameObject;
+
+            goomba.handleEnemyCollision(koopa);
+        }
+        if(bodyB.label=="Koopa" && bodyA.label=="Mario"  ||
+            bodyA.label=="Koopa"&& bodyB.label=="Mario" )
+        {
+            // const player  = bodyB.label=="Mario"  ? bodyA.gameObject : bodyB.gameObject;
+            const koopa = bodyA.label=="Koopa" ? bodyA.gameObject : bodyB.gameObject;
+
+            koopa.handlePlayerCollision(this.jugador);
+        }
+        if(bodyB.label=="Pokey" && bodyA.label=="Mario" ||
+        bodyA.label=="Pokey" && bodyB.label=="Mario")
+        {
+            const pokey = bodyA.label=="Pokey" ? bodyA.gameObject : bodyB.gameObject;
+            
+            pokey.handlePlayerCollision(this.jugador);
+        }
     }
+    
+    this.matter.world.on('collisionstart', handle);
+    this.matter.world.on('collisionactive', handle);
+}
+
 increaseScore(points, type = 'score'){
     if (type === 'score') {
         if (this.score < 9999999999) {
@@ -653,6 +723,94 @@ increaseScore(points, type = 'score'){
             this.textPurpleCoins.setText(this.purpleCoinScore.toString().padStart(1, '0'));
         }
     }
+}
+
+timerMethod ()
+{
+    this.endTimer = false;
+    this.timerEvent = this.time.addEvent({
+    delay: 1000,
+    loop: true,
+    callback: () => {
+        if (!this.endTimer)
+        {
+            this.textTimer.setText(this.timer.toString().padStart(2, '0'));
+            if (this.timer == 0) {
+                this.endTimer=true;
+                this.sound.play('muerte');
+                this.jugador.hurt();
+                this.jugador.setStatic(true);
+                this.doubleEndTransition(
+                ()=>{this.scene.launch('MainMenu');
+                this.scene.stop();});
+            }
+            if (!this.jugador.isInBubble) {
+                this.timer = (this.timer - 1 + 60) % 60; // reinicia a 60
+            }
+        }
+        else{
+            this.timer = 0;
+            this.textTimer.setText(this.timer.toString().padStart(2, '0'));
+        }
+    },
+    });
+
+    // Eventos para limpiar listeners al cerrar la escena
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+    this.timerEvent?.remove(false);
+    });
+}
+
+ganasPartida() {
+    this.endTimer=true;
+
+    this.moveCameraToBottomRight();
+
+    // Destruir todos los Goombas
+    this.goombas.getChildren().forEach(goomba => {
+        if (goomba.safeDestroy && !goomba.shouldBeDestroyed) {
+            goomba.safeDestroy();
+        }
+    });
+
+    // Destruir todos los Koopas
+    this.koopas.getChildren().forEach(koopa => {
+        if (koopa.safeDestroy && !koopa.shouldBeDestroyed) {
+            koopa.safeDestroy();
+        }
+    });
+
+    // Destruir todas las plantas piraña
+    this.piranhas.getChildren().forEach(piranha => {
+        if (piranha.safeDestroy && !piranha.shouldBeDestroyed) {
+            piranha.safeDestroy();
+        }
+    });
+
+    this.pokeys.getChildren().forEach(pokey => {
+        if (pokey.safeDestroy && !pokey.shouldBeDestroyed) {
+            pokey.safeDestroy();
+        }
+    });
+
+    this.jugador.win();
+    this.jugador.play('mario_stop', true);
+
+    // Detener música de nivel al ganar
+    if (this.levelMusic && this.levelMusic.isPlaying) {
+        this.levelMusic.stop();
+    }
+
+    const victoryMusic = this.sound.add('victory_music');
+    victoryMusic.play();
+    victoryMusic.once('complete', () => {
+    this.jugador.play('mario_victory', true);
+    setTimeout(() => {
+        this.doubleEndTransition(
+            ()=>{this.scene.launch('MainMenu');
+            this.scene.stop();});        
+    }, 1000);
+    });
 }
 requestHammer(player) {
     let hammer = this.hammers.getChildren().find(h => !h.active);

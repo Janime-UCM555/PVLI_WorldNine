@@ -1,5 +1,12 @@
+import Enemies from "./Enemies.js";
 import { DIE_TYPES } from "./Goomba.js";
-
+import{
+    CATEGORY_PLAYER,
+    CATEGORY_ENEMY,
+    CATEGORY_POWERUP,
+    CATEGORY_TERRAIN,
+    CATEGORY_FALLOFF
+} from "../collisionCategories.js"
 class Koopa extends Phaser.GameObjects.Sprite
 {
     constructor(scene, x, y, texture, speed = 50, isRome) {
@@ -23,15 +30,15 @@ class Koopa extends Phaser.GameObjects.Sprite
             right: false,
         },
         this.numTouching= {
-                left: 0,
-                right: 0,
+            left: 0,
+            right: 0,
         }; 
         const sx = this.width/2;
         const sy = this.height/2;
         const w = this.width/1.5;
-        const CATEGORY_PLAYER  = 0x0001;
-        const CATEGORY_TERRAIN = 0x0004;
-        this.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN]);
+        this.setDepth(2);
+        this.setCollisionCategory([CATEGORY_ENEMY]);
+        this.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN, CATEGORY_ENEMY]);
 
         const h = this.height/2;
         const M = Phaser.Physics.Matter.Matter;
@@ -95,13 +102,17 @@ class Koopa extends Phaser.GameObjects.Sprite
                 {
                     continue;
                 }
-                if (bodyA === this.sensors.left || bodyB === this.sensors.left)
+                if ((bodyA === this.sensors.left && (bodyB.isStatic||bodyB.label == "Pokey" ||bodyB.label == "Goomba" || bodyB.label == "Koopa")) ||
+                (bodyB === this.sensors.left && (bodyA.isStatic ||bodyA.label == "Pokey" ||bodyA.label == "Goomba" || bodyA.label == "Koopa")))
                 {
-                this.numTouching.left++;
+                    this.numTouching.left += 1;
                 }
-                if (bodyA === this.sensors.right || bodyB === this.sensors.right)
+
+                // verificamos si esta tocando pared derecha
+                if ((bodyA === this.sensors.right && (bodyB.isStatic||bodyB.label == "Pokey" ||bodyB.label == "Goomba" || bodyB.label == "Koopa")) ||
+                (bodyB === this.sensors.right && (bodyA.isStatic ||bodyA.label == "Pokey" ||bodyA.label == "Goomba" || bodyA.label == "Koopa")))
                 {
-                this.numTouching.right++;
+                    this.numTouching.right += 1;
                 }
             }
             });
@@ -120,20 +131,6 @@ class Koopa extends Phaser.GameObjects.Sprite
         this.safeDestroy(); // martillo / estrella lo matan directo
     }
 }
-
-    // Verificar visibilidad
-    checkVisibility() {
-        // Si está marcado para destrucción, no verificar visibilidad
-        if (this.shouldBeDestroyed) return false;
-        
-        const camera = this.scene.cameras.main;
-        
-        // Verificar si está dentro de los límites de la cámara con un margen
-        const margin = 21;
-        const isVisible = this.x >= camera.scrollX - margin && this.x <= camera.scrollX + camera.width + margin && this.y >= camera.scrollY - margin && this.y <= camera.scrollY + camera.height + margin;
-        
-        return isVisible;
-    }
 
     // Actualizar movimiento basado en visibilidad y dirección
     updateMovement() {
@@ -249,7 +246,20 @@ class Koopa extends Phaser.GameObjects.Sprite
         this.changeDirection();
         otherEnemy.changeDirection();
     }
-
+    checkVisibility() {
+        if (this.shouldBeDestroyed) return false;
+        
+        const camera = this.scene.cameras.main;
+        const margin = 50;
+        
+        const isVisible = 
+            this.x >= camera.scrollX - margin && 
+            this.x <= camera.scrollX + camera.width + margin && 
+            this.y >= camera.scrollY - margin && 
+            this.y <= camera.scrollY + camera.height + margin;
+        
+        return isVisible;
+    }
     // Manejar colisiones con Mario
     handlePlayerCollision(player) {
         // Ignorar si está muerto

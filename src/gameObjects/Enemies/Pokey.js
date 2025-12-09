@@ -1,6 +1,17 @@
 import { DIE_TYPES } from "./Goomba.js";
+import Enemies from "./Enemies.js";
+
+import{
+    CATEGORY_PLAYER,
+    CATEGORY_ENEMY,
+    CATEGORY_POWERUP,
+    CATEGORY_TERRAIN,
+    CATEGORY_FALLOFF,
+    CATEGORY_DEBRIS
+} from "../collisionCategories.js"
 
 class Pokey extends Phaser.GameObjects.Container
+
 {
     constructor(scene, x, y, segments = 5, speed) {
         super(scene, x, y);
@@ -98,10 +109,9 @@ class Pokey extends Phaser.GameObjects.Container
             }
 
             // verificamos si esta tocando pared izquierda
-            if ((bodyA === this.sensors.left && bodyB.isStatic) || (bodyB === this.sensors.left && bodyA.isStatic))
+            if ((bodyA === this.sensors.left && (bodyB.isStatic||bodyB.label == "Pokey" ||bodyB.label == "Goomba" || bodyB.label == "Koopa")) ||
+             (bodyB === this.sensors.left && (bodyA.isStatic ||bodyA.label == "Pokey" ||bodyA.label == "Goomba" || bodyA.label == "Koopa")))
             {
-                // Solo los objetos estáticos cuentan ya que no queremos ser bloqueados por un objeto que
-                // podemos empujar.
                 this.numTouching.left += 1;
             }
 
@@ -157,9 +167,6 @@ class Pokey extends Phaser.GameObjects.Container
         }
         
         const M = Phaser.Physics.Matter.Matter;
-        const CATEGORY_DEBRIS = 0x0008; // Nueva categoría para escombros
-        const DEBRIS_MASK = 0x0004; // Solo colisiona con terreno
-        
         // Crear cuerpos físicos independientes para cada segmento
         const allSegments = [...this.bodySegments, this.head];
         
@@ -187,7 +194,7 @@ class Pokey extends Phaser.GameObjects.Container
                     restitution: 0.3,
                     collisionFilter: {
                         category: CATEGORY_DEBRIS,
-                        mask: DEBRIS_MASK
+                        mask: CATEGORY_TERRAIN
                     }
                 }
             );
@@ -303,9 +310,6 @@ class Pokey extends Phaser.GameObjects.Container
         const M = Phaser.Physics.Matter.Matter;
 
         const totalWidth = 24;
-        const CATEGORY_PLAYER  = 0x0001;
-        const CATEGORY_ENEMY   = 0x0002;
-        const CATEGORY_TERRAIN = 0x0004;
         const mask = CATEGORY_PLAYER | CATEGORY_TERRAIN | CATEGORY_ENEMY;
         // El Container está en la base (y), así que el centro del cuerpo está en y - (altura/2)
         const bodyCenterY = this.y - (this.totalHeight / 2);
@@ -433,20 +437,7 @@ class Pokey extends Phaser.GameObjects.Container
         }
     }
 
-    checkVisibility() {
-        if (this.shouldBeDestroyed) return false;
-        
-        const camera = this.scene.cameras.main;
-        const margin = 50;
-        
-        const isVisible = 
-            this.x >= camera.scrollX - margin && 
-            this.x <= camera.scrollX + camera.width + margin && 
-            this.y >= camera.scrollY - margin && 
-            this.y <= camera.scrollY + camera.height + margin;
-        
-        return isVisible;
-    }
+
 
     // Cambiar dirección
     changeDirection() {
@@ -510,7 +501,20 @@ class Pokey extends Phaser.GameObjects.Container
         }
     }
 
-    
+    checkVisibility() {
+        if (this.shouldBeDestroyed) return false;
+        
+        const camera = this.scene.cameras.main;
+        const margin = 50;
+        
+        const isVisible = 
+            this.x >= camera.scrollX - margin && 
+            this.x <= camera.scrollX + camera.width + margin && 
+            this.y >= camera.scrollY - margin && 
+            this.y <= camera.scrollY + camera.height + margin;
+        
+        return isVisible;
+    }
     safeDestroy() {
         if (this.shouldBeDestroyed) return;
         

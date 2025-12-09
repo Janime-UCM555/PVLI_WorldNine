@@ -28,6 +28,7 @@ class Mario extends Phaser.GameObjects.Sprite
         this.isInBubble = false; // Controlar si está en la burbuja
         this.canDrop = false; // Indica si puede salir de la burbuja
         this.bubblesLeft = 2; // Número de burbujas restantes
+        this.slop = 0;
 
         this.canSunJump = false;
         this.inImpulse=false;
@@ -91,7 +92,7 @@ class Mario extends Phaser.GameObjects.Sprite
         const M = Phaser.Physics.Matter.Matter;
         this.playerBody = M.Bodies.rectangle(sx,sy, w * 0.75, h, { chamfer: { radius: 10 }, label:"Mario" });
         this.sensors = {
-            bottom: M.Bodies.rectangle(sx, h, sx, h*0.1, { isSensor: true, label:"Mario" }),
+            bottom: M.Bodies.rectangle(sx, sy+h/2, w*0.6, 8, { isSensor: true, label:"Mario" }),
             left: M.Bodies.rectangle(sx - w * 0.5, sy / 1.2, 5, h * 0.6, { isSensor: true, label:"Mario" }),
             right: M.Bodies.rectangle(sx + w * 0.5, sy / 1.2, 5, h * 0.6, { isSensor: true, label:"Mario" }),
         };

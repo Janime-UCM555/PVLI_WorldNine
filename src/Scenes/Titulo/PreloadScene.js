@@ -274,17 +274,41 @@ class PreloadScene extends Phaser.Scene {
         // Menu SFX
         this.load.audio('iris-out', 'sonidos/SE/MenuSFX/smw_goal_iris-out.wav');
 
-        document.fonts.load('32px aku-kamu').then(() => {});
 
         this.load.on('complete', () => {
             // Se cambia a la escena del menú pricipal medio segundo después de terminar la precarga
             this.time.delayedCall(500, () => {
                 // this.scene.start('MainMenu');
+                document.fonts.load('32px aku-kamu').then(() => {});
                 this.showPlayButton();
             });
         });
     }
     createAnimations() {
+          this.anims.create({
+            key: 'HadesAnim',
+            frames: this.anims.generateFrameNumbers('Hades', { start: 0, end: 4 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'HadesDeadAnim',
+            frames: this.anims.generateFrameNumbers('HadesDead', { start: 0, end: 2 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'WispFireAnim',
+            frames: this.anims.generateFrameNumbers('WispFire', { start: 0, end: 1 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'WispFireFadingAnim',
+            frames: this.anims.generateFrameNumbers('WispFireFading', { start: 0, end: 0 }),
+            frameRate: 8,
+            repeat: -1
+        });
         this.anims.create({
             key: 'pilar_ny',
             frames: this.anims.generateFrameNumbers('pilar_nubeTiles', { start: 0, end: 10 }),
