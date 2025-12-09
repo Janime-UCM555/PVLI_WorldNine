@@ -1153,61 +1153,6 @@ class Mario extends Phaser.GameObjects.Sprite
         this.isGrounded = this.blocked.bottom;
     }
 
-    centerCameraOnPlayer() {
-        // Obtener las dimensiones reales de la vista de la cámara considerando el zoom
-        const camera = this.scene.cameras.main;
-        const cameraViewWidth = camera.width / camera.zoom;
-        const cameraViewHeight = camera.height / camera.zoom;
-
-        // Seguimiento horizontal
-        let targetX;
-
-        // Establecer el objetivo de la cámara horizontalmente
-        if (this.x < cameraViewWidth *0.25) {
-            targetX = -200;
-        }
-        else if(Math.abs(this.body.velocity.x) < 0.05) {
-            targetX = this.x - cameraViewWidth *0.66;
-        }
-        else {
-            targetX = this.x - cameraViewWidth * 0.56;
-        }
-
-        // Seguimiento vertical
-        let targetY;
-    
-        if (this.isInBubble) {
-            // Cuando está en la burbuja, posicionar más alto en la pantalla
-            targetY = this.y - cameraViewHeight * 0.4;
-        } else {
-            // Calcular la posición vertical ideal
-            const baseTargetY = this.y - cameraViewHeight * 0.65;
-
-            if (!this.isGrounded) {
-                // Cuando salta, mantener la cámara un poco más alta
-                targetY = this.y - cameraViewHeight * 0.7;
-            } else {
-                // Cuando está en el suelo, mantenerlo en la posición vertical ideal
-                targetY = baseTargetY
-            }
-        }
-
-        // Suavizado tipo "spring" con LERP para el movimiento suave
-        const smoothFactorX = 0.1;  // Ajustar la suavidad horizontal
-        const smoothFactorY = 0.05; // Ajustar la suavidad vertical
-
-        // // Movimiento de la cámara suavizado
-        // const dx = targetX - cam.scrollX;
-        // const dy = targetY - cam.scrollY;
-
-        // // Aplicar el suavizado con un Lerp (Interpolación lineal)
-        // const moveX = cam.scrollX + dx * smoothFactorX;
-        // const moveY = cam.scrollY + dy * smoothFactorY;
-
-        camera.scrollX += (targetX-camera.scrollX)*smoothFactorX;
-        camera.scrollY += (targetY-camera.scrollY)*smoothFactorY;
-    }
-
     // Resetear estados
     resetStates() {
         this.isJumping = false;

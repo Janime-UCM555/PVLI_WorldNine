@@ -121,11 +121,33 @@ class BossJ extends GameScenes
         if (this.jupiterBoss) {
             this.jupiterBoss.defeat();
         }
+        const fadeTween = this.tweens.add({
+            targets: this.pilar,
+            alpha: 0,
+            scaleX: 0.4,
+            scaleY: 0.4,
+            duration: 1000,
+            ease: 'Cubic',
+            onComplete: () => {
+                // Destruir el fuego cuando esté completamente transparente
+                if (this.pilar) {
+                    this.pilar.destroy();
+                }
+            }
+        });
         super.ganasPartida();
     }
+    // update(time,delta)
+    // {
+    //     super.update(time,delta);
+    //     if (!this.endTimer)
+    //     {
+    //         // Posicionar bien la cámara respecto al jugador
+    //         centerCameraOnPlayer(this,this.jugador,0.55, 0.66);
+    //     }
+    // }
     timerMethod()
     {
-
     }
 }
 

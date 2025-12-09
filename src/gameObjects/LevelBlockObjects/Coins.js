@@ -1,5 +1,6 @@
 import{
     CATEGORY_PLAYER,
+    CATEGORY_SENSOR,
 } from "../collisionCategories.js"
 import SceneBlocks from "./SceneBlocks.js";
 import { purpleCoinsByLevel, collectedPurpleCoinsByLevel } from "../../Scenes/Juego/GameScenes.js";
@@ -24,6 +25,7 @@ export class Coins extends SceneBlocks {
 
         // this.setCollisionCategory(CATEGORY_FALLOFF);
         this.setCollidesWith([CATEGORY_PLAYER]);
+        this.setCollisionCategory([CATEGORY_SENSOR]);
         this.setOrigin(0.5,0.5);
             
         // if (this.body) this.body = null;

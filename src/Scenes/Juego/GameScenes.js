@@ -3,6 +3,11 @@
  * @module UI/Button
  */
 import Button from '../../gameObjects/UI/Button.js';
+/**
+ * 
+ */
+
+import centerCameraOnPlayer from '../../gameObjects/Player/CenterOnPlayer.js';
 
 /**
  * Importación del jugador Mario.
@@ -199,12 +204,13 @@ class EscenaBase extends Phaser.Scene {
         if (this.map.getLayer('CapaDecoraciones'))
         {
             this.decorationsLayer = this.map.createLayer('CapaDecoraciones', tileset, 0, 0);
-            this.decorationsLayer.setDepth(0);
+            this.decorationsLayer.setDepth(1);
         }
         if (this.map.getLayer('CapaFalsoSuelo'))
         {
             this.fakeFloorLayer = this.map.createLayer('CapaFalsoSuelo', tileset, 0, 0);
             this.fakeFloorLayer?.setTint(0x888888);
+            this.decorationsLayer.setDepth(0);
         }
         this.groundLayer = this.map.createLayer('CapaSuelo', tileset, 0, 0);
         this.groundLayer.setDepth(1);
@@ -530,9 +536,14 @@ update(time, delta) {
         // Actualizar objetos
         this.updateObjects(time, delta);
 
-        // Posicionar bien la cámara respecto al jugador
-        this.jugador.centerCameraOnPlayer();
-
+        if (!this.isBoss)
+        {
+            // Posicionar bien la cámara respecto al jugador
+            centerCameraOnPlayer(this,this.jugador, 0.55, 0.66);
+        }
+        else{
+            centerCameraOnPlayer(this,this.jugador, 0.55, 0.75);
+        }
         // Comprobar si el jugador se ha caído
         this.checkPlayerFell();
     }

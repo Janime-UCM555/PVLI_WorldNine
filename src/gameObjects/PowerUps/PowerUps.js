@@ -156,11 +156,11 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
         const bodyB = event.pairs[i].bodyB;
 
         if (!bodyA.isStatic && !bodyB.isStatic && !bodyA instanceof PowerUp && !bodyB instanceof PowerUp) {
-            continue;
+          continue;
         }
         if (bodyA === this.playerBody || bodyB === this.playerBody)
         {
-            continue;
+          continue;
         }
         // 1) Primero, comprobar si ESTE power-up ha chocado con Mario
         const isThisPowerBody =

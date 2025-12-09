@@ -450,7 +450,7 @@ export default class HadesBoss extends BossBase {
 
         // Calcular posición de spawn: 500px a la derecha de Mario, 100px arriba
         let spawnX = this.player.x + 500;
-        let spawnY = this.player.y - 100;
+        let spawnY = 500;
 
         // Obtener límites del mapa
         const map = this.scene.map;

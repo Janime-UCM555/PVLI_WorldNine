@@ -119,49 +119,49 @@ class PreloadScene extends Phaser.Scene {
         frameHeight: 56,
     });
 
-        // Júpiter
-        this.load.spritesheet('jupiter_neutral', 'GameSprites/Characters/Bosses/Jupiter/Jupiter_Neutral.png', {
-            frameWidth: 39,
-            frameHeight: 52,
-        });
-        this.load.spritesheet('jupiter_attack', 'GameSprites/Characters/Bosses/Jupiter/Jupiter_Attack.png', {
-            frameWidth: 39,
-            frameHeight: 54,
-        });
-        this.load.spritesheet('jupiter_tired', 'GameSprites/Characters/Bosses/Jupiter/Jupiter_Tired.png', {
-            frameWidth: 40,
-            frameHeight: 58,
-        });
-        this.load.spritesheet('jupiter_dead', 'GameSprites/Characters/Bosses/Jupiter/Jupiter_Dead.png', {
-            frameWidth: 39,
-            frameHeight: 56,
-        });
-        this.load.spritesheet('warning_triangle', 'GameSprites/Characters/Bosses/Jupiter/Warning_Triangle.png', {
-            frameWidth: 234,
-            frameHeight: 226,
-        });
-        this.load.spritesheet('lightning', 'GameSprites/Characters/Bosses/Jupiter/Lightning.png', {
-            frameWidth: 1224,
-            frameHeight: 350,
-        });
+    // Júpiter
+    this.load.spritesheet('jupiter_neutral', 'GameSprites/Characters/Bosses/Jupiter/Jupiter_Neutral.png', {
+        frameWidth: 39,
+        frameHeight: 52,
+    });
+    this.load.spritesheet('jupiter_attack', 'GameSprites/Characters/Bosses/Jupiter/Jupiter_Attack.png', {
+        frameWidth: 39,
+        frameHeight: 54,
+    });
+    this.load.spritesheet('jupiter_tired', 'GameSprites/Characters/Bosses/Jupiter/Jupiter_Tired.png', {
+        frameWidth: 40,
+        frameHeight: 58,
+    });
+    this.load.spritesheet('jupiter_dead', 'GameSprites/Characters/Bosses/Jupiter/Jupiter_Dead.png', {
+        frameWidth: 39,
+        frameHeight: 56,
+    });
+    this.load.spritesheet('warning_triangle', 'GameSprites/Characters/Bosses/Jupiter/Warning_Triangle.png', {
+        frameWidth: 234,
+        frameHeight: 226,
+    });
+    this.load.spritesheet('lightning', 'GameSprites/Characters/Bosses/Jupiter/Lightning.png', {
+        frameWidth: 1224,
+        frameHeight: 350,
+    });
 
-        // Hades
-        this.load.spritesheet('Hades', 'GameSprites/Characters/Bosses/Hades/HadesAnim.png', {
-            frameWidth: 46,
-            frameHeight: 47
-        });
-        this.load.spritesheet('HadesDead', 'GameSprites/Characters/Bosses/Hades/HadesDeadAnim.png', {
-            frameWidth: 44,
-            frameHeight: 46
-        });
-        this.load.spritesheet('WispFire', 'GameSprites/Characters/Bosses/Hades/FuegoFatuoAnim.png', {
-            frameWidth: 30,
-            frameHeight: 45
-        });
-        this.load.spritesheet('WispFireFading', 'GameSprites/Characters/Bosses/Hades/FuegoFatuoApagado.png', {
-            frameWidth: 32,
-            frameHeight: 34
-        });
+    // Hades
+    this.load.spritesheet('Hades', 'GameSprites/Characters/Bosses/Hades/HadesAnim.png', {
+        frameWidth: 46,
+        frameHeight: 47
+    });
+    this.load.spritesheet('HadesDead', 'GameSprites/Characters/Bosses/Hades/HadesDeadAnim.png', {
+        frameWidth: 44,
+        frameHeight: 46
+    });
+    this.load.spritesheet('WispFire', 'GameSprites/Characters/Bosses/Hades/FuegoFatuoAnim.png', {
+        frameWidth: 30,
+        frameHeight: 45
+    });
+    this.load.spritesheet('WispFireFading', 'GameSprites/Characters/Bosses/Hades/FuegoFatuoApagado.png', {
+        frameWidth: 32,
+        frameHeight: 34
+    });
 
     //PowerUps
     this.load.image('star', 'GameSprites/PowerUps/star.png');

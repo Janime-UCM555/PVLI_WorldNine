@@ -52,10 +52,6 @@ export class OneWay extends SceneBlocks {
     }
     setUpCollisions() {
         const handle = (event, bodyA, bodyB) => {
-            // if(!bodyA.gameObject || bodyB.gameObject)
-            // {
-            //     return;
-            // }
             if (!this.hasPlayer &&((bodyA.label === "oneWay"  && bodyA === this.sensor && bodyB.label === "Mario") ||
                 (bodyB.label === "oneWay"  && bodyB=== this.sensor&& bodyA.label === "Mario" )))
             {

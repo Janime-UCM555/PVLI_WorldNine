@@ -90,19 +90,6 @@ export class FallBlock extends SceneBlocks {
                 }
 
             }
-            // const sensorBody = (bodyA === this.sensor ? bodyA : (bodyB === this.sensor ? bodyB : null));
-            // const playerBody = isPlayer(bodyA) ? bodyA : (isPlayer(bodyB) ? bodyB : null);
-
-            // if (!sensorBody || !playerBody) return;
-
-            // const player = this.scene.jugador.body;
-
-            // // Solo permitir colisión si viene cayendo desde arriba
-            // if (player.velocity.y > 0 && player.position.y + 5 < this.y)
-            // {
-            //     this.hasPlayer = true;
-            //     this.setCollidesWith([CATEGORY_PLAYER, CATEGORY_ENEMY]);
-            // }
         });
 
         this.scene.matter.world.on("collisionend", (event, bodyA, bodyB) => {
