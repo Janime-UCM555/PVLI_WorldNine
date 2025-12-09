@@ -42,7 +42,8 @@ export class Block extends SceneBlocks {
     blockHit(player) {
         // Lógica al golpear un bloque
         const props = this._props;
-
+        if(!player)
+            return;
         if (props.Breakable && player.isSuperSize) {
             this.scene.sound.play('BrickBlock');
             this.destroy();

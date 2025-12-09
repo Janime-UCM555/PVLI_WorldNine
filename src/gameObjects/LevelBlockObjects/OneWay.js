@@ -16,22 +16,23 @@ export class OneWay extends SceneBlocks {
         super(scene, obj);
         this.setBody({
             type: 'rectangle',
-            width: obj.width * 2,
+            width: obj.width * 1,
             height: obj.height,
-            y: obj.y-15,
+            // y: obj.y-15,
         });
         const frame = obj.gid - this.scene.tile.firstgid;
         this.setTexture('mi_tileset',frame);
-        
+        this.slop = 0;
         this.setStatic(true);
         this.setSensor(false);
         this.setCollisionCategory([CATEGORY_TERRAIN]);
         this.setCollidesWith([CATEGORY_ENEMY]);
         const sensorHeight = 20;
         const x = this.x;
-        const y = this.y - this.height * 2 + sensorHeight;
+        const y = this.y - this.height/2 - 2;
 
-        const sensor = this.scene.matter.add.rectangle(x, y, obj.width*2, 5, {
+
+        const sensor = this.scene.matter.add.rectangle(x, y, this.width, 10, {
             isSensor: true,
             // staticBody: true,
             // isStatic: true
@@ -58,22 +59,25 @@ export class OneWay extends SceneBlocks {
             if (!this.hasPlayer &&((bodyA.label === "oneWay"  && bodyA === this.sensor && bodyB.label === "Mario") ||
                 (bodyB.label === "oneWay"  && bodyB=== this.sensor&& bodyA.label === "Mario" )))
             {
-                if (this.scene.jugador.body.velocity.y > 0 && this.scene.jugador.body.position.y < this.y)
+                const player = this.scene.jugador.body;
+                if (player.velocity.y > 0 && player.position.y < this.body.position.y - 5)
                 {
                     this.setCollidesWith([CATEGORY_ENEMY, CATEGORY_PLAYER]);
                     // this.scene?.jugador.setVelocityX(-0.1);
                     this.hasPlayer = true;
                 }
-                else{
-                    this.hasPlayer=false;
-                    this.setCollidesWith([CATEGORY_ENEMY]);
-                }
+
             }
         }
-        this.setOnCollideEnd((data) => {
-            this.hasPlayer=false;
-            this.setCollidesWith([CATEGORY_ENEMY]);
-        });
+        const handleExit = (event, bodyA, bodyB) => {
+            if (this.hasPlayer && ((bodyA.label === "oneWay" && bodyA === this.sensor && bodyB.label === "Mario") ||
+                (bodyB.label === "oneWay" && bodyB === this.sensor && bodyA.label === "Mario")))
+            {
+                this.hasPlayer = false;
+                this.setCollidesWith([CATEGORY_ENEMY]);
+            }
+        }
+        this.scene.matter.world.on('collisionend', handleExit);
         this.scene.matter.world.on('collisionstart', handle);
     }
 }

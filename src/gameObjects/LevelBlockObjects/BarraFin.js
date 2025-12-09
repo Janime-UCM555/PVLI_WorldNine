@@ -13,8 +13,6 @@ export class Fin extends SceneBlocks
     constructor(scene, obj)
     {
         super(scene, obj, 'barra_tileset');
-        
-
         this.speed = 600;
         this.y= obj.y-30;
         // this.x= obj.x;
@@ -31,7 +29,7 @@ export class Fin extends SceneBlocks
         });
         this.setOrigin(0.5, 0.5);
 
-        this.setCollisionCategory(CATEGORY_TERRAIN);
+        this.setCollisionCategory([CATEGORY_TERRAIN]);
         this.setCollidesWith([CATEGORY_PLAYER]);
 
         this.setUpCollisions();

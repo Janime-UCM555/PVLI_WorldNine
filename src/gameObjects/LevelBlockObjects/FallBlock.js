@@ -20,7 +20,7 @@ export class FallBlock extends SceneBlocks {
         this.startPosY = this.y;
         this.setBody({
             type: 'rectangle',
-            width: obj.width * 2,
+            width: obj.width * 1,
             height: obj.height,
         });
         this.setStatic(true);
@@ -34,9 +34,9 @@ export class FallBlock extends SceneBlocks {
         this.setCollisionCategory([CATEGORY_FALLOFF]);
         const sensorHeight = 20;
         const x = this.x;
-        const y = this.y - this.height * 2 + sensorHeight;
+        const y = this.y - this.height/2 - 2;
 
-        const sensor = this.scene.matter.add.rectangle(x, y, obj.width*2, 5, {
+        const sensor = this.scene.matter.add.rectangle(x, y, this.width, 10, {
             isSensor: true,
             // staticBody: true,
             // isStatic: true
@@ -67,56 +67,67 @@ export class FallBlock extends SceneBlocks {
             if (player) {
                 this.setCollidesWith([CATEGORY_PLAYER]);
                 // activar caída con delay
-                this.scene.time.delayedCall(150, () => {
+                this.scene.time.delayedCall(200, () => {
+                    this.scene.time.delayedCall(200, () => {
                     this.fallActive = true;
+                    });
                     this.setTexture("fallOffBlock2");
                 });
             }
         });
-        const handle = (event, bodyA, bodyB) => {
-            // if(!bodyA.gameObject || bodyB.gameObject)
-            // {
-            //     return;
-            // }
+        const isPlayer = body => body.label === "Mario" || body.label === "MarioBottom";
+
+        this.scene.matter.world.on("collisionstart", (event, bodyA, bodyB) => {
             if (!this.hasPlayer &&((bodyA.label === "oneWay"  && bodyA === this.sensor && bodyB.label === "Mario") ||
                 (bodyB.label === "oneWay"  && bodyB=== this.sensor&& bodyA.label === "Mario" )))
             {
-                if (this.scene.jugador.body.velocity.y > 0 && this.scene.jugador.body.position.y < this.y)
+                const player = this.scene.jugador.body;
+                if (player.velocity.y > 0 && player.position.y < this.body.position.y - 5)
                 {
-                    this.scene.jugador.setVelocityX(-0.05);
-                    if (!this.fallActive)
-                    {
-                        this.setCollidesWith([CATEGORY_ENEMY, CATEGORY_PLAYER, CATEGORY_POWERUP]);
-                    }
-                    else{
-                        this.setCollidesWith([CATEGORY_PLAYER]);
-                    }
+                    this.setCollidesWith([CATEGORY_ENEMY, CATEGORY_PLAYER]);
+                    // this.scene?.jugador.setVelocityX(-0.1);
                     this.hasPlayer = true;
                 }
+
             }
-        }
-        this.setOnCollideEnd((data) => {
-            this.hasPlayer=false;
-            if (!this.fallActive)
+            // const sensorBody = (bodyA === this.sensor ? bodyA : (bodyB === this.sensor ? bodyB : null));
+            // const playerBody = isPlayer(bodyA) ? bodyA : (isPlayer(bodyB) ? bodyB : null);
+
+            // if (!sensorBody || !playerBody) return;
+
+            // const player = this.scene.jugador.body;
+
+            // // Solo permitir colisión si viene cayendo desde arriba
+            // if (player.velocity.y > 0 && player.position.y + 5 < this.y)
+            // {
+            //     this.hasPlayer = true;
+            //     this.setCollidesWith([CATEGORY_PLAYER, CATEGORY_ENEMY]);
+            // }
+        });
+
+        this.scene.matter.world.on("collisionend", (event, bodyA, bodyB) => {
+
+            if ((bodyA === this.sensor && isPlayer(bodyB)) ||
+                (bodyB === this.sensor && isPlayer(bodyA)))
             {
+                this.hasPlayer = false;
                 this.setCollidesWith([CATEGORY_ENEMY]);
             }
         });
-        this.scene.matter.world.on('collisionstart', handle);
     }
     update(time, delta) {
         // this.fallBlock.getChildren().forEach(block => {
-        if (this.fallActive) {
-            // block.velocityY += 0.05;
-            this.setCollidesWith([CATEGORY_PLAYER]);
-            this.y += 5*(delta/16.66);
-        }
         if (this.x < this.scene.cameras.scrollX || this.y > this.scene.map.heightInPixels + 50)
         {
             this.setCollidesWith([CATEGORY_ENEMY, CATEGORY_PLAYER, CATEGORY_POWERUP]);
             this.y = this.startPosY;
             this.fallActive = false;
             this.setTexture('fallOffBlock1'); // Cambiar textura a bloque inicial
+        }
+        else if (this.fallActive) {
+            // block.velocityY += 0.05;
+            this.setCollidesWith([CATEGORY_PLAYER]);
+            this.y += 5*(delta/16.66);
         }
         // });  >
     }

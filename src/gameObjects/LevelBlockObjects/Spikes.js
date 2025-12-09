@@ -53,8 +53,8 @@ export class Spikes extends SceneBlocks {
                     }
                     if (!this.scene.isBoss)
                     {
-                        if (player.bubblesLeft > 0) {
-                            player.Bubble(); // Entra en burbuja
+                        if (this.scene?.jugador.bubblesLeft > 0) {
+                            this.scene?.jugador.Bubble(); // Entra en burbuja
                         } else {
                             this.scene?.jugador.hurt();
                             this.scene?.jugador.setStatic(true);

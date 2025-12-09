@@ -76,35 +76,6 @@ class BossJ extends GameScenes
             }
         });
    }
-    ganasPartida(barra) {
-        this.endTimer=true;
-
-        this.moveCameraToBottomRight();
-
-        this.jugador.win();
-        this.jugador.play('mario_stop', true);
-
-        if (this.jupiterBoss) {
-            this.jupiterBoss.defeat();
-        }
-
-
-        // Detener música de nivel al ganar
-        if (this.levelMusic && this.levelMusic.isPlaying) {
-            this.levelMusic.stop();
-        }
-
-        const victoryMusic = this.sound.add('victory_music');
-        victoryMusic.play();
-        victoryMusic.once('complete', () => {
-        this.jugador.play('mario_victory', true);
-        setTimeout(() => {
-            this.doubleEndTransition(
-                ()=>{this.scene.launch('MainMenu');
-                this.scene.stop();});
-        }, 1000);
-        });
-    }
 
     createText()
     {
@@ -118,8 +89,7 @@ class BossJ extends GameScenes
         // graphics.setScrollFactor(0);
 
         const fontSize = 29; // 50 / 1.65 ≈ 29
-        document.fonts.load('32px aku-kamu').then(() => {
-
+        // document.fonts.load('32px aku-kamu').then(() => {
             this.fpsText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -',{fontFamily: 'aku-kamu'})
             .setOrigin(-2,5)
             .setStroke('#000000ff', 6)
@@ -144,7 +114,18 @@ class BossJ extends GameScenes
             .setDepth(6)
             .setFontSize(fontSize + 'px')
             .setScrollFactor(0);
-        });
+        // });
+    }
+    ganasPartida()
+    {
+        if (this.jupiterBoss) {
+            this.jupiterBoss.defeat();
+        }
+        super.ganasPartida();
+    }
+    timerMethod()
+    {
+
     }
 }
 
