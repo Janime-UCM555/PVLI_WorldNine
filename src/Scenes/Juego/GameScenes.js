@@ -364,7 +364,6 @@ class EscenaBase extends Phaser.Scene {
             .setFontSize(fontSize + 'px')
             .setDepth(6)
             .setScrollFactor(0);
-        
         }
             
         
@@ -745,7 +744,7 @@ timerMethod ()
                 this.scene.stop();});
             }
             if (!this.jugador.isInBubble) {
-                this.timer = (this.timer - 1 + 60) % 60; // reinicia a 60
+                this.timer = this.timer - 1; // reinicia a 60
             }
         }
         else{
