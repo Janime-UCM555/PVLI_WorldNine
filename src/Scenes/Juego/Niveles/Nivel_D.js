@@ -38,7 +38,7 @@ class Nivel_D extends GameScenes
         else if(this.levelMusic){
             this.levelMusic.stop();
         }
-        // spawnPowerUp(this,50, 625, POWERUP_TYPES.STAR);
+        spawnPowerUp(this,50, 625, POWERUP_TYPES.HAMMER);
    }
 
     ganasPartida() {

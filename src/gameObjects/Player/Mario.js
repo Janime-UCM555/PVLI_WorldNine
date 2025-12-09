@@ -643,6 +643,8 @@ class Mario extends Phaser.GameObjects.Sprite
         this.isInBubble = true;
         this.canDrop = false;
         this.bubblePhase = 1;
+        // 1.5. Asegurarse de desactivar power-ups
+        this.deactivatePowerUp({ keepSize: false });
 
         // 2. Detener inmediatamente todas las físicas
         this.setVelocity(0, 0);
@@ -826,18 +828,15 @@ class Mario extends Phaser.GameObjects.Sprite
             this.play('mario_panicfall', true);
         }
     
-        // 4. Asegurarse de que no sea superSize
-        this.deactivatePowerUp({ keepSize: false });
-
-        // 5. Resetear velocidades para caída
+        // 4. Resetear velocidades para caída
         this.setVelocityX(0);
         this.setVelocityY(0);
 
-        // 6. Posicionar a Mario en una posición segura
+        // 5. Posicionar a Mario en una posición segura
         this.x = Math.max(this.x, 50);
         this.y = Math.max(this.y, 100);
 
-        // 7. Resetear estados de salto
+        // 6. Resetear estados de salto
         this.isJumping = false;
         this.isHoldingJump = false;
     }
