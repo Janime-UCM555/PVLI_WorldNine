@@ -15,7 +15,7 @@ class BossHades extends GameScenes
         const tilesetBG = this.map?.addTilesetImage('Hell_BG', 'bg_tileset_BH');
         const tileset = this.map?.addTilesetImage('MapaTiles', 'mi_tileset');
             // Capa de suelo
-        let bgLayer = this.map?.createLayer('CapaFondo', 'bg_tileset_BH', 0, 0);
+        let bgLayer = this.map?.createLayer('CapaFondo', tilesetBG, 0, 0);
         bgLayer.setDepth(0);//
 
         // const tilesetWater = this.map?.addTilesetImage('Water', 'water');
@@ -23,7 +23,7 @@ class BossHades extends GameScenes
         let frontLayer = this.map?.createLayer('CapaFrente', tileset, 0, 0);
         frontLayer.setDepth(5);
         
-        this.jugador = new Mario(this, 75, 600, 'mario_run', 5, -3.75, true, true);
+        this.jugador = new Mario(this, 75, 500, 'mario_run', 5, -3.75, true, true);
         
         }, true);
     }
@@ -46,7 +46,7 @@ class BossHades extends GameScenes
    create(){
         super.create();
         // Música de fondo del nivel
-        spawnPowerUp(this,40, 600, POWERUP_TYPES.MUSHROOM);
+        spawnPowerUp(this,40, 500, POWERUP_TYPES.MUSHROOM);
         if ((!this.levelMusic || !this.levelMusic.isPlaying) && !this.endTimer) {
             this.levelMusic = this.sound.add('Boss_Jupiter', { loop: false, volume: 1 });
             this.levelMusic.play();
@@ -54,7 +54,7 @@ class BossHades extends GameScenes
         else if(this.levelMusic){
             this.levelMusic.stop();
         }
-        this.pilar = new Pilar(this,-903,625,'pilar_ny');
+        this.pilar = new Pilar(this,-1000,625,'pilar_f');
         // const bossAttacks = this.map.getObjectLayer('ApareceJefe').objects;
         let id = 0;
         // let attackZones = [];

@@ -180,7 +180,7 @@ class EscenaBase extends Phaser.Scene {
         if (this.map.getLayer('CapaFrente'))
         {       
             this.frontLayer = this.map.createLayer('CapaFrente', tileset, 0, 0);
-            this.frontLayer.setDepth(4);
+            this.frontLayer?.setDepth(4);
         }
         if (this.map.getLayer('CapaDecoraciones'))
         {
@@ -304,6 +304,7 @@ class EscenaBase extends Phaser.Scene {
             }
             else if (enemie.name === 'Piranha')
             {
+                const inverse = enemie.properties?.find(p => p.name === 'inverse')?.value || false;
                 // console.log('PIRANYA');
                 const piranha = new PiranhaPlant(
                     this,
@@ -311,7 +312,8 @@ class EscenaBase extends Phaser.Scene {
                     enemie.y - 35, 
                     'Piranha_plant',
                     2000,
-                    2000
+                    2000,
+                    inverse
                 );
                 this.piranhas.add(piranha);
                 piranha.setCollisionCategory(CATEGORY_ENEMY);

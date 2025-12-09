@@ -2,7 +2,7 @@ import { DIE_TYPES } from "./Goomba.js";
 
 class PiranhaPlant extends Phaser.GameObjects.Sprite
 {
-    constructor(scene, x, y, texture, hideTime = 2000, showTime = 2000) {
+    constructor(scene, x, y, texture, hideTime = 2000, showTime = 2000, inverse) {
         super(scene, x, y, texture);
 
         scene.add.existing(this);
@@ -19,7 +19,15 @@ class PiranhaPlant extends Phaser.GameObjects.Sprite
 
         // Posiciones
         this.hiddenY = y; // Posición cuando está oculta (dentro de la tubería)
-        this.visibleY = y - 56; // Posición cuando está visible (sale 64px)
+        if(!inverse)
+        {
+            this.visibleY = y - 56; // Posición cuando está visible (sale 64px)
+        }
+        else
+        {
+            this.visibleY = y + 56; // Posición cuando está visible (sale 64px)
+            this.flipY = true;
+        }
         this.y = this.hiddenY; // Empieza oculta
 
         // Configuración de física
