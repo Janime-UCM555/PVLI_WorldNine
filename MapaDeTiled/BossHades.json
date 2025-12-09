@@ -708,7 +708,7 @@
                  "gid":2469,
                  "height":56,
                  "id":112,
-                 "name":"",
+                 "name":"piranha",
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -720,7 +720,7 @@
                  "gid":1073744293,
                  "height":56,
                  "id":113,
-                 "name":"",
+                 "name":"piranha",
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -732,7 +732,7 @@
                  "gid":2471,
                  "height":30,
                  "id":114,
-                 "name":"",
+                 "name":"Pokey",
                  "properties":[
                         {
                          "name":"segments",
@@ -746,17 +746,6 @@
                  "x":3872,
                  "y":576
                 }],
-         "opacity":1,
-         "type":"objectgroup",
-         "visible":true,
-         "x":0,
-         "y":0
-        }, 
-        {
-         "draworder":"topdown",
-         "id":9,
-         "name":"Impulsos",
-         "objects":[],
          "opacity":1,
          "type":"objectgroup",
          "visible":true,
@@ -845,8 +834,17 @@
  "tileheight":32,
  "tilesets":[
         {
+         "columns":50,
          "firstgid":1,
-         "source":"Hell_BG.tsx"
+         "image":"..\/assets\/GameSprites\/Tilesets\/Hell_BG.png",
+         "imageheight":704,
+         "imagewidth":1614,
+         "margin":0,
+         "name":"Hell_BG",
+         "spacing":0,
+         "tilecount":1100,
+         "tileheight":32,
+         "tilewidth":32
         }, 
         {
          "firstgid":1101,

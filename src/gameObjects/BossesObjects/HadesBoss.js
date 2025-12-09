@@ -2,7 +2,7 @@ import Goomba from '../../gameObjects/Enemies/Goomba.js';
 import Koopa from '../../gameObjects/Enemies/Koopa.js';
 import BossBase, { BOSS_STATE } from './BaseBoss.js';
 
-export default class HadesBoss extends BossBase {
+export default class HadesBoss extends BossBase { 
     /**
      * @param {Phaser.Scene} scene
      * @param {number} x

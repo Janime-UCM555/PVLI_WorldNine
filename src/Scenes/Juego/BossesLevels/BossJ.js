@@ -54,7 +54,7 @@ class BossJ extends GameScenes
         else if(this.levelMusic){
             this.levelMusic.stop();
         }
-        this.pilar = new Pilar(this,-903,625,'pilar_ny');  
+        this.pilar = new Pilar(this,-903,625,'pilar_ny');
         const bossAttacks = this.map.getObjectLayer('ApareceJefe').objects;
         let id = 0;
         let attackZones = [];
