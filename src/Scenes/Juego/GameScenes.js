@@ -700,6 +700,13 @@ setupCollisions() {
             
             pokey.handlePlayerCollision(this.jugador);
         }
+        if(bodyB.label=="Piranha" && bodyA.label=="Mario" ||
+        bodyA.label=="Piranha" && bodyB.label=="Mario")
+        {
+            const piranha = bodyA.label=="Piranha" ? bodyA.gameObject : bodyB.gameObject;
+            
+            piranha.handlePlayerCollision(this.jugador);
+        }
     }
     
     this.matter.world.on('collisionstart', handle);
