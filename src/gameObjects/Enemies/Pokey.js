@@ -9,9 +9,9 @@ import{
     CATEGORY_FALLOFF,
     CATEGORY_DEBRIS
 } from "../collisionCategories.js"
+const M = Phaser.Physics.Matter.Matter;
 
 class Pokey extends Phaser.GameObjects.Container
-
 {
     constructor(scene, x, y, segments = 5, speed) {
         super(scene, x, y);
@@ -165,8 +165,8 @@ class Pokey extends Phaser.GameObjects.Container
             this.scene.matter.world.remove(this.compoundBody);
             this.compoundBody = null;
         }
-        
-        const M = Phaser.Physics.Matter.Matter;
+        // const CATEGORY_DEBRIS = 0x0008; // Nueva categoría para escombros
+        const DEBRIS_MASK = 0x0004; // Solo colisiona con terreno
         // Crear cuerpos físicos independientes para cada segmento
         const allSegments = [...this.bodySegments, this.head];
         
@@ -194,7 +194,7 @@ class Pokey extends Phaser.GameObjects.Container
                     restitution: 0.3,
                     collisionFilter: {
                         category: CATEGORY_DEBRIS,
-                        mask: CATEGORY_TERRAIN
+                        mask: DEBRIS_MASK
                     }
                 }
             );
@@ -307,7 +307,6 @@ class Pokey extends Phaser.GameObjects.Container
 
     setupPhysics() {
         
-        const M = Phaser.Physics.Matter.Matter;
 
         const totalWidth = 24;
         const mask = CATEGORY_PLAYER | CATEGORY_TERRAIN | CATEGORY_ENEMY;
@@ -443,7 +442,6 @@ class Pokey extends Phaser.GameObjects.Container
     changeDirection() {
         this.direction *= -1;
         // Aplicar la nueva dirección
-        const M = Phaser.Physics.Matter.Matter;
         M.Body.setVelocity(this.compoundBody, { x: this.compoundBody.velocity.x * this.direction, y: this.compoundBody.velocity.y });
         
     }
@@ -458,7 +456,6 @@ class Pokey extends Phaser.GameObjects.Container
         if (this.isAlive) {
             if (isVisible) {
                 // Aplicar movimiento en la dirección actual
-                const M = Phaser.Physics.Matter.Matter;
                 const targetVelocity = this.speed * this.direction;
 
                 // Solo cambiar la velocidad si es diferente
@@ -470,7 +467,6 @@ class Pokey extends Phaser.GameObjects.Container
                 }
             } else {
                 // Detenerse si no es visible
-                const M = Phaser.Physics.Matter.Matter;
                 M.Body.setVelocity(this.compoundBody, { x: 0, y: this.compoundBody.velocity.y });
             }
         }
