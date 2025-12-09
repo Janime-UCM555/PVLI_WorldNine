@@ -47,8 +47,8 @@ class MainMenu extends Phaser.Scene
     // Para que las estrellas cubran toda la pantalla
     this.stars.setDisplaySize(width, height);
 
-    this.mario = this.add.sprite(this.cameras.main.width - 50, this.cameras.main.height - 50, 'mario_walk');
-    this.mario.play('mario_walk');
+    // this.mario = this.add.sprite(this.cameras.main.width - 50, this.cameras.main.height - 50, 'mario_walk');
+    // this.mario.play('mario_walk');
 
     this.mario2 = this.add.sprite(this.cameras.main.width - 100, this.cameras.main.height - 50, 'mario_run');
     this.mario2.play('mario_run');
@@ -77,7 +77,7 @@ class MainMenu extends Phaser.Scene
         this.sound.play('coin_sound', { volume: 0 });
         this.buttonMove.input.enabled = false;
         TransitionCode.invoke(this, this.cameras.main, 1000,{x: this.cameras.main.width/2, y:  this.cameras.main.height/2}, 1500, 0,
-        ()=>{this.scene.launch('BossHades');
+        ()=>{this.scene.launch('Nivel_TO');
             this.scene.stop();
         });
     })
@@ -107,11 +107,11 @@ class MainMenu extends Phaser.Scene
 
     UIResize(width, height){
         this.ui.setPosition(width / 2, height / 2);
-        this.mario.setPosition(width - 50, height - 50);
-        this.mario2.setPosition(width - 100, height - 50);
-        this.mario3.setPosition(width - 150, height - 50);
-        this.mario4.setPosition(width - 200, height - 50);
-        this.mario5.setPosition(width - 250, height - 50);
+        // this.mario.setPosition(width - 50, height - 50);
+        // this.mario2.setPosition(width - 100, height - 50);
+        // this.mario3.setPosition(width - 150, height - 50);
+        // this.mario4.setPosition(width - 200, height - 50);
+        // this.mario5.setPosition(width - 250, height - 50);
 
         this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
         this.scale.off(Phaser.Scale.Events.RESIZE, this.UIResize, this);
