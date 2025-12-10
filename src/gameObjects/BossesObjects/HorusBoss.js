@@ -366,18 +366,7 @@ export default class HorusBoss extends BossBase {
                 this.performWindAttack();
                 break;
             case "spawnEnemys":
-                this.spawnWindKoopa(this.player.x + 400, this.laneYPositions[0]);
-                this.spawnExtraEnemy(this.player.x + 600, this.laneYPositions[0]);
-               
-                let power = new DoubleJump(this.scene, this.player.x + 1000, this.laneYPositions[0]);
-
-                power.setVelocityX(power.body.velocity.x * -0.09315); // Salir del bloque hacia arriba
-                power.setVelocityY(-power.body.velocity.x/2);
-                this.scene.powerups.add(power);
-
-                this.scene.time.delayedCall(1200, () => {
-                    this.finishAttack();
-                });
+                this.performSpawnMinionOrd();
                 break;
             case "columnWave":
             default:
@@ -401,36 +390,70 @@ export default class HorusBoss extends BossBase {
         }
 
         // X base algo por delante del jugador
-        const spawnBaseX = player.x + 400;
+        const spawnBaseX = player.x + 300;
 
         const lanes = Phaser.Utils.Array
             .Shuffle(this.laneYPositions.slice())
             .slice(0, this.columnsPerWave);
 
-        lanes.forEach((laneY, index) => {
-            const delay = index * 150;
+        for (let i = 0; i < this.columnsPerWave; i++) {
+            const delay = i * 150;
 
             scene.time.delayedCall(delay, () => {
-                const spawnX = spawnBaseX + index * this.columnSpacingX;
+                const spawnX = spawnBaseX + i * this.columnSpacingX;
                 const colheight = Phaser.Math.Between(3, 8);
                 const hasHole = colheight > 4 || Math.random() < 0.5;
                 const hole = hasHole? 3 : 0;
                 const offset = Phaser.Math.Between(2, 4);
+                const coltype = Phaser.Math.Between(0, 2);
 
                 const col = new HorusColumn(
                     scene,
                     this.map,
                     this.groundLayer,
                     spawnX,
-                    laneY,
+                    this.laneYPositions[0], // Y del suelo donde empieza la columna
                     colheight,
                     hole,
-                    offset
+                    offset,
+                    "horus_column",     // ⬅ key del spritesheet de columnas
+                    {
+                        bottom: 6 + coltype,            // índice de frame de la base
+                        middle: 3 + coltype,            // índice de frame del cuerpo
+                        top: 0 + coltype,               // índice de frame de la parte superior
+                    },
+                    {
+                        fromOffsetY: 96,      // cuánto “suben” desde abajo
+                        duration: 500,        // tiempo del tween
+                        ease: "Back.easeOut", // curva del tween
+                    }
                 );
                 this.columns.push(col);
+                console.log(col);
             });
-        });
+        };
         scene.time.delayedCall(1200, () => {
+            this.finishAttack();
+        });
+    }
+
+
+    performSpawnMinionOrd() {
+        this.spawnWindKoopa(this.player.x + 400, this.laneYPositions[0] - 32);
+        if(Math.random() < 0.5) this.spawnExtraEnemy(this.player.x + 600, this.laneYPositions[0]);
+        else {this.spawnWindKoopa(this.player.x + 600, this.laneYPositions[0] - 32);}
+        
+        if(Math.random() < 0.5){
+            let power = new DoubleJump(this.scene, this.player.x + 1000, this.laneYPositions[0]);
+            power.setVelocityX(power.body.velocity.x * -0.09315); // Salir del bloque hacia arriba
+            power.setVelocityY(-power.body.velocity.x/2);
+            this.scene.powerups.add(power);
+        }
+        else{
+            this.spawnExtraEnemy(this.player.x + 1000, this.laneYPositions[0]);
+        }
+
+        this.scene.time.delayedCall(1200, () => {
             this.finishAttack();
         });
     }
@@ -519,9 +542,6 @@ export default class HorusBoss extends BossBase {
 
     spawnExtraEnemy() {
         const scene = this.scene;
-
-        if (Math.random() > 0.3) return;
-
         const cam = scene.cameras.main;
         const spawnX = cam.scrollX + cam.width + 100;
         const spawnY = Phaser.Utils.Array.GetRandom(this.laneYPositions);
@@ -557,18 +577,18 @@ export default class HorusBoss extends BossBase {
             .Shuffle(this.laneYPositions.slice())
             .slice(0, this.columnsPerWave);
 
-        lanes.forEach((laneY, index) => {
-            const delay = index * 150;
+        for(let i = 0; i < Phaser.Math.Between(1, this.columnsPerWave); i++) {
+            const delay = i * 150;
 
             scene.time.delayedCall(delay, () => {
                 const width = 96;      // ancho de la zona de viento
                 const height = 260;    // alto de la zona de viento
-                const spawnX = spawnBaseX + index * this.columnSpacingX;
+                const spawnX = spawnBaseX + i * this.columnSpacingX;
 
                 const windZone = new HorusWindZone(
                     scene,
                     spawnX,
-                    this.player.y,
+                    this.player.y + Phaser.Math.Between(-80, 20),
                     width,
                     height,
                     this.columnSpeed,
@@ -577,7 +597,7 @@ export default class HorusBoss extends BossBase {
 
                 this.columns.push(windZone);
             });
-        });
+        };
 
         scene.time.delayedCall(1200, () => {
             this.finishAttack();

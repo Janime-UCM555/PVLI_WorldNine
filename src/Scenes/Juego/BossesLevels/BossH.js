@@ -21,13 +21,19 @@ export default class BossH_Test extends GameScenes{
     constructor() {
         super('BossH', ()=>
             {
-            
+                const tilesetBGD = this.map?.addTilesetImage('Piramid_BG', 'bg_tileset_P');
+                const tilesetBGP = this.map?.addTilesetImage('MapaTiles', 'mi_tileset');
+                
+                // Capa de suelo
+                let bgLayer = this.map?.createLayer('CapaFondo', [tilesetBGD, tilesetBGP], 0, 0);
+                bgLayer.setDepth(0);
             }, true);
     }
 
     preload() {
         this.load.tilemapTiledJSON('map', 'MapaDeTiled/Prueba.json');
         this.load.spritesheet(HORUS_SHEET_KEY, 'assets/GameSprites/Characters/Bosses/Horus/spritesheet_uniforme_completa.png', { frameWidth: 74, frameHeight: 69 });
+        this.load.spritesheet('horus_column', 'assets/GameSprites/ObjetosBosses/Jarrones.png', { frameWidth: 32, frameHeight: 32 });
         this.score = 0;
         this.timer = 60;
         this.coinScore = 0;
@@ -40,70 +46,14 @@ export default class BossH_Test extends GameScenes{
 
     create() {
 
+        this.bossIntroStarted = false;
+
         // ---------------------------------------------------------
         // MARIO
         // ---------------------------------------------------------
-        this.jugador = new Mario(this, 100, 500, "mario_run", 3.5, -3.75, true);
+       
+        this.jugador = new Mario(this, 100, 500, "mario_run", 3.5, -4, true);
         super.create();
-        
-        this.anims.create({
-            key: 'mario_run',
-            frames: this.anims.generateFrameNumbers('mario_run', { start: 0, end: 3 }),
-            frameRate: 8,
-            repeat: -1
-        });
-        this.anims.create({
-            key: 'mario_idle',
-            frames: this.anims.generateFrameNumbers('mario_idle', { start: 0, end: 2 }),
-            frameRate: 1,
-            repeat: -1
-        });
-        this.anims.create({
-            key: 'mario_jump',
-            frames: this.anims.generateFrameNumbers('mario_jump', { start: 0, end: 1 }),
-            frameRate: 8,
-            repeat: -1
-        });
-        this.anims.create({
-            key: 'mario_fall',
-            frames: this.anims.generateFrameNumbers('mario_fall', { start: 0, end: 1 }),
-            frameRate: 8,
-            repeat: -1
-        });
-        this.anims.create({
-            key: 'mario_hurt',
-            frames: this.anims.generateFrameNumbers('mario_hurt', { start: 0, end: 0 }),
-            frameRate: 8,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: 'mario_stop',
-            frames: this.anims.generateFrameNumbers('mario_stop', { start: 0, end: 0 }),
-            frameRate: 8,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: 'mario_victory',
-            frames: this.anims.generateFrameNumbers('mario_victory', { start: 0, end: 0 }),
-            frameRate: 8,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: 'mario_bubble',
-            frames: this.anims.generateFrameNumbers('mario_bubble', {start: 0, end: 0}),
-            frameReate: 8,
-            repeat: -1
-        })
-
-        this.anims.create({
-            key: 'mario_throw',
-            frames: this.anims.generateFrameNumbers('mario_throw', {start: 0, end: 3}),
-            frameReate: 8,
-            repeat: 0
-        })
 
         // ---------------------------------------------------------
         // ✨ LANES desde el TILEMAP
@@ -126,7 +76,7 @@ export default class BossH_Test extends GameScenes{
             super.ganasPartida();
         });
 
-        this.horus = new HorusBoss(this, 1500, 300, {
+        this.horus = new HorusBoss(this, 1500, this.cameras.main.heightInPixels + 100, {
             player: this.jugador,
 
             columnsPerWave: 3,
@@ -145,17 +95,6 @@ export default class BossH_Test extends GameScenes{
             groundLayer: this.groundLayer,
 
         });
-
-        
-        // ---------------------------------------------------------
-        // POWER-UPS para probar
-        // ---------------------------------------------------------
-
-
-        spawnPowerUp(this, 350, 500, POWERUP_TYPES.JUMP_BOOTS)
-        spawnPowerUp(this, 350, 500, POWERUP_TYPES.MUSHROOM)
-        spawnPowerUp(this, 350, 500, POWERUP_TYPES.DOUBLE_JUMP)
-
 
         // ---------------------------------------------------------
         // CÁMARA + BOUNDS
@@ -185,5 +124,10 @@ export default class BossH_Test extends GameScenes{
 
     ganasPartida() {
        this.horus.defeat();
+    }
+
+    restartLevel() {
+        super.restartLevel();
+        
     }
 }

@@ -17,7 +17,7 @@ let config = {
 	pixelArt: true,
 	snapToPixels: true,
 	parent: 'game',
-	fps:300,
+	fps: 300,
 	scale: {
 		autoCenter: Phaser.Scale.CENTER_BOTH,
 		mode: Phaser.Scale.FIT,
