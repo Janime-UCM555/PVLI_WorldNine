@@ -74,7 +74,7 @@ class MainMenu extends Phaser.Scene
             this.scene.launch('BossH');
             this.scene.stop();
         });
-    })
+    }, 0x387999, 0x285f7a, 0xffffff, )
 
     // this.buttonPrueba = new Button(this, 0, 0,'Prueba',() =>{
     //     this.scene.launch('NivelScene');
@@ -82,7 +82,7 @@ class MainMenu extends Phaser.Scene
     // });
 
     this.buttonFullScreen = new Button(this, this.cameras.main.width / 4 + 50, this.cameras.main.height / 2.5, "Pantalla \nCompleta",
-        () => this.scale.toggleFullscreen()
+        () => this.scale.toggleFullscreen(), 0x387999,0x285f7a, 0xffffff, 
     );
 
     this.ui = this.add.container(this.cameras.main.width/2, this.cameras.main.height/2);
