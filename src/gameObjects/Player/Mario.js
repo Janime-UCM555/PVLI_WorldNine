@@ -98,7 +98,7 @@ class Mario extends Phaser.GameObjects.Sprite
         };
 
         const compoundBody = M.Body.create({
-        parts: [this.playerBody,this.sensors.bottom, this.sensors.left, this.sensors.right/*, this.sensors.up*/],
+        parts: [this.playerBody,this.sensors.bottom, this.sensors.left, this.sensors.right],
         friction: 0,
         frictionAir: 0,
         restitution: 0.05, // El jugador no se pega a paredes
@@ -212,73 +212,8 @@ class Mario extends Phaser.GameObjects.Sprite
 
         // Configurar entrada del ratón para saltar
         this.setupMouseInput();
-
-        // // Configurar colisión con los bordes del mundo
-        // this.setUpWorldBoundsCollision();
     }
-
-    setUpWorldBoundsCollision() {
-        const world = this.scene.matter.world;
-
-        // Por si acaso se vuelve a crear el jugador, limpiamos listeners antiguos
-        world.off('beforeupdate', this.handleBeforeUpdate, this);
-        world.off('collisionactive', this.handleCollisionActive, this);
-        world.off('afterupdate', this.handleAfterUpdate, this);
-
-        world.on('beforeupdate', this.handleBeforeUpdate, this);
-        world.on('collisionactive', this.handleCollisionActive, this);
-        world.on('afterupdate', this.handleAfterUpdate, this);
-    }
-
-    handleBeforeUpdate(event) {
-        // Resetear contadores de sensores antes de la actualización
-        this.numTouching.left = 0;
-        this.numTouching.right = 0;
-        this.numTouching.bottom = 0;
-        this.numTouching.up = 0;
-    }
-
-    handleCollisionActive(event) {
-        for (let i = 0; i < event.pairs.length; i++)
-        {
-            const bodyA = event.pairs[i].bodyA;
-            const bodyB = event.pairs[i].bodyB;
-
-            // Saltar si uno de los cuerpos es el jugador
-            if (bodyA === this.playerBody || bodyB === this.playerBody)
-            {
-                continue;
-            }
-
-            // verificamos si esta tocando suelo
-            if (bodyA === this.sensors.bottom || bodyB === this.sensors.bottom)
-            {
-                // Contar cualquier superficie como suelo (por ejemplo, saltar sobre una caja no estática).
-                this.numTouching.bottom += 1;
-            }
-
-            // verificamos si esta tocando pared izquierda
-            if ((bodyA === this.sensors.left && bodyB.isStatic) || (bodyB === this.sensors.left && bodyA.isStatic))
-            {
-                // Solo los objetos estáticos cuentan ya que no queremos ser bloqueados por un objeto que
-                // podemos empujar.
-                this.numTouching.left += 1;
-            }
-
-            // verificamos si esta tocando pared derecha
-            if ((bodyA === this.sensors.right && bodyB.isStatic) || (bodyB === this.sensors.right && bodyA.isStatic))
-            {
-                this.numTouching.right += 1;
-            }
-
-            // verificamos si esta tocando techo
-            if ((bodyA === this.sensors.up && bodyB.isStatic) || (bodyB === this.sensors.up && bodyA.isStatic))
-            {
-                this.numTouching.up += 1;
-            }
-        };
-    }
-
+    
     handleAfterUpdate(event) {
 
         const wasGrounded = this.isGrounded;
@@ -287,7 +222,6 @@ class Mario extends Phaser.GameObjects.Sprite
         this.blocked.right = this.numTouching.right > 0;
         this.blocked.left = this.numTouching.left > 0;
         this.blocked.bottom = this.numTouching.bottom > 0;
-        this.blocked.up = this.numTouching.up > 0;
 
         // Actualizar si está en el suelo
         this.isGrounded = this.blocked.bottom;
@@ -398,7 +332,7 @@ class Mario extends Phaser.GameObjects.Sprite
         }
         
         // Aplicar fuerza de salto progresiva mientras se mantiene presionado y no está chocando por arriba
-        if (this.isJumping && this.jumpHeld && this.isHoldingJump && !this.blocked.up) {
+        if (this.isJumping && this.jumpHeld && this.isHoldingJump) {
             this.applyProgressiveJumpForce(time, delta);
         }
 
@@ -934,15 +868,6 @@ class Mario extends Phaser.GameObjects.Sprite
                 this.setVelocityX(this.speed);
             }
 
-            // Si choca por arriba, cancelar el salto progresivo
-            if (this.blocked.up) {
-                this.isHoldingJump = false;
-                // Ajustar la velocidad Y para que comience a caer inmediatamente
-                if (this.body.velocity.y < 0) {
-                    this.setVelocityY(0);
-                }
-            }
-                // console.log(this.isGrounded);
             if (this.isGrounded) {
                 this.coyoteTimeCounter = this.coyoteTime; // Resetear cuando está en suelo
                 // Solo resetear estados de salto si no está actualmente saltando
@@ -1091,7 +1016,6 @@ class Mario extends Phaser.GameObjects.Sprite
         this.numTouching.left = 0;
         this.numTouching.right = 0;
         this.numTouching.bottom = 0;
-        this.numTouching.up = 0;
     }
     isTerrain(body) {
         return (body.collisionFilter.category & CATEGORY_TERRAIN) !== 0;
@@ -1131,13 +1055,6 @@ class Mario extends Phaser.GameObjects.Sprite
             {
                 this.numTouching.right += 1;
             }
-
-            // verificamos si esta tocando techo
-            if ((bodyA === this.sensors.up && bodyB.isStatic && this.isTerrain(bodyB)) || 
-            (bodyB === this.sensors.up && bodyA.isStatic && this.isTerrain(bodyA)))
-            {
-                this.numTouching.up += 1;
-            }
         };
     }
 
@@ -1146,7 +1063,6 @@ class Mario extends Phaser.GameObjects.Sprite
         this.blocked.right = this.numTouching.right > 0;
         this.blocked.left = this.numTouching.left > 0;
         this.blocked.bottom = this.numTouching.bottom > 0;
-        this.blocked.up = this.numTouching.up > 0;
 
         // Actualizar si está en el suelo
         this.isGrounded = this.blocked.bottom;
