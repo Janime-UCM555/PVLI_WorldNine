@@ -75,11 +75,11 @@ export class FallBlock extends SceneBlocks {
                 });
             }
         });
-        const isPlayer = body => body.label === "Mario" || body.label === "MarioBottom";
+        const isPlayer = body => body.label === "Mario";
 
         this.scene.matter.world.on("collisionstart", (event, bodyA, bodyB) => {
-            if (!this.hasPlayer &&((bodyA.label === "oneWay"  && bodyA === this.sensor && bodyB.label === "Mario") ||
-                (bodyB.label === "oneWay"  && bodyB=== this.sensor&& bodyA.label === "Mario" )))
+            if (((bodyA.label === "oneWay"  && bodyA === this.sensor && isPlayer(bodyB)) ||
+                (bodyB.label === "oneWay"  && bodyB=== this.sensor&& isPlayer(bodyA) )))
             {
                 const player = this.scene.jugador.body;
                 if (player.velocity.y > 0 && player.position.y < this.body.position.y - 5)
@@ -93,7 +93,6 @@ export class FallBlock extends SceneBlocks {
         });
 
         this.scene.matter.world.on("collisionend", (event, bodyA, bodyB) => {
-
             if ((bodyA === this.sensor && isPlayer(bodyB)) ||
                 (bodyB === this.sensor && isPlayer(bodyA)))
             {

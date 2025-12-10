@@ -33,7 +33,7 @@ export class Coins extends SceneBlocks {
 
         this.collected = collected;
 
-         
+        this.body.label = "Coins";
         this.sourceId = obj.id;
 
         if (this.type === 'purple') {

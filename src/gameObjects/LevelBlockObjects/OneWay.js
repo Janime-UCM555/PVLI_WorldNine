@@ -14,14 +14,18 @@ export class OneWay extends SceneBlocks {
      */
     constructor(scene, obj) {
         super(scene, obj);
-        this.setBody({
-            type: 'rectangle',
-            width: obj.width * 1,
-            height: obj.height,
-            // y: obj.y-15,
-        });
-        const frame = obj.gid - this.scene.tile.firstgid;
-        this.setTexture('mi_tileset',frame);
+        const M = Phaser.Physics.Matter.Matter;
+        const body = M.Bodies.rectangle(
+            obj.width,
+            obj.height,
+            {
+                chamfer: { radius: 10 }
+            }
+        );
+        this.setExistingBody(body);
+        // this.setPosition(obj.x, obj.y);
+        // const frame = obj.gid - this.scene.tile.firstgid;
+        // this.setTexture('mi_tileset',frame);
         this.slop = 0;
         this.setStatic(true);
         this.setSensor(false);
@@ -56,7 +60,7 @@ export class OneWay extends SceneBlocks {
                 (bodyB.label === "oneWay"  && bodyB=== this.sensor&& bodyA.label === "Mario" )))
             {
                 const player = this.scene.jugador.body;
-                if (player.velocity.y > 0 && player.position.y < this.body.position.y - 5)
+                if (player.velocity.y > 0 && player.position.y < this.body.position.y - 20)
                 {
                     this.setCollidesWith([CATEGORY_ENEMY, CATEGORY_PLAYER]);
                     // this.scene?.jugador.setVelocityX(-0.1);

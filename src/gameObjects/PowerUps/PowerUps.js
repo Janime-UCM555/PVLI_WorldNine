@@ -16,6 +16,8 @@ import{
     CATEGORY_TERRAIN,
     CATEGORY_POWERUP,
 } from "../collisionCategories.js"
+import Coins from "../LevelBlockObjects/Coins.js";
+// import Coins from "../LevelBlockObjects/Coins.js";
 
 /**
  * @typedef {'mushroom' | 'star' | 'hammer' | 'double_jump' | 'dash' | 'jump_boots'} PowerUpType
@@ -153,7 +155,10 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
       for (let i = 0; i < event.pairs.length; i++) {
         const bodyA = event.pairs[i].bodyA;
         const bodyB = event.pairs[i].bodyB;
-
+        if(bodyA.label === "Coins" || bodyB.label === "Coins")
+        {
+          return;
+        }
         // -------- 1) Filtrar: solo nos interesan colisiones que involucren ESTE power-up --------
         const involvesThisPowerUp =
           bodyA === this.playerBody || bodyB === this.playerBody ||
@@ -253,12 +258,16 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
    */
   preUpdate(time, delta) {
     super.preUpdate(time, delta);
-
+    if (this.body.velocity.x < this.SPEED)
+    {
+      this.setVelocityX(Math.abs(this.SPEED)*(this.body.velocity.x/Math.abs(this.body.velocity.x)));
+    }
     if (this.blocked.left) {
       this.setVelocityX(Math.abs(this.SPEED));
     } else if (this.blocked.right) {
       this.setVelocityX(-Math.abs(this.SPEED));
     }
+
   }
 }
 export default PowerUp;

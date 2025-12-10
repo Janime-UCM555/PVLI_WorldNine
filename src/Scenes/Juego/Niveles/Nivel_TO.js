@@ -32,7 +32,7 @@ class Nivel_TO extends GameScenes
 
     create(){
         super.create();
-        spawnPowerUp(this, 300, 600, POWERUP_TYPES.HAMMER);
+        // spawnPowerUp(this, 300, 600, POWERUP_TYPES.HAMMER);
     }
     timerMethod()
     {

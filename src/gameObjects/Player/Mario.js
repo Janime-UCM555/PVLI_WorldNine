@@ -18,7 +18,7 @@ class Mario extends Phaser.GameObjects.Sprite
         this.speed = speed; // Velocidad del jugador
 
         // Estados del jugador
-        this.isGrounded = false; // Controlar si está en el suelo
+        this.isGrounded = true; // Controlar si está en el suelo
         this.wasGrounded = false; // Para rastrear el estado anterior
         this.canEnemyJump = false; // Para no poder saltar en más enemigos
         this.isStopped = false; // Controlar si está detenido
@@ -130,7 +130,6 @@ class Mario extends Phaser.GameObjects.Sprite
             this.setFixedRotation();
         }
         this.body.moves = true;
-
         //     // Mejorar la detección de colisiones
         this.body.onWorldBounds = true;
         // }
@@ -628,8 +627,8 @@ class Mario extends Phaser.GameObjects.Sprite
         // Detener el movimiento automático
         this.isStopped = true;
         if (this.body) {
-            this.body.velocity.x = 0;
-            this.body.velocity.y = 0;
+            this.setVelocityX(0);
+            this.setVelocityY(0);
             this.body.ignoreGravity = true;
         }
 
@@ -654,8 +653,8 @@ class Mario extends Phaser.GameObjects.Sprite
             this.setSensor(true);
             this.body.collisionFilter.mask = 0; // Desactivar completamente las colisiones
             // Forzar velocidad cero
-            this.body.velocity.x = 0;
-            this.body.velocity.y = 0;
+            this.setVelocityX(0);
+            this.setVelocityY(0);
         }
 
         // 3. Cambiar a textura de burbuja
@@ -977,17 +976,17 @@ class Mario extends Phaser.GameObjects.Sprite
         if (this.body && !this.isHurt && !this.isInBubble) {
             // Asegurar que las velocidades sean números válidos
             if (typeof this.body.velocity.x !== 'number' || isNaN(this.body.velocity.x)) {
-                this.body.velocity.x = this.isBeingPushed ? 0 : this.speed;
+                this.setVelocityX(this.isBeingPushed ? 0 : this.speed);
             }
             if (typeof this.body.velocity.y !== 'number' || isNaN(this.body.velocity.y)) {
-                this.body.velocity.y = 0;
+                this.setVelocityY(0);
             }
 
             // Limitar velocidad X
-            this.body.velocity.x = Phaser.Math.Clamp(this.body.velocity.x, -650, 650);
+            this.setVelocityX(Phaser.Math.Clamp(this.body.velocity.x, -650, 650));
         
             // Limitar velocidad Y
-            this.body.velocity.y = Phaser.Math.Clamp(this.body.velocity.y, -650, 650);
+            this.setVelocityY(Phaser.Math.Clamp(this.body.velocity.y, -650, 650));
         }
     }
 
