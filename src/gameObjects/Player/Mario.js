@@ -101,7 +101,7 @@ class Mario extends Phaser.GameObjects.Sprite
         parts: [this.playerBody,this.sensors.bottom, this.sensors.left, this.sensors.right],
         friction: 0,
         frictionAir: 0,
-        restitution: 0.05, // El jugador no se pega a paredes
+        restitution: 0.1, // El jugador no se pega a paredes
         label: "Mario"
         });
 
@@ -212,24 +212,6 @@ class Mario extends Phaser.GameObjects.Sprite
 
         // Configurar entrada del ratón para saltar
         this.setupMouseInput();
-    }
-    
-    handleAfterUpdate(event) {
-
-        const wasGrounded = this.isGrounded;
-
-        // Actualizar estados de bloqueo basados en sensores
-        this.blocked.right = this.numTouching.right > 0;
-        this.blocked.left = this.numTouching.left > 0;
-        this.blocked.bottom = this.numTouching.bottom > 0;
-
-        // Actualizar si está en el suelo
-        this.isGrounded = this.blocked.bottom;
-
-        if (this.isGrounded) {
-            this.canEnemyJump = false;
-            this.hasDoubleJumped = false; // Resetear doble salto al tocar suelo
-        }
     }
     
     setupMouseInput() {
