@@ -530,6 +530,7 @@ export default class HorusBoss extends BossBase {
                 2
             );
             koopa.direction = -1;
+            koopa.setOrigin(0.5, 0.8);
             this.addMinion(koopa);
 
         } catch (e) {
@@ -616,6 +617,8 @@ export default class HorusBoss extends BossBase {
         if (this.windSound && this.windSound.isPlaying) {
             this.windSound.stop();
         }
+
+        this.clearMinions();
 
         if (this.columns) {
             this.columns.forEach((col) => {
