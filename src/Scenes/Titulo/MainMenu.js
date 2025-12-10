@@ -12,7 +12,7 @@ class MainMenu extends Phaser.Scene
     }
     
     preload(){
-        this.load.image('menu_pattern', 'assets/GameSprites/Precarga/menu_pattern.jpg');
+        this.load.image('menu_bg', 'assets/GameSprites/Precarga/MenuBG.png');
 
         this.load.audio('coin_sound', 'assets/sonidos/SE/Items/Monedas/coin.wav');
 
@@ -32,35 +32,28 @@ class MainMenu extends Phaser.Scene
 
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
-    this.stars = this.add.tileSprite(
+    this.bg = this.add.tileSprite(
         0,
         0,
         width,
         height,
-        'menu_pattern'
+        'menu_bg'
     );
-    this.stars.setOrigin(0, 0);//
+    this.bg.setOrigin(0, 0);//
 
     this.title = this.add.sprite(this.cameras.main.width/2,this.cameras.main.height/3, 'TitleName');
     this.title.setScale(0.8);
 
     // Para que las estrellas cubran toda la pantalla
-    this.stars.setDisplaySize(width, height);
+    this.bg.setDisplaySize(width, height);
 
     // this.mario = this.add.sprite(this.cameras.main.width - 50, this.cameras.main.height - 50, 'mario_walk');
     // this.mario.play('mario_walk');
 
-    this.mario2 = this.add.sprite(this.cameras.main.width - 100, this.cameras.main.height - 50, 'mario_run');
+    this.mario2 = this.add.sprite(this.cameras.main.width / 2, this.cameras.main.height / 2 + 140, 'mario_run');
+    this.mario2.flipX = true;
+    this.mario2.setScale(2,2);
     this.mario2.play('mario_run');
-
-    this.mario3 = this.add.sprite(this.cameras.main.width - 150, this.cameras.main.height - 50, 'mario_jump');
-    this.mario3.play('mario_jump');
-
-    this.mario4 = this.add.sprite(this.cameras.main.width - 200, this.cameras.main.height - 50, 'mario_hurt');
-    this.mario4.play('mario_hurt');
-
-    this.mario5 = this.add.sprite(this.cameras.main.width - 250, this.cameras.main.height - 50, 'mario_throw');
-    this.mario5.play('mario_throw');
 
     // Música de fondo del menú
     if (!this.menuMusic || !this.menuMusic.isPlaying) {
@@ -70,7 +63,7 @@ class MainMenu extends Phaser.Scene
 
 
 
-    this.buttonMove = new Button(this, 0, this.cameras.main.height/5, 'Jugar',() =>{
+    this.buttonMove = new Button(this, 0, this.cameras.main.height/2.5, 'Jugar',() =>{
         if (this.menuMusic && this.menuMusic.isPlaying) {
             this.menuMusic.stop();
         }
@@ -88,7 +81,7 @@ class MainMenu extends Phaser.Scene
     //     this.scene.stop();
     // });
 
-    this.buttonFullScreen = new Button(this, 0, B_SPACING / 2, "Pantalla \nCompleta",
+    this.buttonFullScreen = new Button(this, this.cameras.main.width / 4 + 50, this.cameras.main.height / 2.5, "Pantalla \nCompleta",
         () => this.scale.toggleFullscreen()
     );
 
@@ -125,7 +118,9 @@ class MainMenu extends Phaser.Scene
     }
     update(time, delta) {
         // Se mueven las estrellas de izquierda a derecha y de arriba a abajo
-       
+        if (this.bg) {
+            this.bg.tilePositionX += 5;
+        }
     }
 }
 
