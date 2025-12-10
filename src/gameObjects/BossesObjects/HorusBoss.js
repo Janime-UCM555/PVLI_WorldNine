@@ -340,7 +340,6 @@ export default class HorusBoss extends BossBase {
         const distance = this.player.x - this.lastAttackX;
 
         if (distance >= this.attackDistance) {
-            this.lastAttackX = this.player.x;
             this.changeState(BOSS_STATE.ATTACK);
         }
     }
@@ -530,6 +529,7 @@ export default class HorusBoss extends BossBase {
                 2
             );
             koopa.direction = -1;
+            koopa.setOrigin(0.5, 0.8);
             this.addMinion(koopa);
 
         } catch (e) {
@@ -604,6 +604,11 @@ export default class HorusBoss extends BossBase {
         });
     }
 
+    finishAttack() {
+        this.lastAttackX = this.player.x;
+        super.finishAttack();
+    }
+
 
     updateAttack(time, delta){
         this.x += this.player.speed * delta/21;
@@ -616,6 +621,8 @@ export default class HorusBoss extends BossBase {
         if (this.windSound && this.windSound.isPlaying) {
             this.windSound.stop();
         }
+
+        this.clearMinions();
 
         if (this.columns) {
             this.columns.forEach((col) => {
