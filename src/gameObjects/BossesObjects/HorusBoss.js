@@ -340,7 +340,6 @@ export default class HorusBoss extends BossBase {
         const distance = this.player.x - this.lastAttackX;
 
         if (distance >= this.attackDistance) {
-            this.lastAttackX = this.player.x;
             this.changeState(BOSS_STATE.ATTACK);
         }
     }
@@ -603,6 +602,11 @@ export default class HorusBoss extends BossBase {
         scene.time.delayedCall(1200, () => {
             this.finishAttack();
         });
+    }
+
+    finishAttack() {
+        this.lastAttackX = this.player.x;
+        super.finishAttack();
     }
 
 
