@@ -251,7 +251,7 @@ class PreloadScene extends Phaser.Scene {
         frameHeight: 32
     });
     this.load.image('water', 'GameSprites/Tilesets/Water.png');
-    this.load.tilemapTiledJSON('water_ts', 'MapaDeTiled/Water.tsx')
+    // this.load.tilemapTiledJSON('water_ts', 'MapaDeTiled/Water.tsx')
 
     //Logo
     this.load.image('TitleName', 'web/TituloPNG.png');
@@ -307,13 +307,13 @@ class PreloadScene extends Phaser.Scene {
     createAnimations() {
           this.anims.create({
             key: 'HadesAnim',
-            frames: this.anims.generateFrameNumbers('Hades', { start: 0, end: 4 }),
+            frames: this.anims.generateFrameNumbers('Hades', { start: 0, end: 3 }),
             frameRate: 8,
             repeat: -1
         });
         this.anims.create({
             key: 'HadesDeadAnim',
-            frames: this.anims.generateFrameNumbers('HadesDead', { start: 0, end: 2 }),
+            frames: this.anims.generateFrameNumbers('HadesDead', { start: 0, end: 1 }),
             frameRate: 8,
             repeat: -1
         });
@@ -448,7 +448,7 @@ class PreloadScene extends Phaser.Scene {
         
         this.anims.create({
             key: 'mario_panicrun',
-            frames: this.anims.generateFrameNumbers('mario_panicrun', { start: 0, end: 3 }),
+            frames: this.anims.generateFrameNumbers('mario_panicrun', { start: 0, end: 1 }),
             frameRate: 8,
             repeat: -1
         });

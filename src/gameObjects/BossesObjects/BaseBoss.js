@@ -241,7 +241,7 @@ export default class BossBase extends Phaser.GameObjects.Sprite {
                     this.handleBossDefeated();
                 });
             }
-        } else if (animationKey === 'jupiter_death' || animationKey === 'hades_death') {
+        } else {
             // Calcular posición objetivo
             const targetX = this.player.x + 150;
             const targetY = 375;

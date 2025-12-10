@@ -128,7 +128,7 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
     // // Apply to all parts
     // this.enemyBody.collisionFilter.category = CATEGORY_ENEMY;
     // this.enemyBody.collisionFilter.mask = mask;
-    this.setCollisionCategory([CATEGORY_POWERUP]);
+    this.setCollisionCategory(CATEGORY_POWERUP);
     this.setCollidesWith([CATEGORY_PLAYER, CATEGORY_TERRAIN]);
 
     // Asociamos el cuerpo al sprite
@@ -149,46 +149,49 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
       this.numTouching.bottom = 0;
     }, this);
 
-    // Gestión de colisiones activas (sensores + recogida)
     this.scene.matter.world.on('collisionactive', (event) => {
       for (let i = 0; i < event.pairs.length; i++) {
         const bodyA = event.pairs[i].bodyA;
         const bodyB = event.pairs[i].bodyB;
 
-        if (!bodyA.isStatic && !bodyB.isStatic && !bodyA instanceof PowerUp && !bodyB instanceof PowerUp) {
+        // -------- 1) Filtrar: solo nos interesan colisiones que involucren ESTE power-up --------
+        const involvesThisPowerUp =
+          bodyA === this.playerBody || bodyB === this.playerBody ||
+          bodyA === this.sensors.left || bodyB === this.sensors.left ||
+          bodyA === this.sensors.right || bodyB === this.sensors.right ||
+          bodyA === this.sensors.bottom || bodyB === this.sensors.bottom;
+
+        if (!involvesThisPowerUp) {
+          // La colisión es entre otras cosas que no son este power-up => ignorar
           continue;
         }
-        if (bodyA === this.playerBody || bodyB === this.playerBody)
-        {
-          continue;
-        }
-        // 1) Primero, comprobar si ESTE power-up ha chocado con Mario
+
+        // -------- 2) ¿Ha chocado este power-up con Mario? --------
         const isThisPowerBody =
           bodyA === this.playerBody || bodyB === this.playerBody;
         const isMarioBody =
           bodyA.label === "Mario" || bodyB.label === "Mario";
 
         if (isThisPowerBody && isMarioBody) {
-          // Sacamos el gameObject del cuerpo de Mario
-          /** @type {any} */ // tu clase Player
-          const player = bodyA.label === "Mario" ? bodyA.gameObject : bodyB.gameObject;
-          this.collect(player);   // <-- SOLO este powerup
-          continue;               // No hace falta procesar sensores para este par
+          // Sacar el gameObject del cuerpo de Mario
+          const marioBody = bodyA.label === "Mario" ? bodyA : bodyB;
+          const player = marioBody.gameObject;
+
+          this.collect(player); // SOLO este power-up se recoge
+          continue;             // No hace falta procesar sensores para este par
         }
-        else {
-          // No es colisión con Mario, seguir a sensores
-          // 2) A partir de aquí, lógica de sensores
-          if (bodyA === this.sensors.left || bodyB === this.sensors.left) {
-            this.numTouching.left++;
-          }
-          if (bodyA === this.sensors.right || bodyB === this.sensors.right) {
-            this.numTouching.right++;
-          }
-          if (bodyA === this.sensors.bottom || bodyB === this.sensors.bottom) {
-            this.numTouching.bottom++;
-          }
+
+        // -------- 3) Sensores para rebotar con el terreno --------
+        if (bodyA === this.sensors.left || bodyB === this.sensors.left) {
+          this.numTouching.left++;
         }
-    }
+        if (bodyA === this.sensors.right || bodyB === this.sensors.right) {
+          this.numTouching.right++;
+        }
+        if (bodyA === this.sensors.bottom || bodyB === this.sensors.bottom) {
+          this.numTouching.bottom++;
+        }
+      }
     });
 
     // Actualizar flags blocked según numTouching

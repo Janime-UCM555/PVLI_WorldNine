@@ -108,8 +108,6 @@ function updateWebStatus(status) {
   /** @type {LevelInfo} */
   const info = LEVEL_INFO[sceneKey] || LEVEL_INFO["Global"];
 
-  console.log("Actualizando interfaz web:", sceneKey, purpleCoins, info);
-
   const mythDot    = document.getElementById("myth-dot");
   const mythLabel  = document.getElementById("myth-label");
   const lvlName    = document.getElementById("current-level-name");

@@ -5,7 +5,7 @@ import Nivel_R from './Scenes/Juego/Niveles/Nivel_R.js';
 import Nivel_TO from './Scenes/Juego/Niveles/Nivel_TO.js';
 import Nivel_D from './Scenes/Juego/Niveles/Nivel_D.js';
 import BossJ from './Scenes/Juego/BossesLevels/BossJ.js';
-import BossHTest from './Scenes/Juego/BossesLevels/BossHTest.js';
+import BossHTest from './Scenes/Juego/BossesLevels/BossH.js';
 import BossHades from './Scenes/Juego/BossesLevels/BossHades.js';
 
 /**

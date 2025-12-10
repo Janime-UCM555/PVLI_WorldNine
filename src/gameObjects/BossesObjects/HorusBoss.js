@@ -8,6 +8,22 @@ import HorusColumn from "./HorusColums.js";
 import HorusWindZone from "./HorusWindZone.js";
 import DoubleJump from "../PowerUps/DoubleJump.js";
 
+// Nombre del spritesheet de Horus tal y como lo cargas en preload():
+// this.load.spritesheet('horus_sheet', 'ruta/a/horus.png', { frameWidth, frameHeight });
+export const HORUS_SHEET_KEY = "horus_sheet";
+
+/**
+ * IMPORTANTE:
+ * - Rellena estos arrays con los índices de frame que SÍ quieres usar.
+ * - NO incluyas los frames en negro.
+ * - Ejemplo: si tu spritesheet tiene 0–7 pero 3 y 4 son negros,
+ *   pon [0,1,2,5,6,7].
+ */
+const HORUS_IDLE_FRAMES  = [15, 7, 14];
+const HORUS_INTRO_FRAMES = [30, 20, 15];
+const HORUS_CAST_FRAMES  = [4, 12, 13, 1];
+const HORUS_DEAD_FRAMES  = [6, 0, 2, 26, 23];
+
 export default class HorusBoss extends BossBase {
     /**
      * @param {Phaser.Scene} scene
@@ -120,8 +136,76 @@ export default class HorusBoss extends BossBase {
         //     loop: false,
         // });
 
+        this.ensureAnimations();
+
         this.setDepth(30);
     }
+
+    /**
+     * Crea las animaciones de Horus en la escena si no ha habido ninguna instancia anterior.
+     */
+    ensureAnimations() {
+        HorusBoss.createAnimations(this.scene);
+    }
+
+    /**
+     * Crea (si no existen ya) todas las animaciones de Horus.
+     * Llamar desde la escena antes o durante la creación del boss.
+     * @param {Phaser.Scene} scene
+     */
+    static createAnimations(scene) {
+        const anims = scene.anims;
+
+        // Idle
+        if (!anims.exists("horus_idle")) {
+            anims.create({
+                key: "horus_idle",
+                frames: anims.generateFrameNumbers(HORUS_SHEET_KEY, {
+                    frames: HORUS_IDLE_FRAMES,
+                }),
+                frameRate: 4,
+                repeat: -1,
+            });
+            this.introDuration = anims.get("horus_idle").frames.length * (1000 / 4);
+        }
+
+        // Intro
+        if (!anims.exists("horus_intro")) {
+            anims.create({
+                key: "horus_intro",
+                frames: anims.generateFrameNumbers(HORUS_SHEET_KEY, {
+                    frames: HORUS_INTRO_FRAMES,
+                }),
+                frameRate: 1,
+                repeat: 0,
+            });
+        }
+
+        // Casteando / ataque
+        if (!anims.exists("horus_cast")) {
+            anims.create({
+                key: "horus_cast",
+                frames: anims.generateFrameNumbers(HORUS_SHEET_KEY, {
+                    frames: HORUS_CAST_FRAMES,
+                }),
+                frameRate: 6,
+                repeat: -1,
+            });
+        }
+
+        // Muerte
+        if (!anims.exists("horus_dead")) {
+            anims.create({
+                key: "horus_dead",
+                frames: anims.generateFrameNumbers(HORUS_SHEET_KEY, {
+                    frames: HORUS_DEAD_FRAMES,
+                }),
+                frameRate: 2,
+                repeat: 0,
+            });
+        }
+    }
+
 
     // -------------------------------------------------------
     // INTRO: aparece por detrás, se pone delante y sobrevuela a Mario
@@ -141,6 +225,7 @@ export default class HorusBoss extends BossBase {
         if (this.scene.anims.exists("horus_intro")) {
             this.play("horus_intro");
         }
+        this.player.setStatic(true); // congelar a Mario durante la intro
 
         // Timeline: se acerca por detrás, cruza por encima y se coloca en su posición de vuelo
         // 1er tween: aparece por detrás hasta casi encima
@@ -158,15 +243,19 @@ export default class HorusBoss extends BossBase {
                     targets: this,
                     x: this.player.x + this.baseOffsetX,
                     y: this.player.y + this.baseOffsetY,
-                    duration: this.introDuration * 0.6,
+                    duration: this.introDuration * 1.2,
                     ease: "Cubic.easeInOut",
                     onComplete: () => {
                         this.changeState(BOSS_STATE.NEUTRAL);
+                        this.player.setStatic(false); // liberar a Mario
+                        this.lastAttackX = this.player ? this.player.x : 0;
                     },
                 });
             },
         });
     }
+
+    updateIntro(time, delta) {}
 
     // -------------------------------------------------------
     // SEGUIMIENTO SUAVE + VUELTECITAS + ESCALA
@@ -415,9 +504,9 @@ export default class HorusBoss extends BossBase {
                 y,
                 this.koopaTexture,
                 this.koopaSpeed,
-                true
+                2
             );
-            koopa.direction = -1; // viento hacia la izquierda
+            koopa.direction = -1;
             this.addMinion(koopa);
 
         } catch (e) {
@@ -524,6 +613,36 @@ export default class HorusBoss extends BossBase {
                     super.onEnterDead();
                 }
             );
+            this.player.setStatic(true); // congelar a Mario durante la intro
+
+            // Timeline: se acerca por detrás, cruza por encima y se coloca en su posición de vuelo
+            // 1er tween: aparece por detrás hasta casi encima
+            this.scene.tweens.add({
+                targets: this,
+                alpha: 1,
+                x: this.player.x + 60,
+                y: this.player.y - 50,
+                scale: this.baseScale,
+                duration: this.introDuration,
+                ease: "Cubic.easeInOut",
+                onComplete: () => {
+                    // 2º tween: se adelanta y “salta” por delante y arriba
+                    this.scene.tweens.add({
+                        targets: this,
+                        y: this.laneYPositions[0],
+                        duration: this.introDuration * 1.2,
+                        ease: "Cubic.easeInOut",
+                        onComplete: () => {
+                            this.player.setStatic(false); // liberar a Mario
+                            this.lastAttackX = this.player ? this.player.x : 0;
+                             // Notificar que la animación de muerte ha terminado
+                                if (this.scene && this.scene.events) {
+                                    this.scene.events.emit('horus-death-complete');
+                                }
+                        },
+                    });
+                },
+            });
         } else {
             super.onEnterDead();
         }

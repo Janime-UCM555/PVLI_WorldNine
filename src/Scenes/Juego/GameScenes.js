@@ -194,7 +194,7 @@ class EscenaBase extends Phaser.Scene {
 
 
         this.coins = this.createsCoinsFromLayer('Monedas');
-        this.coins.setDepth(2);
+        this.coins?.setDepth(2);
 
         if (this.map.getLayer('CapaFrente'))
         {       
@@ -204,16 +204,16 @@ class EscenaBase extends Phaser.Scene {
         if (this.map.getLayer('CapaDecoraciones'))
         {
             this.decorationsLayer = this.map.createLayer('CapaDecoraciones', tileset, 0, 0);
-            this.decorationsLayer.setDepth(1);
+            this.decorationsLayer?.setDepth(1);
         }
         if (this.map.getLayer('CapaFalsoSuelo'))
         {
             this.fakeFloorLayer = this.map.createLayer('CapaFalsoSuelo', tileset, 0, 0);
             this.fakeFloorLayer?.setTint(0x888888);
-            this.decorationsLayer.setDepth(0);
+            this.decorationsLayer?.setDepth(0);
         }
         this.groundLayer = this.map.createLayer('CapaSuelo', tileset, 0, 0);
-        this.groundLayer.setDepth(1);
+        this.groundLayer?.setDepth(1);
         this.barraFinLayer = this.createObjectsFromLayer('BarraFin');
 
         // Ponemos colisión a las tiles
@@ -238,12 +238,17 @@ class EscenaBase extends Phaser.Scene {
         {
             this.jugador = new Mario(this, 25, 625, 'mario_run', 3.5, -3.75, true, false);
         }
-        this.jugador.setDepth(3);
 
-        // Forzar la inicialización de animaciones
-        if (this.anims.exists('mario_run')) {
-            this.jugador.play('mario_run');
-        }
+        if (!this.jugador){console.error("No se ha podido crear a Mario");}    
+
+        this.jugador.setDepth(3);
+            
+            // Forzar la inicialización de animaciones
+            if (this.anims.exists('mario_run')) {
+                this.jugador.play('mario_run');
+            }
+
+
         this.setupCollisions();
 
         this.powerups = this.add.group();
@@ -260,19 +265,18 @@ class EscenaBase extends Phaser.Scene {
         // Zoom más cercano (1.65 es 65% más cercano)
         this.cameras.main.setZoom(1.65);
         
-        var openedScene = false;
-        if (!openedScene)
+        if (!this.openedScene)
         {
-            this.jugador.setStatic(true);
-            TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador.getCenter(), 0, 120, ()=>{
+            this.jugador?.setStatic(true);
+            TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador?.getCenter(), 0, 120, ()=>{
                 transition2();
             });
             const transition2 = () => {
-                TransitionCode.invoke(this, this.cameras.main, 600,this.jugador.getCenter(), 120, this.cameras.main.width,
+                TransitionCode.invoke(this, this.cameras.main, 600,this.jugador?.getCenter(), 120, this.cameras.main.width,
                 ()=>{
-                    this.openedScene=true;
-                    this.jugador.setStatic(false);
-                    this.jugador.resume(); // Reanudar movimiento
+                    this.openedScene = true;
+                    this.jugador?.setStatic(false);
+                    this.jugador?.resume(); // Reanudar movimiento
                 });
             }
         }
@@ -373,6 +377,8 @@ class EscenaBase extends Phaser.Scene {
                 
             }
         }
+        
+        this.openedScene = false;
         // Create común
     }
     createText()
