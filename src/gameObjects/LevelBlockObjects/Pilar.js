@@ -20,7 +20,7 @@ export class Pilar extends SceneBlocks
             type: 'rectangle',
             x: x,
             y: y,
-            width: 900,
+            width: 700,
             height:this.scene.cameras.main.height*1.5,
         });
         this.setSensor(true);
