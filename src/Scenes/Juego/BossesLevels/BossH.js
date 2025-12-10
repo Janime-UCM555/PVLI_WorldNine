@@ -52,7 +52,7 @@ export default class BossH_Test extends GameScenes{
         // MARIO
         // ---------------------------------------------------------
        
-        this.jugador = new Mario(this, 100, 500, "mario_run", 3.5, -3.75, true);
+        this.jugador = new Mario(this, 100, 500, "mario_run", 3.5, -4, true);
         super.create();
 
         // ---------------------------------------------------------
@@ -76,7 +76,7 @@ export default class BossH_Test extends GameScenes{
             super.ganasPartida();
         });
 
-        this.horus = new HorusBoss(this, 1500, 300, {
+        this.horus = new HorusBoss(this, 1500, this.cameras.main.heightInPixels + 100, {
             player: this.jugador,
 
             columnsPerWave: 3,

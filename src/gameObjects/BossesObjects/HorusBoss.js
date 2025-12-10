@@ -577,18 +577,18 @@ export default class HorusBoss extends BossBase {
             .Shuffle(this.laneYPositions.slice())
             .slice(0, this.columnsPerWave);
 
-        lanes.forEach((laneY, index) => {
-            const delay = index * 150;
+        for(let i = 0; i < Phaser.Math.Between(1, this.columnsPerWave); i++) {
+            const delay = i * 150;
 
             scene.time.delayedCall(delay, () => {
                 const width = 96;      // ancho de la zona de viento
                 const height = 260;    // alto de la zona de viento
-                const spawnX = spawnBaseX + index * this.columnSpacingX;
+                const spawnX = spawnBaseX + i * this.columnSpacingX;
 
                 const windZone = new HorusWindZone(
                     scene,
                     spawnX,
-                    this.player.y,
+                    this.player.y + Phaser.Math.Between(-80, 20),
                     width,
                     height,
                     this.columnSpeed,
@@ -597,7 +597,7 @@ export default class HorusBoss extends BossBase {
 
                 this.columns.push(windZone);
             });
-        });
+        };
 
         scene.time.delayedCall(1200, () => {
             this.finishAttack();
