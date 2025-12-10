@@ -474,7 +474,8 @@ export default class HadesBoss extends BossBase {
                 spawnY,
                 'gombrome_walk',
                 1.0,
-                true
+                this.level,
+                1
             );
             enemy.direction = -1; // Ir hacia la izquierda (hacia Mario)
             this.scene.goombas.add(enemy);
@@ -486,7 +487,7 @@ export default class HadesBoss extends BossBase {
                 spawnY,
                 'Koopa_walk_R',
                 1,
-                true
+                1
             );
             enemy.direction = -1; // Ir hacia la izquierda (hacia Mario)
             this.scene.koopas.add(enemy);
