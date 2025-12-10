@@ -9,14 +9,14 @@ import{
 } from "../collisionCategories.js"
 class Koopa extends Phaser.GameObjects.Sprite
 {
-    constructor(scene, x, y, texture, speed = 50, isRome) {
+    constructor(scene, x, y, texture, speed = 50, type) {
         super(scene, x, y, texture);
 
         scene.add.existing(this);
         scene.matter.add.gameObject(this);
 
         this.speed = speed; // Velocidad del Koopa
-        this.isRome = isRome; // Es romano o no
+        this.type = type; // Tipo de koopa
         this.direction = -1; // 1 = derecha, -1 = izquierda
         this.isAlive = true; // Estado de vivo o muerto
         this.currentlyVisible = false; // Estado actual de visibilidad
@@ -149,11 +149,15 @@ class Koopa extends Phaser.GameObjects.Sprite
                 if (this.body.velocity.x !== targetVelocity) {
                     this.setVelocityX(targetVelocity);
                 }
-            
-                if (!this.anims.isPlaying || (this.isRome && this.anims.currentAnim.key !== 'Koopa_walk_R')) {
+            //
+                if (!this.anims.isPlaying || (this.type === 0 && this.anims.currentAnim.key !== 'Koopa_walk')) {
+                    this.play('Koopa_walk');
+                } 
+                else if (!this.anims.isPlaying || (this.type === 1 && this.anims.currentAnim.key !== 'Koopa_walk_R')) {
                     this.play('Koopa_walk_R');
-                } else if (!this.anims.isPlaying || (!this.isRome && this.anims.currentAnim.key !== 'Koopa_walk_R')) {
-                    this.play('Koopa_walk_R');
+                }
+                else if (!this.anims.isPlaying || (this.type === 2 && this.anims.currentAnim.key !== 'Koopa_walk_E')) {
+                    this.play('Koopa_walk_E');
                 }
             } else {
                 // Detenerse completamente si no es visible

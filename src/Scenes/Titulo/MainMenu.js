@@ -39,7 +39,7 @@ class MainMenu extends Phaser.Scene
         height,
         'menu_pattern'
     );
-    this.stars.setOrigin(0, 0);
+    this.stars.setOrigin(0, 0);//
 
     this.title = this.add.sprite(this.cameras.main.width/2,this.cameras.main.height/3, 'TitleName');
     this.title.setScale(0.8);
@@ -77,7 +77,7 @@ class MainMenu extends Phaser.Scene
         this.sound.play('coin_sound', { volume: 0 });
         this.buttonMove.input.enabled = false;
         TransitionCode.invoke(this, this.cameras.main, 1000,{x: this.cameras.main.width/2, y:  this.cameras.main.height/2}, 1500, 0,
-        ()=>{this.scene.launch('BossHades');
+        ()=>{this.scene.launch('Nivel_R');
             this.scene.stop();
         });
     })

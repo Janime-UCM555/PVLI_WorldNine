@@ -292,13 +292,26 @@ class EscenaBase extends Phaser.Scene {
         {
             if (enemie.name === 'Goomba')
             {
+                let texture = 'Gomb_Walk'
+                let type = 0;
+                if (this.levelType == 'Roma')
+                {
+                    texture = 'gombrome_walk';
+                    type = 1;
+                }
+                else if (this.levelType == 'Egipto')
+                {
+                    texture = 'GombEgypt_Walk';
+                    type = 2
+                }
                 const goomba = new Goomba(
                     this,
                     enemie.x,
                     enemie.y -16, 
-                    'gombrome_walk',
+                    texture,
                     1.0,
-                    true
+                    this.level,
+                    type
                 );
                 goomba.direction = 1;
                 this.goombas.add(goomba);
@@ -308,13 +321,25 @@ class EscenaBase extends Phaser.Scene {
             }
             else if (enemie.name === 'Koopa')
             {
+                let texture = 'Koopa_walk'
+                let type = 0;
+                if (this.levelType == 'Roma')
+                {
+                    texture = 'Koopa_walk_R';
+                    type = 1;
+                }
+                else if (this.levelType == 'Egipto')
+                {
+                    texture = 'Koopa_walk_E';
+                    type = 2
+                }
                 const koopa = new Koopa(
                     this,
                     enemie.x,
                     enemie.y - 32, 
-                    'Koopa_walk_R',
+                    texture,
                     1,
-                    true
+                    type
                 );
                 koopa.direction = -1;
                 this.koopas.add(koopa);
@@ -422,27 +447,52 @@ class EscenaBase extends Phaser.Scene {
         {
             if (enemie.name === 'Goomba')
             {
+                let texture = 'Gomb_Walk'
+                let type = 0;
+                if (this.levelType == 'Roma')
+                {
+                    texture = 'gombrome_walk';
+                    type = 1;
+                }
+                else if (this.levelType == 'Egipto')
+                {
+                    texture = 'GombEgypt_Walk';
+                    type = 2
+                }
                 const goomba = new Goomba(
                     this,
                     enemie.x,
                     enemie.y -16, 
-                    'gombrome_walk',
+                    texture,
                     1.0,
                     1,
-                    this.levelType
+                    this.levelType,
+                    type
                 );
                 goomba.direction = 1;
                 this.goombas.add(goomba);
             }
             else if (enemie.name === 'Koopa')
             {
+                let texture = 'Koopa_walk'
+                let type = 0;
+                if (this.levelType == 'Roma')
+                {
+                    texture = 'Koopa_walk_R';
+                    type = 1;
+                }
+                else if (this.levelType == 'Egipto')
+                {
+                    texture = 'Koopa_walk_E';
+                    type = 2;
+                }
                 const koopa = new Koopa(
                     this,
                     enemie.x,
                     enemie.y - 32, 
-                    'Koopa_walk_R',
+                    texture,
                     1,
-                    true
+                    type
                 );
                 koopa.direction = -1;
                 this.koopas.add(koopa);

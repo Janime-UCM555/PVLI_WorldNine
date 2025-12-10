@@ -17,20 +17,20 @@ import Enemies from "./Enemies.js";
 
 class Goomba extends Enemies
 {
-    constructor(scene, x, y, texture, speed = 50, currentScene) {
-        super(scene, x, y, texture, speed, currentScene, "Goomba");
+    constructor(scene, x, y, texture, speed = 50, currentScene, type) {
+        super(scene, x, y, texture, null, speed, currentScene, type);
 
         // scene.add.existing(this);
         // scene.matter.add.gameObject(this);
 
         this.direction = 1; // 1 = derecha, -1 = izquierda
+        this.type = type;
 
         // Configuración de física
         //Sensores
         this.setDepth(2);
         this.setCollisionCategory([CATEGORY_ENEMY]);
         this.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN, CATEGORY_ENEMY]);
-
         const sx = this.width/2;
         const sy = this.height/2;
         const w = this.width;
@@ -131,10 +131,14 @@ class Goomba extends Enemies
                     this.setVelocityX(targetVelocity);
                 }
             
-                if (!this.anims.isPlaying || (this.currentScene==="Rome" && this.anims.currentAnim.key !== 'gombrome_walk')) {
+                if (!this.anims.isPlaying || (this.type === 0 && this.anims.currentAnim.key !== 'gomb_walk')) {
+                    this.play('gomb_walk');
+                } 
+                else if (!this.anims.isPlaying || (this.type === 1 && this.anims.currentAnim.key !== 'gombrome_walk')) {
                     this.play('gombrome_walk');
-                } else if (!this.anims.isPlaying || (this.currentScene==="Normal"&& this.anims.currentAnim.key !== 'Gomb_Walk')) {
-                    this.play('Gomb_Walk');
+                }
+                else if (!this.anims.isPlaying || (this.type === 2 && this.anims.currentAnim.key !== 'gombegypt_walk')) {
+                    this.play('gombegypt_walk');
                 }
             } else {
                 // Detenerse completamente si no es visible
@@ -318,11 +322,15 @@ class Goomba extends Enemies
         }
         
         // Cambiar a sprite de aplastado si existe
-        if (this.scene.textures.exists('GombRome_Stomp') && this.currentScene==="Rome") {
+        if (this.scene.textures.exists('GombRome_Stomp') && this.type == 1) {
             this.setTexture('GombRome_Stomp');
-        }else if (this.scene.textures.exists('Gomb_Stomp')&& this.currentScene==="Normal")
+        }else if (this.scene.textures.exists('Gomb_Stomp')&& this.type == 0)
         {
             this.setTexture('Gomb_Stomp');            
+        }
+        else if (this.scene.textures.exists('GombEgypt_Stomp')&& this.type == 2)
+        {
+            this.setTexture('GombEgypt_Stomp');            
         }
 
         this.scene.increaseScore(200, 'score');

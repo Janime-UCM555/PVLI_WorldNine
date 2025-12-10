@@ -42,24 +42,44 @@ class PreloadScene extends Phaser.Scene {
     });
     this.load.image('GombRome_Stomp', 'GameSprites/Characters/Enemigos/Goomba/GombRome_Stomp.png');
 
+    this.load.spritesheet('GombEgypt_Walk', 'GameSprites/Characters/Enemigos/Goomba/GombEgypt_Walk.png', {
+        frameWidth: 34,
+        frameHeight: 35
+    });
+    this.load.spritesheet('GombEgypt_Bite', 'GameSprites/Characters/Enemigos/Goomba/GombEgypt_Bite.png', {
+        frameWidth: 34,
+        frameHeight: 35
+    });
+    this.load.image('GombEgypt_Stomp', 'GameSprites/Characters/Enemigos/Goomba/GombEgypt_Stomp.png');
+
     // Koopa
-    this.load.image('Koopa_idle_R', 'GameSprites/Characters/Enemigos/Koopa/Koopa_idle_R.png');
     this.load.image('Koopa_idle', 'GameSprites/Characters/Enemigos/Koopa/Koopa_idle.png');
     this.load.image('Koopa_shell', 'GameSprites/Characters/Enemigos/Koopa/Koopa_shell.png');
-    this.load.spritesheet('Koopa_walk_R', 'GameSprites/Characters/Enemigos/Koopa/Koopa_walk_R.png', {
-        frameWidth: 41,
-        frameHeight: 60
-    });
     this.load.spritesheet('Koopa_walk', 'GameSprites/Characters/Enemigos/Koopa/Koopa_walk.png', {
         frameWidth: 41,
         frameHeight: 50
     });
+
+    this.load.image('Koopa_idle_R', 'GameSprites/Characters/Enemigos/Koopa/Koopa_idle_R.png');
+    this.load.spritesheet('Koopa_walk_R', 'GameSprites/Characters/Enemigos/Koopa/Koopa_walk_R.png', {
+        frameWidth: 41,
+        frameHeight: 60
+    });
+
+    this.load.image('Koopa_idle_E', 'GameSprites/Characters/Enemigos/Koopa/Koopa_idle_E.png');
+    this.load.spritesheet('Koopa_walk_E', 'GameSprites/Characters/Enemigos/Koopa/Koopa_walk_E.png', {
+        frameWidth: 41,
+        frameHeight: 62
+    });
+
+    //Planta Piraña
     this.load.image('Piranha_plant', 'GameSprites/Characters/Enemigos/PiranhaPlant/PiranhaPlant_Idle.png');
     this.load.spritesheet('piranha_movement', 'GameSprites/Characters/Enemigos/PiranhaPlant/PiranhaPlant_movement.png', {
         frameWidth: 46,
         frameHeight: 51
     });
 
+    //Pokey
     this.load.spritesheet('pokey', 'GameSprites/Characters/Enemigos/Pokey/Pokey.png', {
         frameWidth: 30,
         frameHeight: 30
@@ -434,14 +454,38 @@ class PreloadScene extends Phaser.Scene {
         });
 
         this.anims.create({
+            key: 'gomb_walk',
+            frames: this.anims.generateFrameNumbers('Gomb_Walk', { start: 0, end: 3 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
             key: 'gombrome_walk',
             frames: this.anims.generateFrameNumbers('gombrome_walk', { start: 0, end: 3 }),
             frameRate: 8,
             repeat: -1
         });
         this.anims.create({
+            key: 'gombegypt_walk',
+            frames: this.anims.generateFrameNumbers('GombEgypt_Walk', { start: 0, end: 3 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'Koopa_walk',
+            frames: this.anims.generateFrameNumbers('Koopa_walk', { start: 0, end: 3 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
             key: 'Koopa_walk_R',
             frames: this.anims.generateFrameNumbers('Koopa_walk_R', { start: 0, end: 3 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'Koopa_walk_E',
+            frames: this.anims.generateFrameNumbers('Koopa_walk_E', { start: 0, end: 3 }),
             frameRate: 8,
             repeat: -1
         });
