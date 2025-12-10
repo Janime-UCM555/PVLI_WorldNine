@@ -16,6 +16,8 @@ export class OneWay extends SceneBlocks {
         super(scene, obj);
         const M = Phaser.Physics.Matter.Matter;
         const body = M.Bodies.rectangle(
+            this.x,
+            this.y,
             obj.width,
             obj.height,
             {
@@ -60,7 +62,7 @@ export class OneWay extends SceneBlocks {
                 (bodyB.label === "oneWay"  && bodyB=== this.sensor&& bodyA.label === "Mario" )))
             {
                 const player = this.scene.jugador.body;
-                if (player.velocity.y > 0 && player.position.y < this.body.position.y - 20)
+                if (player.velocity.y > 0 && player.position.y < this.body.position.y - 10)
                 {
                     this.setCollidesWith([CATEGORY_ENEMY, CATEGORY_PLAYER]);
                     // this.scene?.jugador.setVelocityX(-0.1);

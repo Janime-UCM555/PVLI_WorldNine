@@ -14,7 +14,7 @@ export class Pilar extends SceneBlocks
     {
         super(scene, x, y, texture);
         scene.add.existing(this);
-        this.setDisplaySize(400,this.scene.cameras.main.height*1.5);
+        this.setDisplaySize(300,300);
 
         this.setBody({
             type: 'rectangle',
