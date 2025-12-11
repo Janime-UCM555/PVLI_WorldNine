@@ -9,6 +9,7 @@ import Mushroom from '../../../gameObjects/PowerUps/Mushroom.js';
 import JumpBoots from '../../../gameObjects/PowerUps/HighJump.js';
 import GameScenes from '../GameScenes.js';
 import spawnPowerUp from '../../../gameObjects/PowerUps/PowerUpSpawn.js';
+import Pilar from '../../../gameObjects/LevelBlockObjects/Pilar.js';
 
 const CATEGORY_PLAYER  = 0x0001;
 const CATEGORY_ENEMY   = 0x0002;
@@ -21,12 +22,12 @@ export default class BossH extends GameScenes{
     constructor() {
         super('BossH', ()=>
             {
-                const tilesetBGD = this.map?.addTilesetImage('Piramid_BG', 'bg_tileset_P');
+                const tilesetBGD = this.map?.addTilesetImage('Pyramid_BG', 'bg_tileset_P');
                 const tilesetBGP = this.map?.addTilesetImage('MapaTiles', 'mi_tileset');
                 
                 // Capa de suelo
                 let bgLayer = this.map?.createLayer('CapaFondo', [tilesetBGD, tilesetBGP], 0, 0);
-                bgLayer.setDepth(0);
+                bgLayer.setDepth(-2);
             }, true);
     }
 
@@ -52,7 +53,7 @@ export default class BossH extends GameScenes{
         // MARIO
         // ---------------------------------------------------------
        
-        this.jugador = new Mario(this, 100, 500, "mario_run", 3.5, -4, true);
+        this.jugador = new Mario(this, 32 * 5, 32 * 23, "mario_run", 5, -4, true);
         super.create();
 
         // ---------------------------------------------------------
@@ -76,11 +77,11 @@ export default class BossH extends GameScenes{
             super.ganasPartida();
         });
 
-        this.horus = new HorusBoss(this, 1500, this.cameras.main.heightInPixels + 100, {
+        this.horus = new HorusBoss(this, 200, this.cameras.main.heightInPixels + 100, {
             player: this.jugador,
 
             columnsPerWave: 3,
-            attackDistance: 22 * 32,
+            attackDistance: 20 * 32,
             columnSpeed: -4,
 
             laneYPositions: laneYPositions, 
@@ -96,18 +97,8 @@ export default class BossH extends GameScenes{
 
         });
 
-        // ---------------------------------------------------------
-        // CÁMARA + BOUNDS
-        // ---------------------------------------------------------
-        this.cameras.main.startFollow(this.jugador, true, 0.1, 0.1);
-        this.cameras.main.setZoom(1.65);
-
-        this.matter.world.setBounds(
-            0, 0,
-            this.map.widthInPixels,
-            this.map.heightInPixels,
-            0, false, false, false, false
-        );
+        this.pilar = new Pilar(this,-903,625,'pilar_ny');
+        this.pilar.setStatic(true);
     }
     
 
@@ -116,18 +107,32 @@ export default class BossH extends GameScenes{
 
         this.horus.update(time, delta);
 
-        if (!this.bossIntroStarted && this.jugador.x >= 1200) {
+        if (!this.bossIntroStarted && this.jugador.x >= this.map.tileToWorldX(30)) {
             this.horus.startBattle();
             this.bossIntroStarted = true;
+            this.pilar.setTint(0xFFFF00);
+            this.pilar.setStatic(false);
         }
     }
 
     ganasPartida() {
-        super.ganasPartida();
+
+        if (this.barraFinLayer) {
+            this.barraFinLayer.getChildren().forEach(barra => {
+                // Si BarraFin es un Matter sprite:
+                if (barra.body && barra.setCollidesWith) {
+                barra.setCollidesWith([]); // que no choque con nada
+                }
+                if (barra.body && barra.body.collisionFilter) {
+                barra.body.collisionFilter.mask = 0; // por si acaso
+                }
+            });
+        }
+
+        this.horus.defeat();
     }
 
     restartLevel() {
         super.restartLevel();
-        
     }
 }

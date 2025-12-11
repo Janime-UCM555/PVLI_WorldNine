@@ -237,7 +237,7 @@ class EscenaBase extends Phaser.Scene {
         this.groundLayer = this.map.createLayer('CapaSuelo', tileset, 0, 0);
         this.groundLayer?.setDepth(1);
         this.barraFinLayer = this.createObjectsFromLayer('BarraFin');
-        this.barraFinLayerr?.setDepth(8);
+        this.barraFinLayer?.setDepth(8);
 
         // Ponemos colisión a las tiles
         this.map.setCollisionByExclusion([ -1, 0 ]);

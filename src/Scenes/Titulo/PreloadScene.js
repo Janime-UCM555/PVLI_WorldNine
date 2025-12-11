@@ -157,6 +157,12 @@ class PreloadScene extends Phaser.Scene {
         frameHeight: 56,
     });
 
+    //Zagreus
+        this.load.spritesheet('zagreus_walk', 'GameSprites/Characters/Zagreus/Zagreus_walk.png', {
+        frameWidth: 180,
+        frameHeight: 280,
+    });
+
     // Júpiter
     this.load.spritesheet('jupiter_neutral', 'GameSprites/Characters/Bosses/Jupiter/Jupiter_Neutral.png', {
         frameWidth: 39,
@@ -479,7 +485,12 @@ class PreloadScene extends Phaser.Scene {
             frameRate: 8,
             repeat: -1
         });
-
+        this.anims.create({
+            key: 'zagreus_walk',
+            frames: this.anims.generateFrameNumbers('zagreus_walk', { start: 0, end: 12 }),
+            frameRate: 25,
+            repeat: -1
+        });
         this.anims.create({
             key: 'gomb_walk',
             frames: this.anims.generateFrameNumbers('Gomb_Walk', { start: 0, end: 3 }),

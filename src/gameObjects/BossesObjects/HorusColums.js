@@ -93,7 +93,7 @@ export default class HorusColumn {
                 frame
             );
 
-            sprite.setOrigin(0.5, 0.5); // anclado por abajo
+            sprite.setOrigin(0.5, 0.5);
             sprite.setDepth(this.layer.depth + 1);
 
             // Tween de salida (sube hasta worldY)

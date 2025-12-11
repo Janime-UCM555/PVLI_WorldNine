@@ -144,7 +144,7 @@ function updateWebStatus(status) {
           coins += purpleCoinsByLevel[level] || 0;
         }
       }
-      statPurple.textContent = String(coins || 0);
+      statPurple.textContent = String(coins || 0) + " / 20";
     }
   }
 }

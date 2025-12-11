@@ -16,10 +16,10 @@ class BossHades extends GameScenes
         const titanBG = this.map?.addTilesetImage('Titan_BG', 'bg_tileset_Titan');
         const tileset = this.map?.addTilesetImage('MapaTiles', 'mi_tileset');
             // Capa de suelo
-        let decorLayer = this.map?.createLayer('CapaDecoraciones', [tileset,titanBG], 0, 0);
+        let titanLayer = this.map?.createLayer('CapaTitan', titanBG, 0, 0);
         let bgLayer = this.map?.createLayer('CapaFondo', tilesetBG, 0, 0);
         bgLayer.setDepth(0);
-        decorLayer?.setDepth(1);
+        titanLayer.setDepth(1);
 
         // const tilesetWater = this.map?.addTilesetImage('Water', 'water');
         // const tilesetNube = this.map?.addTilesetImage('Cloud_BG', 'bg_tileset_Nube');
@@ -58,6 +58,7 @@ class BossHades extends GameScenes
             this.levelMusic.stop();
         }
         this.pilar = new Pilar(this,-1000,625,'pilar_f');
+        this.pilar.setDepth(2);
         // const bossAttacks = this.map.getObjectLayer('ApareceJefe').objects;
         let id = 0;
         // let attackZones = [];

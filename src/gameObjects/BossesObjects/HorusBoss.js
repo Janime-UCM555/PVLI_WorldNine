@@ -111,7 +111,7 @@ export default class HorusBoss extends BossBase {
 
         // Offset base de posición respecto a Mario
         this.baseOffsetX = 200;    // delante/detrás
-        this.baseOffsetY = -220;   // por encima
+        this.baseOffsetY = -120;   // por encima
 
         this.followOffsetX = 200;
         this.followOffsetY = this.baseOffsetY;
@@ -125,8 +125,8 @@ export default class HorusBoss extends BossBase {
         this.rollAmplitudeDeg = 12;     // inclinación máxima (grados)
 
         // Escala como si se acercara a cámara
-        this.baseScale = 1.0;
-        this.pulseScale = 0.18;         // cuánto varía la escala
+        this.baseScale = 1.8;
+        this.pulseScale = 0.5;         // cuánto varía la escala
         this.setScale(this.baseScale);
 
         // Sonidos opcionales
@@ -138,7 +138,7 @@ export default class HorusBoss extends BossBase {
 
         this.ensureAnimations();
 
-        this.setDepth(30);
+        this.setDepth(4);
     }
 
     /**
@@ -299,6 +299,15 @@ export default class HorusBoss extends BossBase {
 
         this.x = Phaser.Math.Clamp(this.x, left, right);
         this.y = Phaser.Math.Clamp(this.y, top, bottom);
+
+        if(this.x > this.player.x){
+            this.flipX = false;
+        }
+        else{
+            this.flipX = true;
+        }
+        
+        this.setDepth((this.scale >= this.baseScale) ? 5 : -1)
     }
 
     // -------------------------------------------------------
@@ -374,6 +383,48 @@ export default class HorusBoss extends BossBase {
         }
     }
 
+
+    getGroundAt(x){
+        if(!this.scene.map || !this.scene.groundLayer){
+            return ;
+        }
+
+        const tileX = this.scene.map.worldToTileX(x); 
+
+        for(let i = this.scene.map.height - 1 ; i > 0; i--){
+            const tile = this.scene.groundLayer.getTileAt(tileX, i);
+            if(tile){
+                continue;
+            }
+            else{
+                return this.scene.map.tileToWorldY(i) + this.scene.map.tilesets[0].tileHeight / 2;
+            }
+        }
+        return ;
+    }
+
+    getPlayerGroundAt(x){
+        if(!this.scene.map || !this.scene.groundLayer || !this.player){
+            return ;
+        }
+
+        const tileX = this.scene.map.worldToTileX(x); 
+
+        for(let i = this.scene.map.worldToTileY(this.player.y); i < this.scene.map.height; i++){
+            const tile = this.scene.groundLayer.getTileAt(tileX, i);
+            if(!tile){
+                continue;
+            }
+            else{
+                return this.scene.map.tileToWorldY(i - 1) + this.scene.map.tilesets[0].tileHeight / 2;
+            }
+        }
+
+        return this.getGroundAt(x)
+
+    }
+
+
         // Patrón 1: columnas sólidas + Koopas (tu patrón original)
     performColumnAttack() {
         const scene = this.scene;
@@ -401,9 +452,9 @@ export default class HorusBoss extends BossBase {
             scene.time.delayedCall(delay, () => {
                 const spawnX = spawnBaseX + i * this.columnSpacingX;
                 const colheight = Phaser.Math.Between(3, 8);
-                const hasHole = colheight > 4 || Math.random() < 0.5;
+                const hasHole = colheight > 3 || Math.random() < 0.5;
                 const hole = hasHole? 3 : 0;
-                const offset = Phaser.Math.Between(2, 4);
+                const offset = Phaser.Math.Between(2, 3);
                 const coltype = Phaser.Math.Between(0, 2);
 
                 const col = new HorusColumn(
@@ -411,7 +462,7 @@ export default class HorusBoss extends BossBase {
                     this.map,
                     this.groundLayer,
                     spawnX,
-                    this.laneYPositions[0], // Y del suelo donde empieza la columna
+                    this.getPlayerGroundAt(spawnX), // Y del suelo donde empieza la columna
                     colheight,
                     hole,
                     offset,
@@ -423,12 +474,11 @@ export default class HorusBoss extends BossBase {
                     },
                     {
                         fromOffsetY: 96,      // cuánto “suben” desde abajo
-                        duration: 500,        // tiempo del tween
-                        ease: "Back.easeOut", // curva del tween
+                        duration: 500,
+                        ease: "Back.easeOut",
                     }
                 );
                 this.columns.push(col);
-                console.log(col);
             });
         };
         scene.time.delayedCall(1200, () => {
@@ -438,18 +488,18 @@ export default class HorusBoss extends BossBase {
 
 
     performSpawnMinionOrd() {
-        this.spawnWindKoopa(this.player.x + 400, this.laneYPositions[0] - 32);
-        if(Math.random() < 0.5) this.spawnExtraEnemy(this.player.x + 600, this.laneYPositions[0]);
-        else {this.spawnWindKoopa(this.player.x + 600, this.laneYPositions[0] - 32);}
+        this.spawnWindKoopa(this.player.x + 8 * 32, this.getPlayerGroundAt(this.player.x + 8 * 32));
+        if(Math.random() < 0.5) this.spawnExtraEnemy(this.player.x + 11 * 32, this.getPlayerGroundAt(this.player.x + 11 * 32));
+        else {this.spawnWindKoopa(this.player.x + 11 * 32, this.getPlayerGroundAt(this.player.x + 11 * 32));}
         
         if(Math.random() < 0.5){
-            let power = new DoubleJump(this.scene, this.player.x + 1000, this.laneYPositions[0]);
+            let power = new DoubleJump(this.scene, this.player.x + 14 * 32, this.getPlayerGroundAt(this.player.x + 14 * 32));
             power.setVelocityX(power.body.velocity.x * -0.09315); // Salir del bloque hacia arriba
             power.setVelocityY(-power.body.velocity.x/2);
             this.scene.powerups.add(power);
         }
         else{
-            this.spawnExtraEnemy(this.player.x + 1000, this.laneYPositions[0]);
+            this.spawnExtraEnemy(this.player.x + 14 * 32, this.getPlayerGroundAt(this.player.x + 14 * 32));
         }
 
         this.scene.time.delayedCall(1200, () => {
@@ -540,16 +590,14 @@ export default class HorusBoss extends BossBase {
         }
     }
 
-    spawnExtraEnemy() {
+    spawnExtraEnemy(x, y) {
         const scene = this.scene;
         const cam = scene.cameras.main;
-        const spawnX = cam.scrollX + cam.width + 100;
-        const spawnY = Phaser.Utils.Array.GetRandom(this.laneYPositions);
 
         let pokey = new Pokey(
             scene,
-            spawnX,
-            spawnY - 32,
+            x,
+            y,
             Phaser.Math.Clamp(Math.floor(Math.random()/0.2), 2, 5),
             1.5
         );
@@ -640,6 +688,9 @@ export default class HorusBoss extends BossBase {
                     super.onEnterDead();
                 }
             );
+            this.setDepth(4);
+            this.rotation = 0;
+            this.setOrigin(0.5, 0.6)
             this.player.setStatic(true); // congelar a Mario durante la intro
 
             // Timeline: se acerca por detrás, cruza por encima y se coloca en su posición de vuelo
