@@ -1,4 +1,3 @@
-import Enemies from "./Enemies.js";
 import { DIE_TYPES } from "./Goomba.js";
 import{
     CATEGORY_PLAYER,

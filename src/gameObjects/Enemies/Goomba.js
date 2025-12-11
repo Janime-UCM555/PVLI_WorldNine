@@ -12,22 +12,37 @@ import{
     CATEGORY_TERRAIN,
     CATEGORY_FALLOFF
 } from "../collisionCategories.js"
-import Enemies from "./Enemies.js";
 
-
-class Goomba extends Enemies
+class Goomba extends Phaser.GameObjects.Sprite
 {
     constructor(scene, x, y, texture, speed = 50, currentScene, type) {
         super(scene, x, y, texture, null, speed, currentScene, type);
 
-        // scene.add.existing(this);
-        // scene.matter.add.gameObject(this);
+        scene.add.existing(this);
+        scene.matter.add.gameObject(this);
 
+        this.speed = speed; // Velocidad del Koopa
+        this.type = type; // Tipo de koopa
+        this.direction = -1; // 1 = derecha, -1 = izquierda
+        this.isAlive = true; // Estado de vivo o muerto
+        this.currentlyVisible = false; // Estado actual de visibilidad
+        this.shouldBeDestroyed = false; // Control de destrucción
+        this.isEnemy = true; // Marca como enemigo
+        
         this.direction = 1; // 1 = derecha, -1 = izquierda
         this.type = type;
 
         // Configuración de física
         //Sensores
+        this.blocked= {
+            left: false,
+            right: false,
+        };
+        this.numTouching= {
+            left: 0,
+            right: 0,
+        }; 
+
         this.setDepth(2);
         this.setCollisionCategory([CATEGORY_ENEMY]);
         this.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN, CATEGORY_ENEMY]);

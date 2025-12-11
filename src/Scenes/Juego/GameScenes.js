@@ -462,6 +462,9 @@ class EscenaBase extends Phaser.Scene {
                     this.type
                 );
                 goomba.direction = 1;
+                goomba.setDepth(2);
+                goomba.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN]);
+                goomba.setCollisionCategory([CATEGORY_ENEMY]);
                 this.goombas.add(goomba);
             }
             else if (enemie.name === 'Koopa')
@@ -475,6 +478,9 @@ class EscenaBase extends Phaser.Scene {
                     this.type
                 );
                 koopa.direction = -1;
+                koopa.setDepth(2);
+                koopa.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN]);
+                koopa.setCollisionCategory([CATEGORY_ENEMY]);
                 this.koopas.add(koopa);
             }
             else if (enemie.name === 'Piranha')
@@ -487,12 +493,18 @@ class EscenaBase extends Phaser.Scene {
                     2000,
                     2000
                 );
+                piranha.setDepth(2);
+                piranha.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN]);
+                piranha.setCollisionCategory([CATEGORY_ENEMY]);
                 this.piranhas.add(piranha);
             }
             else if (enemie.name === 'Pokey')
             {
                 const segments = enemie.properties?.find(p => p.name === 'segments')?.value || 5;
                 const pokey = new Pokey(this, enemie.x, enemie.y, segments, 1);
+                pokey.setDepth(2);
+                pokey.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN]);
+                pokey.setCollisionCategory([CATEGORY_ENEMY]);
                 this.pokeys.add(pokey);                
             }
         }
