@@ -1,4 +1,12 @@
 { "compressionlevel":-1,
+ "editorsettings":
+    {
+     "export":
+        {
+         "format":"json",
+         "target":"MapaTutorial.json"
+        }
+    },
  "height":26,
  "infinite":false,
  "layers":[
