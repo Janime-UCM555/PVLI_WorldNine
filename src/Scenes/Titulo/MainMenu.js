@@ -48,11 +48,19 @@ class MainMenu extends Phaser.Scene
 
     // this.mario = this.add.sprite(this.cameras.main.width - 50, this.cameras.main.height - 50, 'mario_walk');
     // this.mario.play('mario_walk');
-
     this.mario2 = this.add.sprite(this.cameras.main.width / 2, this.cameras.main.height / 2 + 140, 'mario_run');
     this.mario2.flipX = true;
     this.mario2.setScale(2,2);
     this.mario2.play('mario_run');
+
+    const progression = saveManager.getCurrentProgression();
+
+    if (progression.nextToUnlock === null) {
+            this.zagreus = this.add.sprite(this.cameras.main.width / 3, this.cameras.main.height / 2 + 100, 'zagreus_walk');
+            this.zagreus.setScale(0.75,0.75);
+            this.zagreus.play('zagreus_walk');
+            //zagreus_walk
+    }
 
     // Música de fondo del menú
     if (!this.menuMusic || !this.menuMusic.isPlaying) {
