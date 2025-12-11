@@ -324,8 +324,8 @@ class EscenaBase extends Phaser.Scene {
                     enemie.x,
                     enemie.y -16, 
                     'Gomb_Walk',
-                    1.0,
-                    this.level,
+                    1,
+                    1,
                     this.type
                 );
                 goomba.direction = 1;
