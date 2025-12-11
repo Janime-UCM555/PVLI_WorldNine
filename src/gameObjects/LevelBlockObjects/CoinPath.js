@@ -19,8 +19,10 @@ export class CoinPath extends SceneBlocks {
     constructor(scene, obj) {
         super(scene, obj, 'CoinPassD');
 
-        this.setStatic(true);
+        this.setStatic(false);
         this.setSensor(true);
+        this.setIgnoreGravity(true);
+
     
         let tex = 'CoinPassD';
         this.type = obj.name;

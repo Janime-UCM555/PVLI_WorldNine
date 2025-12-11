@@ -57,6 +57,7 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
     /** @type {PowerUpType} */
     this.type = type;
 
+    this.setDepth(3);
     scene.add.existing(this);
     scene.matter.add.gameObject(this);
     this.setOrigin(0.5, 0.5);
