@@ -87,9 +87,9 @@ export const purpleCoinsByLevel = {
     Nivel_R: 0,
     Nivel_D: 0,
     Nivel_G: 0,
-    BossJ: 0,
-    BossH: 0,
-    BossHades: 0
+    // BossJ: 0,
+    // BossH: 0,
+    // BossHades: 0
 };
 
 export const collectedPurpleCoinsByLevel = {
@@ -97,9 +97,9 @@ export const collectedPurpleCoinsByLevel = {
     Nivel_R: [],
     Nivel_D: [],
     Nivel_G: [],
-    BossJ: [],
-    BossH: [],
-    BossHades: []
+    // BossJ: [],
+    // BossH: [],
+    // BossHades: []
 };
 
 const savedCounts = localStorage.getItem('w9_purpleCoinsByLevel');
@@ -176,7 +176,8 @@ class EscenaBase extends Phaser.Scene {
         if (window.updateWebStatus) {
             window.updateWebStatus({
                 sceneKey: this.level, 
-                purpleCoins: this.purpleCoinScore ?? 0
+                purpleCoins: this.purpleCoinScore ?? 0,
+                isBoss: this.isBoss
             });
         }
 

@@ -66,21 +66,21 @@ const LEVEL_INFO = {
   },
   BossJ: {
     label: "Jefe Júpiter – Juez Relámpago",
-    myth: "Roma",
+    myth: "Roma-Jefe",
     mythClass: "myth-dot--roma",
     description:
       "Al señor de los dioses de estas tierras no le gusta que metan las narices en sus asuntos. ¡Prepárate para la batalla!"
   },
   BossH: {
     label: "Jefe Horus – Maestro del Cielo",
-    myth: "Egipto",
+    myth: "Egipto-Jefe",
     mythClass: "myth-dot--egipto",
     description:
       "Horus, dios del cielo, según Júpiter tiene cautivo a quien podría devolverte a casa. Si no quiere ayudarte... ¡habrá que luchar!"
   },
   BossHades: {
     label: "Boss Hades – Señor del Inframundo",
-    myth: "Grecia",
+    myth: "Grecia-Jefe",
     mythClass: "myth-dot--grecia",
     description:
       "Por fin encontraste a quien podría salvarte y devolverte a casa. Pero Hades no te lo pondrá nada fácil. ¡A luchar!"
@@ -91,8 +91,9 @@ const LEVEL_INFO = {
  * Estado que se recibe desde Phaser para actualizar la interfaz web.
  *
  * @typedef {Object} WebStatus
- * @property {string} [sceneKey="Global"] - Clave de la escena actual (coincide con las de LEVEL_INFO).
- * @property {number} [purpleCoins=0] - Cantidad de monedas moradas recogidas en el nivel actual.
+ * @property {string} [sceneKey = "Global"] - Clave de la escena actual (coincide con las de LEVEL_INFO).
+ * @property {number} [purpleCoins = 0] - Cantidad de monedas moradas recogidas en el nivel actual.
+ * @property {boolean} [isBoss = false]
  */
 
 /**
@@ -109,7 +110,8 @@ const LEVEL_INFO = {
 function updateWebStatus(status) {
   const {
     sceneKey = "Global",
-    purpleCoins = 0
+    purpleCoins = 0,
+    isBoss = false
   } = status || {};
 
   /** @type {LevelInfo} */
@@ -131,7 +133,8 @@ function updateWebStatus(status) {
   if (statPurple) {
     // Si NO es el resumen global, mostramos contador tipo "X / 5"
     if (info.myth !== "Global") {
-      statPurple.textContent = String(purpleCoins) + " / 5";
+      let nMaxCoins = isBoss? " / 0" : " / 5";
+      statPurple.textContent = String(purpleCoins || 0) + nMaxCoins;
     } else {
       // En el resumen global, sumamos todas las monedas moradas de todos los niveles
       /** @type {number} */
