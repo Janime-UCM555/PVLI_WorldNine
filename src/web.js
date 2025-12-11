@@ -38,8 +38,8 @@ const LEVEL_INFO = {
   },
     Nivel_T: {
     label: "Tutorial",
-    myth: "Global",
-    mythClass: "myth-dot--global",
+    myth: "Tutorial",
+    mythClass: "myth-dot--tutorial",
     description:
       "Un nivel simple que sirve como tutorial, clásico de los juegos de Mario. ¿Qué podría salir mal?"
   },
