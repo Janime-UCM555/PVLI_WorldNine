@@ -13,10 +13,13 @@ class BossHades extends GameScenes
     constructor(){
         super('BossHades', ()=>{
         const tilesetBG = this.map?.addTilesetImage('Hell_BG', 'bg_tileset_BH');
+        const titanBG = this.map?.addTilesetImage('Titan_BG', 'bg_tileset_Titan');
         const tileset = this.map?.addTilesetImage('MapaTiles', 'mi_tileset');
             // Capa de suelo
+        let decorLayer = this.map?.createLayer('CapaDecoraciones', [tileset,titanBG], 0, 0);
         let bgLayer = this.map?.createLayer('CapaFondo', tilesetBG, 0, 0);
-        bgLayer.setDepth(0);//
+        bgLayer.setDepth(0);
+        decorLayer?.setDepth(1);
 
         // const tilesetWater = this.map?.addTilesetImage('Water', 'water');
         // const tilesetNube = this.map?.addTilesetImage('Cloud_BG', 'bg_tileset_Nube');

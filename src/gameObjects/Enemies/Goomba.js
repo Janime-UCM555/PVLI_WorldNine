@@ -140,6 +140,9 @@ class Goomba extends Enemies
                 else if (!this.anims.isPlaying || (this.type === 2 && this.anims.currentAnim.key !== 'gombegypt_walk')) {
                     this.play('gombegypt_walk');
                 }
+                else if (!this.anims.isPlaying || (this.type === 3 && this.anims.currentAnim.key !== 'gombegreece_walk')) {
+                    this.play('gombgreece_walk');
+                }
             } else {
                 // Detenerse completamente si no es visible
                 this.setVelocityX(0);
@@ -331,6 +334,10 @@ class Goomba extends Enemies
         else if (this.scene.textures.exists('GombEgypt_Stomp')&& this.type == 2)
         {
             this.setTexture('GombEgypt_Stomp');            
+        }
+        else if (this.scene.textures.exists('GombGreece_Stomp')&& this.type == 3)
+        {
+            this.setTexture('GombGreece_Stomp');            
         }
 
         this.scene.increaseScore(200, 'score');

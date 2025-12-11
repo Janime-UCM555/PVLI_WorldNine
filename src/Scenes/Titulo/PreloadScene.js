@@ -52,6 +52,16 @@ class PreloadScene extends Phaser.Scene {
     });
     this.load.image('GombEgypt_Stomp', 'GameSprites/Characters/Enemigos/Goomba/GombEgypt_Stomp.png');
 
+    this.load.spritesheet('GombGreece_Walk', 'GameSprites/Characters/Enemigos/Goomba/GombGreece_Walk.png', {
+        frameWidth: 30,
+        frameHeight: 30
+    });
+    this.load.spritesheet('GombGreece_Bite', 'GameSprites/Characters/Enemigos/Goomba/GombGreece_Bite.png', {
+        frameWidth: 32,
+        frameHeight: 30
+    });
+    this.load.image('GombGreece_Stomp', 'GameSprites/Characters/Enemigos/Goomba/GombGreece_Stomp.png');
+
     // Koopa
     this.load.image('Koopa_idle', 'GameSprites/Characters/Enemigos/Koopa/Koopa_idle.png');
     this.load.image('Koopa_shell', 'GameSprites/Characters/Enemigos/Koopa/Koopa_shell.png');
@@ -70,6 +80,13 @@ class PreloadScene extends Phaser.Scene {
     this.load.spritesheet('Koopa_walk_E', 'GameSprites/Characters/Enemigos/Koopa/Koopa_walk_E.png', {
         frameWidth: 41,
         frameHeight: 62
+    });
+
+    this.load.image('Koopa_idle_G', 'GameSprites/Characters/Enemigos/Koopa/Koopa_idle_G.png');
+    this.load.image('Koopa_shell_G', 'GameSprites/Characters/Enemigos/Koopa/Koopa_shell_G.png');
+    this.load.spritesheet('Koopa_walk_G', 'GameSprites/Characters/Enemigos/Koopa/Koopa_walk_G.png', {
+        frameWidth: 41,
+        frameHeight: 60
     });
 
     //Planta Piraña
@@ -229,6 +246,7 @@ class PreloadScene extends Phaser.Scene {
     this.load.image('bg_tileset_Nube', 'GameSprites/Tilesets/Cloud_BG.png');
     this.load.image('bg_tileset_BH', 'GameSprites/Tilesets/Hell_BG.png');
     this.load.image('bg_tileset_Bosque', 'GameSprites/Tilesets/Forest_BG.png');
+    this.load.image('bg_tileset_Titan', 'GameSprites/Tilesets/Titan_BG.png');
     this.load.spritesheet('barra_tileset', 'GameSprites/Items/barraFin.png', {
         frameWidth: 64,
         frameHeight: 32
@@ -473,6 +491,12 @@ class PreloadScene extends Phaser.Scene {
             repeat: -1
         });
         this.anims.create({
+            key: 'gombgreece_walk',
+            frames: this.anims.generateFrameNumbers('GombGreece_Walk', { start: 0, end: 3 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
             key: 'Koopa_walk',
             frames: this.anims.generateFrameNumbers('Koopa_walk', { start: 0, end: 3 }),
             frameRate: 8,
@@ -487,6 +511,12 @@ class PreloadScene extends Phaser.Scene {
         this.anims.create({
             key: 'Koopa_walk_E',
             frames: this.anims.generateFrameNumbers('Koopa_walk_E', { start: 0, end: 3 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'Koopa_walk_G',
+            frames: this.anims.generateFrameNumbers('Koopa_walk_G', { start: 0, end: 3 }),
             frameRate: 8,
             repeat: -1
         });
