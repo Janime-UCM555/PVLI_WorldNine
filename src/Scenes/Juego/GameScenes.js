@@ -152,13 +152,17 @@ class EscenaBase extends Phaser.Scene {
         this.levelType = "Normal";
         if (this.level == "Nivel_R"||this.level=="BossJ")
         {
+            console.log("Roma");
             this.levelType="Roma";
         }
-        else if (this.level=="Nivel_D"||this.level == "BossHTest")
+        else if (this.level=="Nivel_D"||this.level == "BossH")
         {
+            console.log("Egipto");
             this.levelType="Egipto";
         }
-        else{
+        else if (this.level=="Nivel_G"||this.level == "BossHades")
+        {
+            console.log("Grecia");
             this.levelType="Grecia";
         }
     }
@@ -312,6 +316,11 @@ class EscenaBase extends Phaser.Scene {
                     texture = 'GombEgypt_Walk';
                     type = 2
                 }
+                else if (this.levelType == 'Grecia')
+                {
+                    texture = 'GombGreece_Walk';
+                    type = 3
+                }
                 const goomba = new Goomba(
                     this,
                     enemie.x,
@@ -340,6 +349,11 @@ class EscenaBase extends Phaser.Scene {
                 {
                     texture = 'Koopa_walk_E';
                     type = 2
+                }
+                else if (this.levelType == 'Grecia')
+                {
+                    texture = 'Koopa_walk_G';
+                    type = 3
                 }
                 const koopa = new Koopa(
                     this,
@@ -469,6 +483,11 @@ class EscenaBase extends Phaser.Scene {
                     texture = 'GombEgypt_Walk';
                     type = 2
                 }
+                else if (this.levelType == 'Grecia')
+                {
+                    texture = 'GombGreece_Walk';
+                    type = 3
+                }
                 const goomba = new Goomba(
                     this,
                     enemie.x,
@@ -495,6 +514,12 @@ class EscenaBase extends Phaser.Scene {
                 {
                     texture = 'Koopa_walk_E';
                     type = 2;
+                }
+                else if (this.levelType == 'Grecia')
+                {
+                    console.log("GRECIA");
+                    texture = 'Koopa_walk_G';
+                    type = 3;
                 }
                 const koopa = new Koopa(
                     this,

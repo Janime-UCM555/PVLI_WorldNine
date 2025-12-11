@@ -159,6 +159,9 @@ class Koopa extends Phaser.GameObjects.Sprite
                 else if (!this.anims.isPlaying || (this.type === 2 && this.anims.currentAnim.key !== 'Koopa_walk_E')) {
                     this.play('Koopa_walk_E');
                 }
+                else if (!this.anims.isPlaying || (this.type === 3 && this.anims.currentAnim.key !== 'Koopa_walk_G')) {
+                    this.play('Koopa_walk_G');
+                }
             } else {
                 // Detenerse completamente si no es visible
                 this.setVelocityX(0);
@@ -365,7 +368,10 @@ class Koopa extends Phaser.GameObjects.Sprite
         }
         
         // Cambiar a sprite de aplastado si existe
-        if (this.scene.textures.exists('Koopa_shell')) {
+        if (this.scene.textures.exists('Koopa_shell_G') && this.type === 3) {
+            this.setTexture('Koopa_shell_G');
+        }
+        else{
             this.setTexture('Koopa_shell');
         }
 

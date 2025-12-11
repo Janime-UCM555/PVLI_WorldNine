@@ -471,12 +471,13 @@ export default class HadesBoss extends BossBase {
             enemy = new Goomba(
                 this.scene,
                 spawnX,
-                spawnY,
-                'gombrome_walk',
-                1.0,
-                this.level,
-                1
+                spawnY, 
+                'GombGreece_Walk',
+                1,
+                1,
+                3
             );
+            console.log("Goomba spawneado - Type:", enemy.type, "Texture:", enemy.texture.key);
             enemy.direction = -1; // Ir hacia la izquierda (hacia Mario)
             this.scene.goombas.add(enemy);
         } else {
@@ -487,7 +488,7 @@ export default class HadesBoss extends BossBase {
                 spawnY,
                 'Koopa_walk_R',
                 1,
-                1
+                3
             );
             enemy.direction = -1; // Ir hacia la izquierda (hacia Mario)
             this.scene.koopas.add(enemy);
