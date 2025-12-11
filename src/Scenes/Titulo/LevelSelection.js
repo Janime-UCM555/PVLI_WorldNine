@@ -51,6 +51,13 @@ class LevelSelection extends Phaser.Scene
     }
 
     create(){
+        if (window.updateWebStatus) {
+            window.updateWebStatus({
+            sceneKey: this.level, 
+            purpleCoins: this.purpleCoinScore ?? 0
+        });
+        }
+
         // Música de fondo
         if (!this.menuMusic || !this.menuMusic.isPlaying) {
             this.menuMusic = this.sound.add('menu_music', { loop: true, volume: 1 });
