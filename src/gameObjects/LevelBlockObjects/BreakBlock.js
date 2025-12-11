@@ -84,7 +84,7 @@ export class Block extends SceneBlocks {
                            (bodyB.label === "Mario") ? bodyB : null;
 
             if (player) {
-                if (player.gameObject?.body.velocity.y > 0 || (player?.y+player?.height) <= this?.y 
+                if (player.gameObject?.body.velocity.y > 0
                 ){ //|| player.gameObject.getCenter().y < bodyB.bounds.max.y){
                     return; // Solo al golpear desde abajo
                 } 
