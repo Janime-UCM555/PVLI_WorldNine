@@ -228,6 +228,7 @@ class PreloadScene extends Phaser.Scene {
     this.load.image('bg_tileset_BJ', 'GameSprites/Tilesets/Colosseum_BG.png');
     this.load.image('bg_tileset_Nube', 'GameSprites/Tilesets/Cloud_BG.png');
     this.load.image('bg_tileset_BH', 'GameSprites/Tilesets/Hell_BG.png');
+    this.load.image('bg_tileset_Bosque', 'GameSprites/Tilesets/Forest_BG.png');
     this.load.spritesheet('barra_tileset', 'GameSprites/Items/barraFin.png', {
         frameWidth: 64,
         frameHeight: 32

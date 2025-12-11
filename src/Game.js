@@ -1,6 +1,7 @@
 import PreloadScene from './Scenes/Titulo/PreloadScene.js';
 import MainMenu from './Scenes/Titulo/MainMenu.js';
 import MapScene from './Scenes/Titulo/Map.js';
+import Nivel_T from './Scenes/Juego/Niveles/Nivel_T.js';
 import Nivel_R from './Scenes/Juego/Niveles/Nivel_R.js';
 import Nivel_TO from './Scenes/Juego/Niveles/Nivel_TO.js';
 import Nivel_D from './Scenes/Juego/Niveles/Nivel_D.js';
@@ -23,7 +24,7 @@ let config = {
 		mode: Phaser.Scale.FIT,
 		fullscreenTarget: 'game'
 	},
-	scene:[PreloadScene, MainMenu, MapScene, Nivel_R, Nivel_TO, Nivel_D, BossJ, BossHTest, BossHades],	// Decimos a Phaser cual es nuestra escena
+	scene:[PreloadScene, MainMenu, MapScene, Nivel_T, Nivel_R, Nivel_TO, Nivel_D, BossJ, BossHTest, BossHades],	// Decimos a Phaser cual es nuestra escena
 	physics: { 
 		default: 'matter', 
 		matter: { 
