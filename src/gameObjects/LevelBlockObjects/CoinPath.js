@@ -26,7 +26,7 @@ export class CoinPath extends SceneBlocks {
         this.type = obj.name;
         if (this.type === 'PasoMonedasAr' || this.type === 'PasoMonedasDer') 
         { tex = 'CoinPassS'; }
-
+        this.label = "CoinPath";
         this.setTexture(tex);
         this.setDepth(3);
         // this.setRotation(Phaser.Math.DegToRad(obj.rotation));

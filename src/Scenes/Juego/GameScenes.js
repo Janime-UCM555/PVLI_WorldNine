@@ -381,15 +381,15 @@ class EscenaBase extends Phaser.Scene {
     // graphics.setScrollFactor(0);
 
     const fontSize = 29; // 50 / 1.65 ≈ 29
-        if(this.game.config.physics?.matter?.debug){
-        this.fpsText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -',{fontFamily: 'aku-kamu'})
-            .setOrigin(-2,5)
-            .setStroke('#000000ff', 6)
-            .setFill('#38b762ff')
-            .setFontSize(fontSize + 'px')
-            .setDepth(6)
-            .setScrollFactor(0);
-        }
+        // if(this.game.config.physics?.matter?.debug){
+        // this.fpsText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -',{fontFamily: 'aku-kamu'})
+        //     .setOrigin(-2,5)
+        //     .setStroke('#000000ff', 6)
+        //     .setFill('#38b762ff')
+        //     .setFontSize(fontSize + 'px')
+        //     .setDepth(6)
+        //     .setScrollFactor(0);
+        // }
             
         
 
@@ -546,10 +546,10 @@ doubleEndTransition(callback)
     }
 }
 update(time, delta) {
-    if (!this.fpsText || !this.fpsText.scene || this.fpsText._destroyed) return;
+    // if (!this.fpsText || !this.fpsText.scene || this.fpsText._destroyed) return;
     if (!this.endTimer)
     {
-        this.fpsText?.setText(Math.floor(this?.game?.loop?.actualFps));
+        // this.fpsText?.setText(Math.floor(this?.game?.loop?.actualFps));
         // Actualizar jugador
         this.jugador.update(time,delta);
 

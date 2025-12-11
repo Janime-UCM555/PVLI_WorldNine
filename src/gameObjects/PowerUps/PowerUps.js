@@ -155,7 +155,8 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
       for (let i = 0; i < event.pairs.length; i++) {
         const bodyA = event.pairs[i].bodyA;
         const bodyB = event.pairs[i].bodyB;
-        if(bodyA.label === "Coins" || bodyB.label === "Coins")
+        if(bodyA.label === "Coins" || bodyB.label === "Coins" || 
+          bodyA.label === "CoinPath" || bodyB.label === "CoinPath")
         {
           return;
         }
