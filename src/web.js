@@ -36,6 +36,13 @@ const LEVEL_INFO = {
     description:
       "Aquí están los resultados de todo lo que llevas jugado."
   },
+    Nivel_T: {
+    label: "Tutorial",
+    myth: "Global",
+    mythClass: "myth-dot--global",
+    description:
+      "Un nivel simple que sirve como tutorial, clásico de los juegos de Mario. ¿Qué podría salir mal?"
+  },
   Nivel_R: {
     label: "Reino de Roma",
     myth: "Roma",

@@ -83,6 +83,7 @@ import Star from '../../gameObjects/PowerUps/Star.js';
 import { DIE_TYPES } from '../../gameObjects/Enemies/Goomba.js';
 
 export const purpleCoinsByLevel = {
+    Nivel_T: 0,
     Nivel_R: 0,
     Nivel_D: 0,
     Nivel_G: 0,
@@ -92,6 +93,7 @@ export const purpleCoinsByLevel = {
 };
 
 export const collectedPurpleCoinsByLevel = {
+    Nivel_T: [],
     Nivel_R: [],
     Nivel_D: [],
     Nivel_G: [],
@@ -191,6 +193,7 @@ class EscenaBase extends Phaser.Scene {
         this.pausa = this.createObjectsFromLayer('PauseBlocks');
         this.oneWay = this.createObjectsFromLayer('OneWays');
         this.coinPath = this.createObjectsFromLayer('CaminoMonedas');
+        this.coinPath?.setDepth(3);
 
 
         this.coins = this.createsCoinsFromLayer('Monedas');
@@ -210,11 +213,12 @@ class EscenaBase extends Phaser.Scene {
         {
             this.fakeFloorLayer = this.map.createLayer('CapaFalsoSuelo', tileset, 0, 0);
             this.fakeFloorLayer?.setTint(0x888888);
-            this.decorationsLayer?.setDepth(0);
+            this.fakeFloorLayer?.setDepth(0);
         }
         this.groundLayer = this.map.createLayer('CapaSuelo', tileset, 0, 0);
         this.groundLayer?.setDepth(1);
         this.barraFinLayer = this.createObjectsFromLayer('BarraFin');
+        this.barraFinLayerr?.setDepth(8);
 
         // Ponemos colisión a las tiles
         this.map.setCollisionByExclusion([ -1, 0 ]);
