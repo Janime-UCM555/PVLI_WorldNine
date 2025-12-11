@@ -28,8 +28,23 @@ export class CoinPath extends SceneBlocks {
         { tex = 'CoinPassS'; }
 
         this.setTexture(tex);
-        this.setRotation(Phaser.Math.DegToRad(obj.rotation));
-
+        this.setDepth(3);
+        // this.setRotation(Phaser.Math.DegToRad(obj.rotation));
+        // Aplicamos rotación 
+        const angle = obj.rotation;
+        this.setRotation(Phaser.Math.DegToRad(angle));
+        this.setFlipX(obj.flippedHorizontal || false);
+        this.setFlipY(obj.flippedVertical || false);
+        if (angle === 90 || angle === -270) {
+            this.y += this.height;
+        }
+        else if (angle === 180 || angle === -180) {
+            this.x -= this.width;
+            this.y += this.height;
+        }
+        else if (angle=== 270 || angle === -90) {
+            this.x -= this.width;
+        }
         this.setUpCollisions();
     }
     setUpCollisions()

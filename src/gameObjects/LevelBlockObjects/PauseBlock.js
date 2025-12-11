@@ -18,7 +18,7 @@ export class PauseBlock extends SceneBlocks {
         this.hasPlayer = false;
         this.setBody({
             type: 'rectangle',
-            width: obj.width /3, // Para que se pare un poco centrado
+            width: obj.width, // Para que se pare un poco centrado
             height: obj.height,
         });
 
@@ -48,8 +48,9 @@ export class PauseBlock extends SceneBlocks {
                     this.setTexture('Pause');
                     this.scene.sound.play('PauseBlq');
                 };
-                
-                activarPausa();
+                const player = this.scene?.jugador.body;
+                if (player.velocity.y > 0 && player.position.y < this.body.position.y - 5)
+                {activarPausa();}
             }
         });
     }

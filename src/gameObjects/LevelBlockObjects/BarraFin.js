@@ -19,7 +19,7 @@ export class Fin extends SceneBlocks
         this.iniY = this.y;
         this.range = 100;
         this.direction = -1;
-
+        this.setDepth(3);
         // Cuerpo rectangular
         this.setRectangle(32, 1000, { 
             isStatic: true, 

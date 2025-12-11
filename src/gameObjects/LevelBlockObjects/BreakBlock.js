@@ -84,7 +84,8 @@ export class Block extends SceneBlocks {
                            (bodyB.label === "Mario") ? bodyB : null;
 
             if (player) {
-                if (player.gameObject.body.velocity.y > 0){ //|| player.gameObject.getCenter().y < bodyB.bounds.max.y){
+                if (player.gameObject.body.velocity.y > 0 || (player.y+player.height) <= this.y 
+                ){ //|| player.gameObject.getCenter().y < bodyB.bounds.max.y){
                     return; // Solo al golpear desde abajo
                 } 
                 // const aim = this.findSpawnBlockAbovePlayer(this.jugador, 20, 20); // (toleranciaX, toleranciaY)
