@@ -8,7 +8,7 @@
 // import TransitionCode from '../../../gameObjects/UI/Transition.js'
 // import { PowerUp, POWERUP_TYPES } from '../../../gameObjects/PowerUps/PowerUps.js';
 // import { DIE_TYPES } from '../../../gameObjects/Enemies/Goomba.js';
-import GameScenes from '../GameScenes.js'
+import GameScenes from '../GameScenes.js';
 
 class Nivel_R extends GameScenes
 {
@@ -27,7 +27,8 @@ class Nivel_R extends GameScenes
     }
 
     preload(){
-        this.load.tilemapTiledJSON('map', 'MapaDeTiled/ElMapa.json');
+        console.log('=== INICIO ===');
+        this.load.tilemapTiledJSON(this.mapKey, 'MapaDeTiled/ElMapa.json');
         this.score=0;
         this.coinScore = 0;
         this.purpleCoinScore = 0;

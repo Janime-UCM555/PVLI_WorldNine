@@ -403,7 +403,7 @@ class Pokey extends Phaser.GameObjects.Container
                         player.setStatic(true);
                         this.body.collisionFilter.mask = 0;
                         this.setStatic(true);
-                        this.scene.doubleEndTransition(()=>{this.scene.scene.launch('MainMenu');
+                        this.scene.doubleEndTransition(()=>{this.scene.scene.launch('LevelSelection');
                             this.scene.scene.stop();});
                     }
                 }
@@ -412,8 +412,9 @@ class Pokey extends Phaser.GameObjects.Container
                     this.scene.jugador.hurt();
                     this.scene.endTimer=true;
                     this.scene.jugador.setStatic(true);
-                    this.scene.doubleEndTransition(()=>{
-                        this.scene.scene.restart();
+                    const sceneRef = this.scene;
+                    sceneRef.doubleEndTransition(()=>{
+                        sceneRef.scene.restart();
                     });
                 }
             }

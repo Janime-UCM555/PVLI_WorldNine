@@ -1,4 +1,4 @@
-import GameScenes from '../GameScenes.js'
+import GameScenes from '../GameScenes.js';
 import { PowerUp, POWERUP_TYPES } from '../../../gameObjects/PowerUps/PowerUps.js';
 import spawnPowerUp from '../../../gameObjects/PowerUps/PowerUpSpawn.js';
 
@@ -20,7 +20,7 @@ class Nivel_D extends GameScenes
 
     preload(){
         console.log('=== INICIO ===');
-        this.load.tilemapTiledJSON('map', 'MapaDeTiled/MapaDesierto.json');
+        this.load.tilemapTiledJSON(this.mapKey, 'MapaDeTiled/MapaDesierto.json');
         this.score=0;
         this.coinScore = 0;
         this.purpleCoinScore = 0;

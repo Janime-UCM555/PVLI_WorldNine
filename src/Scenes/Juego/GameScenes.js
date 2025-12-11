@@ -82,6 +82,12 @@ import Star from '../../gameObjects/PowerUps/Star.js';
  */
 import { DIE_TYPES } from '../../gameObjects/Enemies/Goomba.js';
 
+/**
+ * Guardar los datos de la partida
+ * @module UI/SaveManager
+ */
+import saveManager from '../../gameObjects/UI/SaveManager.js';
+
 export const purpleCoinsByLevel = {
     Nivel_T: 0,
     Nivel_R: 0,
@@ -145,12 +151,16 @@ export const CLASS_MAP = {
 };
 class EscenaBase extends Phaser.Scene {
     constructor(key, callback, IsBoss) {
-        super(key, callback, IsBoss);
+        super({ key: key });
+
         this.level = key;
+        this.mapKey = this.level + '_map';
         this.isBoss = IsBoss;
         this.customLayer = callback;
+        this.saveManager = saveManager;
         this.levelType = "Normal";
         this.type = 0;
+        
         if (this.level == "Nivel_R"||this.level=="BossJ")
         {
             console.log("Roma");
@@ -189,7 +199,7 @@ class EscenaBase extends Phaser.Scene {
             });
         }
 
-        this.map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
+        this.map = this.make.tilemap({ key: this.mapKey, tileWidth: 32, tileHeight: 32 });
         const tileset = this.map.addTilesetImage('MapaTiles', 'mi_tileset');
         this.tile = tileset;
         this.customLayer();
@@ -533,18 +543,90 @@ doubleEndTransition(callback)
 {
     if (this.levelMusic && this.levelMusic.isPlaying) {
         this.levelMusic.stop();
+        this.levelMusic.destroy();
+        this.levelMusic = null;
     }
-    TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador.getCenter(), this.cameras.main.width, 120,
+    TransitionCode.invoke(this, this.cameras.main, 1000, this.jugador?.getCenter() || {x: this.cameras.main.width/2, y: this.cameras.main.height/2}, this.cameras.main.width, 120,
     ()=>{
-        this.sound.play('iris-out')
+        this.sound.play('iris-out');
+        const transition2 = () => {
+            TransitionCode.invoke(this, this.cameras.main, 1000, this.jugador?.getCenter() || {x: this.cameras.main.width/2, y: this.cameras.main.height/2}, 120, 0,
+            ()=>{
+                // Limpiar recursos antes de cambiar de escena
+                this.cleanupBeforeSceneChange();
+
+                // Asegurarse de que no haya escenas duplicadas
+                if (this.scene.isActive('LevelSelection')) {
+                    this.scene.stop('LevelSelection');
+                }
+
+                // Ejecutar el callback
+                callback();
+
+                // Detener esta escena después de un pequeño delay
+                this.time.delayedCall(100, () => {
+                    this.scene.stop();
+                });
+            });
+        };
         transition2();
     });
-    const transition2 = () => {
-        TransitionCode.invoke(this, this.cameras.main, 1000,this.jugador.getCenter(), 120, 0,
-        ()=>{
-            callback();
-        });
+}
+safeSceneTransition(targetScene) {
+    // Obtener todas las instancias de escenas del manager
+    const scenes = this.scene.manager.scenes;
+    const currentScene = this.scene.key;
+        
+    // Detener todas las escenas excepto la actual y la objetivo
+    for (let i = scenes.length - 1; i >= 0; i--) {
+        const scene = scenes[i];
+            
+        // Verificar que la escena tenga la propiedad scene.key
+        if (scene.scene && scene.scene.key) {
+            const sceneKey = scene.scene.key;
+                
+            // Detener escenas que no sean la actual ni la objetivo
+            if (sceneKey !== currentScene && sceneKey !== targetScene) {
+                if (scene.scene.isActive && scene.scene.isActive()) {
+                    scene.scene.stop();
+                }
+            }
+        }
     }
+        
+    // Lanzar la nueva escena
+    this.scene.launch(targetScene);
+        
+    // Detener la escena actual después de un breve retraso
+    setTimeout(() => {
+        this.scene.stop();
+    }, 50);
+}
+cleanupBeforeSceneChange() {
+    // Detener todos los sonidos
+    if (this.levelMusic) {
+        this.levelMusic.stop();
+        this.levelMusic.destroy();
+        this.levelMusic = null;
+    }
+    
+    // Limpiar timers
+    if (this.timerEvent) {
+        this.timerEvent.remove();
+        this.timerEvent = null;
+    }
+    
+    // Limpiar grupos
+    if (this.goombas) this.goombas.clear(true, true);
+    if (this.koopas) this.koopas.clear(true, true);
+    if (this.piranhas) this.piranhas.clear(true, true);
+    if (this.pokeys) this.pokeys.clear(true, true);
+    if (this.powerups) this.powerups.clear(true, true);
+    if (this.hammers) this.hammers.clear(true, true);
+    
+    // Detener todas las animaciones
+    this.tweens.killAll();
+    this.time.removeAllEvents();
 }
 update(time, delta) {
     // if (!this.fpsText || !this.fpsText.scene || this.fpsText._destroyed) return;
@@ -651,8 +733,7 @@ checkPlayerFell() {
             this.jugador.y = this.map.heightInPixels + 45;
             this.jugador.hurt();
             this.jugador.setStatic(true);
-            this.doubleEndTransition(()=>{this.scene.launch('MainMenu');
-                this.scene.stop();});
+            this.doubleEndTransition(()=>{this.safeSceneTransition('LevelSelection');});
         }
     }
 }
@@ -750,6 +831,9 @@ increaseScore(points, type = 'score'){
         }
     } else if (type == 'purple_coin'){
         this.purpleCoinScore += points;
+        // Guardar inmediatamente en localStorage también
+        purpleCoinsByLevel[this.level] = this.purpleCoinScore;
+        localStorage.setItem('w9_purpleCoinsByLevel', JSON.stringify(purpleCoinsByLevel));
         if(this.purpleCoinScore < 5)
         {
             this.sound.play('purple_coin_sound');
@@ -779,8 +863,7 @@ timerMethod ()
                 this.jugador.hurt();
                 this.jugador.setStatic(true);
                 this.doubleEndTransition(
-                ()=>{this.scene.launch('MainMenu');
-                this.scene.stop();});
+                ()=>{this.safeSceneTransition('LevelSelection');});
             }
             if (!this.jugador.isInBubble) {
                 this.timer = this.timer - 1; // reinicia a 60
@@ -831,6 +914,21 @@ ganasPartida() {
         }
     });
 
+    if (this.jupiterBoss) {
+        this.jupiterBoss.defeat();
+    }
+
+    if (this.horus) {
+        this.horus.defeat();
+    }
+
+    if (this.hadesBoss) {
+        this.hadesBoss.defeat();
+    }
+
+    this.saveManager.markLevelCompleted(this.level);
+    this.saveManager.updateLevelScore(this.level, this.score, this.purpleCoinScore);
+
     this.jugador.win();
     this.jugador.play('mario_stop', true);
 
@@ -844,11 +942,39 @@ ganasPartida() {
     victoryMusic.once('complete', () => {
     this.jugador.play('mario_victory', true);
     setTimeout(() => {
-        this.doubleEndTransition(
-            ()=>{this.scene.launch('MainMenu');
-            this.scene.stop();});        
+        this.doubleEndTransition(()=>{
+            this.safeSceneTransition('LevelSelection');
+        });
     }, 1000);
     });
+}
+shutdown() {
+    // Limpiar explícitamente todos los recursos
+    if (this.levelMusic && this.levelMusic.isPlaying) {
+        this.levelMusic.stop();
+        this.levelMusic.destroy();
+    }
+    
+    // Limpiar todas las referencias
+    this.jugador = null;
+    this.map = null;
+    this.timerEvent?.remove();
+    
+    // Limpiar grupos
+    this.goombas?.clear(true, true);
+    this.koopas?.clear(true, true);
+    this.piranhas?.clear(true, true);
+    this.pokeys?.clear(true, true);
+    this.powerups?.clear(true, true);
+    this.hammers?.clear(true, true);
+    
+    // Limpiar todas las tareas pendientes
+    this.time.removeAllEvents();
+    this.tweens.killAll();
+    
+    // Restablecer estado
+    this.endTimer = true;
+    this.enPausa = false;
 }
 requestHammer(player) {
     let hammer = this.hammers.getChildren().find(h => !h.active);
@@ -913,7 +1039,6 @@ requestHammer(player) {
 
     return hammer;
 }
-
 
 recycleHammer(hammer) {
     if (!hammer) return;

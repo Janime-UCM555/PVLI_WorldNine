@@ -37,7 +37,7 @@ class BossHades extends GameScenes
 
     preload(){
         console.log('=== INICIO ===');
-        this.load.tilemapTiledJSON('map', 'MapaDeTiled/BossHades.json');
+        this.load.tilemapTiledJSON(this.mapKey, 'MapaDeTiled/BossHades.json');
         this.score=0;
         this.coinScore = 0;
         this.purpleCoinScore = 0;
@@ -79,35 +79,6 @@ class BossHades extends GameScenes
             }
         });
    }
-    ganasPartida(barra) {
-        this.endTimer=true;
-
-        this.moveCameraToBottomRight();
-
-        this.jugador.win();
-        this.jugador.play('mario_stop', true);
-
-        if (this.hadesBoss) {
-            this.hadesBoss.defeat();
-        }
-
-
-        // Detener música de nivel al ganar
-        if (this.levelMusic && this.levelMusic.isPlaying) {
-            this.levelMusic.stop();
-        }
-
-        const victoryMusic = this.sound.add('victory_music');
-        victoryMusic.play();
-        victoryMusic.once('complete', () => {
-        this.jugador.play('mario_victory', true);
-        setTimeout(() => {
-            this.doubleEndTransition(
-                ()=>{this.scene.launch('MainMenu');
-                this.scene.stop();});
-        }, 1000);
-        });
-    }
 
     createText()
     {
@@ -148,6 +119,25 @@ class BossHades extends GameScenes
             .setFontSize(fontSize + 'px')
             .setScrollFactor(0);
         });
+    }
+
+    ganasPartida(barra) {
+        const fadeTween = this.tweens.add({
+            targets: this.pilar,
+            alpha: 0,
+            scaleX: 0.4,
+            scaleY: 0.4,
+            duration: 1000,
+            ease: 'Cubic',
+            onComplete: () => {
+                // Destruir el pilar cuando esté completamente transparente
+                if (this.pilar) {
+                    this.pilar.destroy();
+                }
+            }
+        });
+
+        super.ganasPartida();
     }
 }
 

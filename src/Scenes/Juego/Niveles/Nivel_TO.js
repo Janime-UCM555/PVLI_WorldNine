@@ -22,7 +22,7 @@ class Nivel_TO extends GameScenes
     }
 
     preload(){
-        this.load.tilemapTiledJSON('map', 'MapaDeTiled/TestObjetos.json');
+        this.load.tilemapTiledJSON(this.mapKey, 'MapaDeTiled/TestObjetos.json');
         this.score=0;
         this.endTimer=false;
         this.coinScore = 0;

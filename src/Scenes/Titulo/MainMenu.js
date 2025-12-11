@@ -1,5 +1,6 @@
 import Button from '../../gameObjects/UI/Button.js';
 import TransitionCode from '../../gameObjects/UI/Transition.js'
+import saveManager from '../../gameObjects/UI/SaveManager.js'
 const B_SPACING = 100 ;
 class MainMenu extends Phaser.Scene
 {
@@ -13,8 +14,6 @@ class MainMenu extends Phaser.Scene
     
     preload(){
         this.load.image('menu_bg', 'assets/GameSprites/Precarga/MenuBG.png');
-
-        this.load.audio('coin_sound', 'assets/sonidos/SE/Items/Monedas/coin.wav');
 
         this.load.image('TitleName', 'assets/web/TituloPNG.png');
     }
@@ -67,14 +66,13 @@ class MainMenu extends Phaser.Scene
         if (this.menuMusic && this.menuMusic.isPlaying) {
             this.menuMusic.stop();
         }
-        this.sound.play('coin_sound', { volume: 0 });
         this.buttonMove.input.enabled = false;
         TransitionCode.invoke(this, this.cameras.main, 1000,{x: this.cameras.main.width/2, y:  this.cameras.main.height/2}, 1500, 0,
         ()=>{
-            this.scene.launch('BossJ');
+            this.scene.launch('LevelSelection');
             this.scene.stop();
         });
-    }, 0x387999, 0x285f7a, 0xffffff, )
+    }, 0x387999, 0x285f7a, 0xffffff,);
 
     // this.buttonPrueba = new Button(this, 0, 0,'Prueba',() =>{
     //     this.scene.launch('NivelScene');
@@ -82,7 +80,26 @@ class MainMenu extends Phaser.Scene
     // });
 
     this.buttonFullScreen = new Button(this, this.cameras.main.width / 4 + 50, this.cameras.main.height / 2.5, "Pantalla \nCompleta",
-        () => this.scale.toggleFullscreen(), 0x387999,0x285f7a, 0xffffff, 
+        () => this.scale.toggleFullscreen(), 0x387999, 0x285f7a, 0xffffff, 
+    );
+
+    // Botón para resetear datos guardados
+    this.buttonReset = new Button(this, -300, B_SPACING * 2.6, "Resetear \nProgreso",
+        () => {
+            saveManager.resetAllData();
+            // Recargar la escena para reflejar cambios
+            this.scene.restart();
+        }, 0x387999, 0x285f7a, 0xffffff
+    );
+
+    this.buttonUnlockAll = new Button(
+        this, -300, B_SPACING * 3.4, "Desbloquear\nTodo", 
+        () => {
+            saveManager.unlockAllLevelsAndBosses();
+            
+            // Recargar la escena para reflejar cambios
+            this.scene.restart();
+        }, 0x387999, 0x285f7a, 0xffffff
     );
 
     this.ui = this.add.container(this.cameras.main.width/2, this.cameras.main.height/2);
@@ -91,7 +108,9 @@ class MainMenu extends Phaser.Scene
         //Añadir aqui los elementos de la ui
         this.buttonFullScreen,
         // this.buttonPrueba,
-        this.buttonMove
+        this.buttonMove,
+        this.buttonReset,
+        this.buttonUnlockAll
     ])
 
     this.scale.on('resize', (gameSize) => {this.UIResize(gameSize.width, gameSize.height)});

@@ -1,4 +1,4 @@
-import GameScenes from '../GameScenes.js'
+import GameScenes from '../GameScenes.js';
 import Pilar from '../../../gameObjects/LevelBlockObjects/Pilar.js';
 import JupiterBoss from '../../../gameObjects/BossesObjects/JupiterBoss.js';
 import spawnPowerUp from '../../../gameObjects/PowerUps/PowerUpSpawn.js';
@@ -34,7 +34,7 @@ class BossJ extends GameScenes
 
     preload(){
         console.log('=== INICIO ===');
-        this.load.tilemapTiledJSON('map', 'MapaDeTiled/BossJupiter.json');
+        this.load.tilemapTiledJSON(this.mapKey, 'MapaDeTiled/BossJupiter.json');
         this.score=0;
         this.coinScore = 0;
         this.purpleCoinScore = 0;
@@ -118,9 +118,6 @@ class BossJ extends GameScenes
     }
     ganasPartida()
     {
-        if (this.jupiterBoss) {
-            this.jupiterBoss.defeat();
-        }
         const fadeTween = this.tweens.add({
             targets: this.pilar,
             alpha: 0,
@@ -129,7 +126,7 @@ class BossJ extends GameScenes
             duration: 1000,
             ease: 'Cubic',
             onComplete: () => {
-                // Destruir el fuego cuando esté completamente transparente
+                // Destruir el pilar cuando esté completamente transparente
                 if (this.pilar) {
                     this.pilar.destroy();
                 }

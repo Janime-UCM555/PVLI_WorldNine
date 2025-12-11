@@ -20,7 +20,7 @@ class Nivel_G extends GameScenes
 
     preload(){
         console.log('=== INICIO ===');
-        this.load.tilemapTiledJSON('map', 'MapaDeTiled/MapaGrecia.json');
+        this.load.tilemapTiledJSON(this.mapKey, 'MapaDeTiled/MapaGrecia.json');
         this.score=0;
         this.coinScore = 0;
         this.purpleCoinScore = 0;

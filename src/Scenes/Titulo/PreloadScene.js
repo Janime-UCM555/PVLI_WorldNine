@@ -21,6 +21,7 @@ class PreloadScene extends Phaser.Scene {
   // Todo lo que cargues a partir de aquí será relativo a /assets/
   this.load.setPath('assets/');
     this.load.image('star_pattern', 'GameSprites/Precarga/star_pattern.png');
+    this.load.image('lock', 'GameSprites/Precarga/lock.png');
 
     // Goomba
     this.load.spritesheet('Gomb_Bite', 'GameSprites/Characters/Enemigos/Goomba/Gomb_Bite.png', {
@@ -350,7 +351,13 @@ class PreloadScene extends Phaser.Scene {
         });
         this.anims.create({
             key: 'pilar_ny',
-            frames: this.anims.generateFrameNumbers('pilar_nubeTiles', { start: 0, end: 10 }),
+            frames: this.anims.generateFrameNumbers('pilar_nubeTiles', { start: 0, end: 16 }),
+            frameRate: 20,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'pilar_fuego',
+            frames: this.anims.generateFrameNumbers('pilar_fuegoTiles', { start: 0, end: 16 }),
             frameRate: 20,
             repeat: -1
         });

@@ -1,4 +1,4 @@
-// BossH_Test.js
+// BossH.js
 import Mario from '../../../gameObjects/Player/Mario.js';
 import HorusBoss, { HORUS_SHEET_KEY } from "../../../gameObjects/BossesObjects/HorusBoss.js";
 import Star from '../../../gameObjects/PowerUps/Star.js';
@@ -16,7 +16,7 @@ const CATEGORY_POWERUP = 0x0003;
 const CATEGORY_TERRAIN = 0x0004;
 const CATEGORY_FALLOFF = 0x0005;
 
-export default class BossH_Test extends GameScenes{
+export default class BossH extends GameScenes{
 
     constructor() {
         super('BossH', ()=>
@@ -31,7 +31,7 @@ export default class BossH_Test extends GameScenes{
     }
 
     preload() {
-        this.load.tilemapTiledJSON('map', 'MapaDeTiled/Prueba.json');
+        this.load.tilemapTiledJSON(this.mapKey, 'MapaDeTiled/Prueba.json');
         this.load.spritesheet(HORUS_SHEET_KEY, 'assets/GameSprites/Characters/Bosses/Horus/spritesheet_uniforme_completa.png', { frameWidth: 74, frameHeight: 69 });
         this.load.spritesheet('horus_column', 'assets/GameSprites/ObjetosBosses/Jarrones.png', { frameWidth: 32, frameHeight: 32 });
         this.score = 0;
@@ -123,7 +123,7 @@ export default class BossH_Test extends GameScenes{
     }
 
     ganasPartida() {
-       this.horus.defeat();
+        super.ganasPartida();
     }
 
     restartLevel() {

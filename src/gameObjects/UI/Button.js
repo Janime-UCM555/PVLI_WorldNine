@@ -16,7 +16,8 @@ class Button extends Phaser.GameObjects.Container
         this.label = scene.add.text(0, 0, text, {
             fontFamily: 'chlorinap',
             fontSize: '24px',
-            fill: textColorHex
+            fill: textColorHex,
+            align: 'center'
         });
         this.label.setOrigin(0.5);
 
@@ -30,8 +31,8 @@ class Button extends Phaser.GameObjects.Container
 
         this.on('pointerdown', callback);
 
-        this.on('pointerover', () => this.drawBackground(this.selectionColor));
-        this.on('pointerout', () => this.drawBackground(this.defaultColor));
+        this.on('pointerover', () => {this.drawBackground(this.selectionColor), this.setScale(1.05)});
+        this.on('pointerout', () => {this.drawBackground(this.defaultColor), this.setScale(1)});
 
         scene.add.existing(this);
     }
