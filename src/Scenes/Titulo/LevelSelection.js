@@ -40,6 +40,9 @@ class LevelSelection extends Phaser.Scene
                 color: '#da4c3cff'
             }
         ];
+
+        // Mapa para almacenar botones por nivel
+        this.levelButtonsMap = new Map();
     }
 
     preload(){
@@ -149,32 +152,34 @@ class LevelSelection extends Phaser.Scene
             } else {
                 // Hacer interactivo solo si está desbloqueado
                 button.setInteractive({ useHandCursor: true });
-                
-                // Efectos hover solo para desbloqueados
+            
+                // Guardar las funciones de hover para restaurarlas después
                 const hoverEffect = () => {
                     button.fillColor = 0x4444ff;
                     button.setScale(1.1);
                     text.setScale(1.1);
                 };
-                
+            
                 const hoverOutEffect = () => {
                     button.fillColor = 0x0000ff;
                     button.setScale(1);
                     text.setScale(1);
                 };
-                
-                button.on('pointerover', hoverEffect);
-                
-                button.on('pointerout', hoverOutEffect);
-                
-                // Acción al hacer clic solo para desbloqueados
+            
                 const clickAction = () => {
                     if (!this.panelOpen) {
                         this.openWorldPanel(world);
                     }
                 };
-                
+            
+                button.on('pointerover', hoverEffect);
+                button.on('pointerout', hoverOutEffect);
                 button.on('pointerdown', clickAction);
+            
+                // Guardar referencias para restaurarlas después
+                button.hoverEffect = hoverEffect;
+                button.hoverOutEffect = hoverOutEffect;
+                button.clickAction = clickAction;
             }
             
             // Almacenar referencia al mundo
@@ -209,6 +214,9 @@ class LevelSelection extends Phaser.Scene
 
         // Crear panel del mundo (inicialmente oculto)
         this.createWorldPanel();
+
+        // Crear botones de nivel
+        this.createLevelButtons();
         
         // Información sobre progreso
         this.createProgressionInfo();
@@ -310,37 +318,7 @@ class LevelSelection extends Phaser.Scene
             color: '#ff2020ff',
             align: 'center'
         }).setOrigin(0.5, 0).setDepth(102).setVisible(false);
-        
-        // Botones dentro del panel
-        const buttonY = panelY + panelHeight - 75;
-        const buttonSpacing = 180;
-        
-        // Botón para jugar el nivel
-        this.playLevelButton = new Button(
-            this,
-            panelX + panelWidth / 2 - buttonSpacing,
-            buttonY,
-            'Nivel',
-            () => this.playLevel(),
-            0x0000ff, // Azul
-            0x4444ff, // Azul claro al hover
-            0xffffff // Texto blanco
-        );
-        this.playLevelButton.setDepth(102).setVisible(false);
-        
-        // Botón para jugar el jefe
-        this.playBossButton = new Button(
-            this,
-            panelX + panelWidth / 2 + buttonSpacing,
-            buttonY,
-            'Jefe',
-            () => this.playBossLevel(),
-            0xcc0000, // Rojo
-            0xff3300, // Rojo claro al hover
-            0xffffff // Texto blanco
-        );
-        this.playBossButton.setDepth(102).setVisible(false);
-        
+
         // Botón para cerrar el panel
         this.closePanelButton = this.add.text(panelX + panelWidth - 35, panelY + 35, 'X', {
             fontFamily: 'chlorinap',
@@ -365,6 +343,94 @@ class LevelSelection extends Phaser.Scene
         this.closePanelButton.on('pointerdown', () => {
             this.closeWorldPanel();
         });
+
+        // Contenedor para los botones de nivel
+        this.levelButtonsContainer = this.add.container(0, 0).setDepth(103).setVisible(false);
+    }
+
+    createLevelButtons() {
+        // Definir todos los niveles del juego
+        const allLevels = [
+            { key: 'Nivel_T', name: 'Tutorial', color: 0x00ff00, isBoss: false },
+            { key: 'Nivel_R', name: 'Roma', color: 0x387999, isBoss: false },
+            { key: 'BossJ', name: 'Júpiter', color: 0xff0000, isBoss: true },
+            { key: 'Nivel_D', name: 'Egipto', color: 0xffd700, isBoss: false },
+            { key: 'BossH', name: 'Horus', color: 0xff4500, isBoss: true },
+            { key: 'Nivel_G', name: 'Grecia', color: 0xda4c3c, isBoss: false },
+            { key: 'BossHades', name: 'Hades', color: 0x8b0000, isBoss: true }
+        ];
+
+        // Crear un botón para cada nivel
+        allLevels.forEach(level => {
+            const isUnlocked = this.checkIfLevelUnlocked(level.key);
+            
+            // Crear botón con posición inicial fuera de pantalla
+            const button = new Button(
+                this,
+                -200, // Posición inicial fuera de pantalla
+                -200,
+                level.name,
+                () => this.startScene(level.key),
+                isUnlocked ? level.color : 0x666666,
+                isUnlocked ? this.lightenColor(level.color) : 0x888888,
+                0xffffff
+            );
+            
+            // Si no está desbloqueado, desactivar interacción
+            if (!isUnlocked) {
+                button.disableInteractive();
+                
+                // Agregar icono de candado
+                const lockIcon = this.add.image(-200, -200, 'lock')
+                    .setScale(0.5)
+                    .setDepth(104);
+                button.lockIcon = lockIcon;
+                this.levelButtonsContainer.add(lockIcon);
+            }
+            
+            // Configurar para que no sea visible inicialmente
+            button.setVisible(false);
+            button.setActive(false);
+            
+            // Agregar al contenedor y al mapa
+            this.levelButtonsContainer.add(button);
+            this.levelButtonsMap.set(level.key, {
+                button: button,
+                isBoss: level.isBoss,
+                color: level.color
+            });
+        });
+    }
+
+    // Método para verificar si un nivel está desbloqueado
+    checkIfLevelUnlocked(levelKey) {
+        if (levelKey === 'Nivel_T') return true; // Tutorial siempre disponible
+        
+        // Verificar desbloqueo basado en progreso
+        const unlockOrder = {
+            'Nivel_R': ['Nivel_T'],
+            'BossJ': ['Nivel_R'],
+            'Nivel_D': ['BossJ'],
+            'BossH': ['Nivel_D'],
+            'Nivel_G': ['BossH'],
+            'BossHades': ['Nivel_G']
+        };
+        
+        if (unlockOrder[levelKey]) {
+            return unlockOrder[levelKey].some(requiredLevel => 
+                saveManager.getLevelData(requiredLevel)?.completed
+            );
+        }
+        
+        return false;
+    }
+
+    // Método auxiliar para aclarar colores
+    lightenColor(color) {
+        const r = Math.min(255, ((color >> 16) & 0xFF) + 40);
+        const g = Math.min(255, ((color >> 8) & 0xFF) + 40);
+        const b = Math.min(255, (color & 0xFF) + 40);
+        return (r << 16) | (g << 8) | b;
     }
 
     openWorldPanel(world) {
@@ -373,31 +439,34 @@ class LevelSelection extends Phaser.Scene
         
         const color = world.color;
         
-        // Restaurar visualmente todos los botones a su estado normal
         this.levelButtons.forEach(item => {
-            const button = item.button;
-            const text = item.text;
-        
-            // Restaurar propiedades visuales
-            if (button.world.unlocked) {
-                button.fillColor = 0x0000ff; // Azul original
-                button.setStrokeStyle(5, 0xffffff); // Borde blanco original
+            // Restaurar apariencia visual original
+            if (item.button.world.unlocked) {
+                item.button.fillColor = 0x0000ff;
+                item.button.setStrokeStyle(5, 0xffffff);
             } else {
-                button.fillColor = 0x666666; // Gris original
-                button.setStrokeStyle(5, 0x888888); // Borde gris original
+                item.button.fillColor = 0x666666;
+                item.button.setStrokeStyle(5, 0x888888);
             }
         
-            // Restaurar escala
-            button.setScale(1);
-            text.setScale(1);
+            // Asegurar que la escala sea 1
+            item.button.setScale(1);
+            item.text.setScale(1);
+
+            // Deshabilitar la interactividad
+            item.button.disableInteractive();
         
-            // Deshabilitar interacción
-            if (button.world.unlocked) {
-                button.disableInteractive();
-            }
+            // También deshabilitar los eventos hover
+            item.button.removeAllListeners('pointerover');
+            item.button.removeAllListeners('pointerout');
+            item.button.removeAllListeners('pointerdown');
         });
 
+        // Deshabilitar el botón de Volver
         this.backButton.disableInteractive();
+
+        // Deshabilitar el botón del tutorial
+        this.tutorialButton.disableInteractive();
 
         // Obtener datos del nivel y jefe
         const levelData = saveManager.getLevelData(world.levelKey);
@@ -466,77 +535,176 @@ class LevelSelection extends Phaser.Scene
         this.levelStats.setVisible(true);
         this.bossInfo.setVisible(true);
         this.bossStats.setVisible(true);
-        this.playLevelButton.setVisible(true);
-        this.playBossButton.setVisible(true);
         this.closePanelButton.setVisible(true);
+        this.closePanelButton.setInteractive({ useHandCursor: true });
+    
+        // Mostrar botones de niveles para este mundo
+        this.showWorldLevelButtons(world);
+    }
+
+    // Mostrar botones de niveles del mundo
+    showWorldLevelButtons(world) {
+        // Mostrar el contenedor de botones
+        this.levelButtonsContainer.setVisible(true);
         
-        // Configurar botón del nivel (siempre activo porque el mundo está desbloqueado)
-        this.playLevelButton.label.setText(levelDisplayName);
-        this.playLevelButton.setInteractive({ useHandCursor: true });
-        this.playLevelButton.on('pointerdown', () => this.startScene(world.levelKey));
+        // Obtener niveles de este mundo
+        let levelKeys = [];
         
-        // Configurar botón del jefe (solo activo si está desbloqueado)
-        if (bossUnlocked) {
-            this.playBossButton.label.setText(bossDisplayName);
-            this.playBossButton.setInteractive({ useHandCursor: true });
-            this.playBossButton.on('pointerdown', () => this.startScene(world.bossKey));
-
-            // Color rojo para jefe
-            this.playBossButton.defaultColor = 0xcc0000;
-            this.playBossButton.selectionColor = 0xff3300;
-            this.playBossButton.drawBackground(0xcc0000);
-            this.playBossButton.label.setColor('#ffffff');
-    
-            // Agregar eventos de hover
-            this.playBossButton.gfx.on('pointerover', () => {
-                this.playBossButton.gfx.setScale(1.05);
-                this.playBossButton.label.setScale(1.05);
-            });
-    
-            this.playBossButton.gfx.on('pointerout', () => {
-                this.playBossButton.gfx.setScale(1);
-                this.playBossButton.label.setScale(1);
-            });
-    
-            // Hacer lo mismo para el label
-            this.playBossButton.label.on('pointerover', () => {
-                this.playBossButton.gfx.setScale(1.05);
-                this.playBossButton.label.setScale(1.05);
-            });
-    
-            this.playBossButton.label.on('pointerout', () => {
-                this.playBossButton.gfx.setScale(1);
-                this.playBossButton.label.setScale(1);
-            });
-        } else {
-            this.playBossButton.label.setText(`${bossDisplayName}\nBloqueado`);
-            this.playBossButton.disableInteractive();
-
-            // Color gris para bloqueado
-            this.playBossButton.defaultColor = 0x666666;
-            this.playBossButton.selectionColor = 0x666666;
-            this.playBossButton.drawBackground(0x666666);
-            this.playBossButton.label.setColor('#ffffffff');
-
-            // Eliminar eventos de hover si existen
-            this.playBossButton.gfx.off('pointerover');
-            this.playBossButton.gfx.off('pointerout');
-            this.playBossButton.label.off('pointerover');
-            this.playBossButton.label.off('pointerout');
+        switch(world.key) {
+            case 'world1':
+                levelKeys = ['Nivel_R', 'BossJ'];
+                break;
+            case 'world2':
+                levelKeys = ['Nivel_D', 'BossH'];
+                break;
+            case 'world3':
+                levelKeys = ['Nivel_G', 'BossHades'];
+                break;
         }
+        
+        // Calcular posiciones para los botones
+        const panelX = (this.cameras.main.width - (this.cameras.main.width * 0.7)) / 2;
+        const panelY = (this.cameras.main.height - (this.cameras.main.height * 0.6)) / 2;
+        const panelHeight = this.cameras.main.height * 0.6;
+        
+        // Posicion para el botón de nivel (izquierda)
+        const levelButtonX = panelX + 150;
+        const levelButtonY = panelY + panelHeight - 75;
+        
+        // Posicion para el botón de jefe (derecha)
+        const bossButtonX = panelX + (this.cameras.main.width * 0.7) - 150;
+        const bossButtonY = panelY + panelHeight - 75;
+        
+        // Ocultar todos los botones primero
+        this.levelButtonsMap.forEach((data, key) => {
+            const button = data.button;
+            button.setVisible(false);
+            button.setActive(false);
+            button.x = -200;
+            button.y = -200;
+            
+            if (button.lockIcon) {
+                button.lockIcon.setVisible(false);
+                button.lockIcon.x = -200;
+                button.lockIcon.y = -200;
+            }
+        });
+        
+        // Mostrar y posicionar botones del mundo actual
+        levelKeys.forEach((key, index) => {
+            const levelData = this.levelButtonsMap.get(key);
+            if (levelData) {
+                const button = levelData.button;
+                const isUnlocked = this.checkIfLevelUnlocked(key);
+                
+                // Posicionar el botón
+                if (levelData.isBoss) {
+                    button.x = bossButtonX;
+                    button.y = bossButtonY;
+                    if (button.lockIcon) {
+                        button.lockIcon.x = bossButtonX;
+                        button.lockIcon.y = bossButtonY;
+                    }
+                } else {
+                    button.x = levelButtonX;
+                    button.y = levelButtonY;
+                    if (button.lockIcon) {
+                        button.lockIcon.x = levelButtonX;
+                        button.lockIcon.y = levelButtonY;
+                    }
+                }
+                
+                // Actualizar estado de desbloqueo
+                if (isUnlocked) {
+                    button.setInteractive({ useHandCursor: true });
+                    button.drawBackground(levelData.color);
+                    button.defaultColor = levelData.color;
+                    button.selectionColor = this.lightenColor(levelData.color);
+                    if (button.lockIcon) {
+                        button.lockIcon.setVisible(false);
+                    }
+                } else {
+                    button.disableInteractive();
+                    button.drawBackground(0x666666);
+                    button.defaultColor = 0x666666;
+                    button.selectionColor = 0x888888;
+                    if (button.lockIcon) {
+                        button.lockIcon.setVisible(true);
+                    }
+                }
+                
+                // Mostrar el botón
+                button.setVisible(true);
+                button.setActive(true);
+            }
+        });
     }
 
     closeWorldPanel() {
         this.panelOpen = false;
         
-        // Habilitar interacción con los botones del fondo
+        // Restaurar la interactividad y opacidad de los botones de mundo
         this.levelButtons.forEach(item => {
             if (item.button.world.unlocked) {
+                // Restaurar interactividad solo si el mundo está desbloqueado
                 item.button.setInteractive({ useHandCursor: true });
+            
+                // Restaurar eventos hover
+                const hoverEffect = () => {
+                    item.button.fillColor = 0x4444ff;
+                    item.button.setScale(1.1);
+                    item.text.setScale(1.1);
+                };
+            
+                const hoverOutEffect = () => {
+                    item.button.fillColor = 0x0000ff;
+                    item.button.setScale(1);
+                    item.text.setScale(1);
+                };
+            
+                const clickAction = () => {
+                    if (!this.panelOpen) {
+                        this.openWorldPanel(item.button.world);
+                    }
+                };
+            
+                item.button.on('pointerover', hoverEffect);
+                item.button.on('pointerout', hoverOutEffect);
+                item.button.on('pointerdown', clickAction);
+            }
+        
+            // Restaurar apariencia visual
+            if (item.button.world.unlocked) {
+                item.button.fillColor = 0x0000ff;
+                item.button.setStrokeStyle(5, 0xffffff);
+            } else {
+                item.button.fillColor = 0x666666;
+                item.button.setStrokeStyle(5, 0x888888);
             }
         });
+
+        // Restaurar el botón de volver
         this.backButton.setInteractive({ useHandCursor: true });
+    
+        // Restaurar el botón de tutorial
+        this.tutorialButton.setInteractive({ useHandCursor: true });
         
+        // Ocultar todos los botones de nivel
+        this.levelButtonsMap.forEach((data, key) => {
+            const button = data.button;
+            button.setVisible(false);
+            button.setActive(false);
+            button.x = -200;
+            button.y = -200;
+        
+            if (button.lockIcon) {
+                button.lockIcon.setVisible(false);
+                button.lockIcon.x = -200;
+                button.lockIcon.y = -200;
+            }
+        });
+        this.levelButtonsContainer.setVisible(false);
+    
         // Ocultar panel
         this.panelBackground.setVisible(false);
         this.panel.setVisible(false);
@@ -545,8 +713,7 @@ class LevelSelection extends Phaser.Scene
         this.levelStats.setVisible(false);
         this.bossInfo.setVisible(false);
         this.bossStats.setVisible(false);
-        this.playLevelButton.setVisible(false);
-        this.playBossButton.setVisible(false);
+        this.closePanelButton.setInteractive({ useHandCursor: false });
         this.closePanelButton.setVisible(false);
     }
 
@@ -555,17 +722,34 @@ class LevelSelection extends Phaser.Scene
     }
 
     playLevel() {
-        this.startScene(this.selectedWorld.levelKey);
+        if (this.selectedWorld) {
+            this.startScene(this.selectedWorld.levelKey);
+        }
     }
 
     playBossLevel() {
-        this.startScene(this.selectedWorld.bossKey);
+        if (this.selectedWorld) {
+            this.startScene(this.selectedWorld.bossKey);
+        }
     }
 
     startScene(sceneKey) {
+        // Ocultar todos los botones de nivel antes de la transición
+        this.levelButtonsMap.forEach((data, key) => {
+            const button = data.button;
+            button.setVisible(false);
+            button.setActive(false);
+        });
+        this.levelButtonsContainer.setVisible(false);
+
         // Detener música
         if (this.menuMusic && this.menuMusic.isPlaying) {
             this.menuMusic.stop();
+        }
+
+        // Cerrar panel si está abierto
+        if (this.panelOpen) {
+            this.closeWorldPanel();
         }
         
         // Transición a la escena seleccionada
@@ -584,6 +768,14 @@ class LevelSelection extends Phaser.Scene
     }
     
     returnToMainMenu() {
+        // Ocultar todos los botones de nivel
+        this.levelButtonsMap.forEach((data, key) => {
+            const button = data.button;
+            button.setVisible(false);
+            button.setActive(false);
+        });
+        this.levelButtonsContainer.setVisible(false);
+
         // Detener música
         if (this.menuMusic && this.menuMusic.isPlaying) {
             this.menuMusic.stop();
