@@ -140,8 +140,8 @@ class Goomba extends Enemies
                 else if (!this.anims.isPlaying || (this.type === 2 && this.anims.currentAnim.key !== 'gombegypt_walk')) {
                     this.play('gombegypt_walk');
                 }
-                else if (!this.anims.isPlaying || (this.type === 3 && this.anims.currentAnim.key !== 'gombegreece_walk')) {
-                    this.play('gombgreece_walk');
+                else if (!this.anims.isPlaying || (this.type === 3 && this.anims.currentAnim.key !== 'gombgreece_walk')) {
+                    this.play('gombgreece_walk');//
                 }
             } else {
                 // Detenerse completamente si no es visible
