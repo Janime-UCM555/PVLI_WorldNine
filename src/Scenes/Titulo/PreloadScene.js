@@ -292,6 +292,10 @@ class PreloadScene extends Phaser.Scene {
         frameWidth: 128,
         frameHeight: 126
     });
+    this.load.spritesheet('pilar_arenaTiles', 'GameSprites/ObjetosBosses/PilarArena.png', {
+        frameWidth: 128,
+        frameHeight: 126
+    });
     this.load.spritesheet('water_tileset', 'GameSprites/Tilesets/Water.png', {
         frameWidth: 32,
         frameHeight: 32
