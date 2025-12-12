@@ -1,20 +1,29 @@
+import Coins from "./Coins.js";
+import SceneBlocks from "./SceneBlocks.js";
 import{
     CATEGORY_PLAYER,
     CATEGORY_TERRAIN
-} from "../collisionCategories.js";
-import Coins from "./Coins.js";
-import SceneBlocks from "./SceneBlocks.js";
+} from "../collisionCategories.js"
 /**
- * Tipos de CoinPath:
- * - PasoMonedasAr: Arriba
- * - PasoMonedasDer: Derecha
- * - PasoMonedasArDer: Arriba Derecha 
- * - PasoMonedasAbDer: Abajo Derecha
+ * Bloque especial que genera un camino de monedas al ser activado por el jugador
+ * Tipos disponibles:
+ * - PasoMonedasAr: Monedas hacia arriba
+ * - PasoMonedasDer: Monedas hacia la derecha
+ * - PasoMonedasArDer: Monedas diagonal arriba-derecha
+ * - PasoMonedasAbDer: Monedas diagonal abajo-derecha
+ * @extends SceneBlocks
  */
 export class CoinPath extends SceneBlocks {
     /**
-     * @param {scene} scene 
-     * @param {gameObject} obj 
+     * Constructor del bloque CoinPath
+     * @param {Phaser.Scene} scene - La escena donde se crea el bloque
+     * @param {Object} obj - Objeto con datos del tilemap
+     * @param {number} obj.x - Posición X
+     * @param {number} obj.y - Posición Y
+     * @param {string} obj.name - Tipo de camino (PasoMonedasAr, PasoMonedasDer, etc.)
+     * @param {number} obj.rotation - Rotación del objeto en grados
+     * @param {boolean} obj.flippedHorizontal - Si está volteado horizontalmente
+     * @param {boolean} obj.flippedVertical - Si está volteado verticalmente
      */
     constructor(scene, obj) {
         super(scene, obj, 'CoinPassD');
@@ -23,16 +32,19 @@ export class CoinPath extends SceneBlocks {
         this.setSensor(true);
         this.setIgnoreGravity(true);
 
-    
         let tex = 'CoinPassD';
+        /** 
+         * Tipo de camino de monedas
+         * @type {string}
+         */
         this.type = obj.name;
         if (this.type === 'PasoMonedasAr' || this.type === 'PasoMonedasDer') 
         { tex = 'CoinPassS'; }
         this.label = "CoinPath";
         this.setTexture(tex);
         this.setDepth(3);
-        // this.setRotation(Phaser.Math.DegToRad(obj.rotation));
-        // Aplicamos rotación 
+
+        // Aplicar rotación según configuración del tilemap
         const angle = obj.rotation;
         this.setRotation(Phaser.Math.DegToRad(angle));
         this.setFlipX(obj.flippedHorizontal || false);
@@ -49,34 +61,36 @@ export class CoinPath extends SceneBlocks {
         }
         this.setUpCollisions();
     }
+
+    /**
+     * Configura el sistema de colisiones para activar el camino de monedas
+     * @private
+     */
     setUpCollisions()
     {        
         this.setOnCollide((data)=>
         {
             const { bodyA, bodyB } = data;
 
-            // detectar al jugador
             const player = (bodyA.label === "Mario") ? bodyA : 
                            (bodyB.label === "Mario") ? bodyB : null;
 
             if (player) {
-                // 5 monedas en
-                // Arriba Recto por defecto
+                // Configurar dirección del camino según el tipo
                 let coinDistanceX = 10;
                 let coinDistanceY = -40;
                 if(this.type === "PasoMonedasAbDer") 
-                { // Abajo Derecha
-                    // 5 monedas Abajo Diagonal
+                {
                     coinDistanceX = 20;
                     coinDistanceY = 40;
                 }
                 else if(this.type === "PasoMonedasArDer") 
-                { // Arriba Derecha
+                {
                     coinDistanceX = 20;
                     coinDistanceY = -40;
                 }
                 else if(this.type === "PasoMonedasDer") 
-                { // Derecha Recto
+                {
                     coinDistanceX = 40;
                     coinDistanceY = 0;
                 }
@@ -84,6 +98,14 @@ export class CoinPath extends SceneBlocks {
             }
         });
     }
+
+    /**
+     * Genera el camino de 5 monedas en la dirección especificada
+     * @param {number} distX - Distancia horizontal entre monedas
+     * @param {number} distY - Distancia vertical entre monedas
+     * @param {Phaser.GameObjects.Sprite} blockPass - Referencia al bloque que genera las monedas
+     * @private
+     */
     spawnCoins(distX, distY, blockPass)
     {
         this.scene.sound.play('coinPath');
@@ -91,12 +113,23 @@ export class CoinPath extends SceneBlocks {
         blockPass.setCollidesWith([]);
         const center = blockPass.getCenter();
         const delay = 50;
-        // 4 monedas 
+
         for (let i=0; i < 5; ++i)
         {
             this.scene.time.delayedCall(delay*i,()=> { this.delayedCoins(center,distX,distY, i)}, [], this);
         }
     }
+
+    /**
+     * Crea una moneda individual con delay
+     * @param {Object} center - Centro del bloque
+     * @param {number} center.x - Posición X del centro
+     * @param {number} center.y - Posición Y del centro
+     * @param {number} distX - Distancia X desde el centro
+     * @param {number} distY - Distancia Y desde el centro
+     * @param {number} i - Índice de la moneda (0-4)
+     * @private
+     */
     delayedCoins(center, distX, distY, i)
     {
         const x = center.x + i * distX;
@@ -112,6 +145,5 @@ export class CoinPath extends SceneBlocks {
 
         const coin = new Coins(this.scene, coinData);
     }
-
 }
 export default CoinPath;

@@ -1,77 +1,72 @@
 import BossBase, { BOSS_STATE } from './BaseBoss.js';
 
+/**
+ * Boss Júpiter - Dios del trueno
+ * Este boss lanza rayos en carriles horizontales específicos cuando el jugador
+ * entra en zonas de ataque predefinidas. Incluye movimiento especial y cambios de sprite.
+ * @extends BossBase
+ */
 export default class JupiterBoss extends BossBase {
     /**
-     * @param {Phaser.Scene} scene
-     * @param {number} x
-     * @param {number} y
-     * @param {object} config  - igual que BossBase (player, onBattleEnd, etc.)
-     * @param {Array<{minX: number, maxX: number, id: number}>} attackZones
+     * Constructor de Júpiter
+     * @param {Phaser.Scene} scene - La escena de Phaser
+     * @param {number} x - Posición X inicial
+     * @param {number} y - Posición Y inicial
+     * @param {Object} [config={}] - Configuración (igual que BossBase: player, onBattleEnd, etc.)
+     * @param {Array<{minX: number, maxX: number, id: number}>} attackZones - Array de zonas donde Júpiter puede atacar
      */
     constructor(scene, x, y, config = {}, attackZones) {
         super(scene, x, y, 'jupiter_neutral', {
             ...config,
-            // Valores por defecto específicos de Júpiter:
-            introDuration: 750,   // duración de la animación de entrada
-            neutralMoveSpeed: 0.075,   // Velocidad de Júpiter
+            introDuration: 750,
+            neutralMoveSpeed: 0.075,
         },attackZones);
-        this.attackZones = attackZones; // Guardamos el array de zonas
+        this.attackZones = attackZones;
 
-        // Precargar el sonido del rayo
         this.lightningSound = scene.sound.add('JupiterLightningSound');
 
-        // Configuración específica de Júpiter
-        this.lanes = []; // Posiciones Y de los 3 carriles
-        this.laneWidth = 200; // Ancho de cada carril
-        this.telegraphDuration = 1500; // Duración del aviso visual
-        this.lightningDuration = 400; // Duración del rayo
+        // Configuración de carriles y efectos
+        this.lanes = [];
+        this.laneWidth = 200;
+        this.telegraphDuration = 1500;
+        this.lightningDuration = 400;
         
-        // Arrays para guardar referencias de efectos
         this.activeTelegraphs = [];
         this.activeLightnings = [];
         this.activeTriangles = [];
 
-        // Variable para el movimiento oscilatorio
         this.oscillationTime = 0;
 
-        // Zonas X donde Júpiter puede atacar
-        // this.attackZones = [
-        //     { minX: 600, maxX: 1150, id: 1 }, // Zona 1
-        //     { minX: 1250, maxX: 1800, id: 2 }, // Zona 2
-        //     { minX: 2450, maxX: 3000, id: 3 }, // Zona 3
-        // ];
+        this.zoneMovementEnabledIds = [2];
 
-        this.zoneMovementEnabledIds = [2]; // Solo estas zonas activan movimiento especial
-
-        // Control de estado de ataque
+        // Control de estado de ataque por zona
         this.lastAttackZoneId = null;
         this.canAttack = true;
-        this.currentZoneId = null; // Zona actual donde está Mario
-        this.hasLeftZoneAfterAttack = false; // Indica si Mario ha salido de la zona después del último ataque
+        this.currentZoneId = null;
+        this.hasLeftZoneAfterAttack = false;
 
-        // Variables para el movimiento especial de zona de ataque
+        // Variables para movimiento especial
         this.isInZoneMovement = false;
         this.zoneMovementStartTime = 0;
-        this.zoneMovementDuration = 2000; // 2 segundos de movimiento lento
-        this.slowMoveSpeed = -0.0045; // Velocidad lenta durante 2 segundos
-        this.fastMoveSpeed = 0.1; // Velocidad rápida para alcanzar la posición
+        this.zoneMovementDuration = 2000;
+        this.slowMoveSpeed = -0.0045;
+        this.fastMoveSpeed = 0.1;
 
-        // Inicializar lanes en el constructor
-        // Usar la posición Y del jugador si está disponible
         if (config.player) {
             this.initializeLanes(config.player.y - 130);
         } else {
-            // Fallback: usar posición Y por defecto (aproximadamente donde estaría Mario)
-            this.initializeLanes(625 - 130); // Posición Y inicial típica de Mario en BossJ
+            this.initializeLanes(625 - 130);
         }
 
-        // Se puede ajustar escala, depth, etc.
         this.setDepth(20);
         this.setScale(4);
         this.setAlpha(0);
     }
 
-    // Verificar si Mario está en una zona de ataque
+    /**
+     * Verifica si Mario está en alguna zona de ataque
+     * @returns {Object|null} Zona de ataque actual o null si no está en ninguna
+     */
     isMarioInAttackZone() {
         if (!this.player) {
             return false;
@@ -82,7 +77,6 @@ export default class JupiterBoss extends BossBase {
             marioX >= zone.minX && marioX <= zone.maxX
         );
         
-        // Verificar si Mario está en alguna de las zonas de ataque
         if (currentZone) {
             return currentZone;
         } else {
@@ -90,7 +84,10 @@ export default class JupiterBoss extends BossBase {
         }
     }
 
-    // Obtener la zona actual de Mario
+    /**
+     * Obtiene la zona de ataque actual donde se encuentra Mario
+     * @returns {Object|null} Zona actual o null
+     */
     getCurrentAttackZone() {
         if (!this.player) return null;
         
@@ -101,21 +98,26 @@ export default class JupiterBoss extends BossBase {
         );
     }
 
-    // Inicializar lanes
+    /**
+     * Inicializa los carriles horizontales para los rayos
+     * @param {number} baseY - Posición Y base desde donde calcular los carriles
+     */
     initializeLanes(baseY) {
         const laneSpacing = 75;
         
-        // Las lanes se calculan en relación a la posición Y base
         this.lanes = [
-            baseY - (2 * laneSpacing),  // Carril superior
-            baseY - laneSpacing,        // Carril medio
-            baseY                       // Carril inferior
+            baseY - (2 * laneSpacing),
+            baseY - laneSpacing,
+            baseY
         ];
 
-        // Actualizar el ancho del carril al ancho de la cámara
         this.laneWidth = this.scene.cameras.main.width / this.scene.cameras.main.zoom;
     }
 
+    /**
+     * Sobrescribe el cambio de estado para manejar cambios de sprite
+     * @param {string} newState - Nuevo estado (uno de BOSS_STATE)
+     */
     changeState(newState) {
         if (this.state === newState) return;
 
@@ -123,10 +125,8 @@ export default class JupiterBoss extends BossBase {
         this.state = newState;
         this._stateTime = 0;
 
-        // Asegurar cambio de sprite al cambiar estado
         switch (newState) {
             case BOSS_STATE.NEUTRAL:
-                // Si está en movimiento especial, usar sprite jupiter_tired
                 if (this.isInZoneMovement) {
                     this.setTexture('jupiter_tired');
                 } else {
@@ -134,11 +134,9 @@ export default class JupiterBoss extends BossBase {
                 }
                 break;
             case BOSS_STATE.ATTACK:
-                // El ataque tiene prioridad sobre el movimiento especial
                 this.setTexture('jupiter_attack');
                 break;
             case BOSS_STATE.DEAD:
-                // La muerte tiene máxima prioridad
                 this.setTexture('jupiter_dead');
                 break;
         }
@@ -146,7 +144,10 @@ export default class JupiterBoss extends BossBase {
         this.enterState(newState);
     }
 
-    // ---------- INTRO ESPECÍFICA DE JÚPITER ----------
+    /**
+     * Lógica al entrar en estado INTRO
+     * Realiza fade-in del boss
+     */
     onEnterIntro() {
         this.setAlpha(0);
 
@@ -155,62 +156,59 @@ export default class JupiterBoss extends BossBase {
             alpha: 1,
             duration: this.introDuration,
             onComplete: () => {
-                // Cuando termina la intro, pasa a estado NEUTRAL
                 this.changeState(BOSS_STATE.NEUTRAL);
             }
         });
     }
 
+    /**
+     * Actualización durante estado INTRO
+     * @param {number} time - Tiempo total del juego
+     * @param {number} delta - Delta time
+     */
     updateIntro(time, delta) {
-        // Llamar al método padre para que maneje la transición automática
         super.updateIntro(time, delta);
     }
 
-    // ---------- NEUTRAL ----------
+    /**
+     * Lógica al entrar en estado NEUTRAL
+     * Configura sprite y resetea variables de ataque
+     */
     onEnterNeutral() {
-        // Llamar al método padre primero
         super.onEnterNeutral();
-
-        // Usar sprite jupiter_neutral
         this.setTexture('jupiter_neutral');
-    
-        // Inicializar variables específicas de Júpiter
         this.canAttack = true;
     }
     
-    // Solo contar tiempo para ataque si está en zona permitida
+    /**
+     * Actualización durante estado NEUTRAL
+     * Controla cuándo puede atacar basándose en la zona actual de Mario
+     * @param {number} time - Tiempo total del juego
+     * @param {number} delta - Delta time
+     */
     updateNeutral(time, delta) {
         if (!this.player) {
             return;
         }
 
-        // Obtener la posición X actual de Mario
         const marioX = this.player.x;
 
-        // Verificar si Mario está en una zona de ataque
         const currentZone = this.attackZones.find(zone => 
             marioX >= zone.minX && marioX <= zone.maxX
         );
 
-        // Manejar cambios de zona
         const previousZoneId = this.currentZoneId;
     
         if (currentZone) {
-            // Mario está en una zona
             if (this.currentZoneId !== currentZone.id) {
                 this.currentZoneId = currentZone.id;
             
-                // Solo marcar hasLeftZoneAfterAttack como true si:
-                // - Había una zona anterior (no es el primer ingreso)
-                // - Y la zona anterior era diferente a la actual
                 if (previousZoneId !== null && previousZoneId !== currentZone.id) {
                     this.hasLeftZoneAfterAttack = true;
                 }
 
-                // Iniciar movimiento especial 1.75 segundos después de que Mario entre en una nueva zona
                 if (this.zoneMovementEnabledIds.includes(currentZone.id)) {
                     this.scene.time.delayedCall(1750, () => {
-                        // Verificar si Mario sigue en una zona de ataque antes de iniciar el movimiento
                         const currentZoneNow = this.getCurrentAttackZone();
                         if (currentZoneNow && currentZoneNow.id === currentZone.id && this.isBattleActive && !this.isInZoneMovement) {
                             this.startZoneMovement();
@@ -219,14 +217,12 @@ export default class JupiterBoss extends BossBase {
                 }
             }
         } else {
-            // Mario no está en ninguna zona
             if (this.currentZoneId !== null) {
                 this.currentZoneId = null;
                 this.hasLeftZoneAfterAttack = true;
             }
         }
 
-        // Condición de ataque
         const canAttackInThisZone = this.lastAttackZoneId === null || this.lastAttackZoneId !== currentZone?.id || this.hasLeftZoneAfterAttack;
     
         if (this.state === BOSS_STATE.NEUTRAL && this.canAttack && currentZone && canAttackInThisZone) {
@@ -237,14 +233,19 @@ export default class JupiterBoss extends BossBase {
         }
     }
 
-    // ---------- ATAQUE ESPECÍFICO DE JÚPITER ----------
-    // Estado ATTACK
+    /**
+     * Lógica al entrar en estado ATTACK
+     * Cambia a sprite de ataque y ejecuta el ataque
+     */
     onEnterAttack() {
-        // Usar sprite jupiter_attack
         this.setTexture('jupiter_attack');
         this.performAttack();
     }
 
+    /**
+     * Ejecuta el ataque de Júpiter: rayo en un carril aleatorio
+     * Primero muestra aviso visual (telegraph), luego lanza el rayo
+     */
     performAttack() {
         const laneIndex = Phaser.Math.Between(0, 2);
         const laneY = this.lanes[laneIndex];
@@ -260,19 +261,21 @@ export default class JupiterBoss extends BossBase {
         });
     }
 
-    // Función para el aviso visual
+    /**
+     * Crea el aviso visual antes del rayo
+     * Muestra un rectángulo rojo parpadeante y un triángulo de advertencia
+     * @param {number} laneIndex - Índice del carril (0-2)
+     * @param {number} laneY - Posición Y del carril
+     */
     telegraphLane(laneIndex, laneY) {
         if (!this.player) return;
     
         const marioX = this.player.x;
 
-        // Calcular posición X del rectángulo
-        const telegraphX = marioX + (this.laneWidth * 0.25); // Desplazado 25% a la derecha desde Mario
+        const telegraphX = marioX + (this.laneWidth * 0.25);
 
-        // Aumentar el ancho del rectángulo para cubrir más área
-        const extendedWidth = this.laneWidth * 1.5; // 50% más ancho
+        const extendedWidth = this.laneWidth * 1.5;
 
-        // Crear efecto visual de advertencia (rectángulo rojo semitransparente)
         const telegraph = this.scene.add.rectangle(
             telegraphX,
             laneY,
@@ -283,7 +286,6 @@ export default class JupiterBoss extends BossBase {
         );
         telegraph.setDepth(15);
         
-        // Animación de parpadeo
         this.scene.tweens.add({
             targets: telegraph,
             alpha: { from: 0.2, to: 0.5 },
@@ -292,16 +294,14 @@ export default class JupiterBoss extends BossBase {
             repeat: 3
         });
 
-        // Crear sprite de triángulo rojo
         const triangle = this.scene.add.sprite(
             marioX + 250,
-            laneY - 30, // Posicionar arriba del carril
+            laneY - 30,
             'warning_triangle'
         );
         triangle.setDepth(16);
         triangle.setScale(0.8);
 
-        // Animación de parpadeo del triángulo
         this.scene.tweens.add({
             targets: triangle,
             alpha: { from: 0.3, to: 1 },
@@ -316,11 +316,15 @@ export default class JupiterBoss extends BossBase {
         this.activeTriangles.push(triangle);
     }
 
-    // Función para el rayo
+    /**
+     * Genera el rayo en el carril especificado
+     * Reproduce sonido, crea efecto visual y verifica si golpea al jugador
+     * @param {number} laneIndex - Índice del carril (0-2)
+     * @param {number} laneY - Posición Y del carril
+     */
     spawnLightningInLane(laneIndex, laneY) {
         if (!this.player) return;
 
-        // Limpiar telegraph de este carril
         this.activeTelegraphs.forEach(telegraph => {
             if (telegraph.active) telegraph.destroy();
         });
@@ -331,10 +335,8 @@ export default class JupiterBoss extends BossBase {
         this.activeTelegraphs = [];
         this.activeTriangles = [];
 
-        // Obtener la posición X actual de Mario
         const marioX = this.player.x;
 
-        // Crear sprite del rayo
         const lightning = this.scene.add.sprite(
             marioX,
             laneY,
@@ -342,12 +344,10 @@ export default class JupiterBoss extends BossBase {
         );
         lightning.setDepth(16);
 
-        // Sonido del rayo
         if (this.scene.sound) {
             this.scene.sound.play('JupiterLightningSound');
         }
 
-        // Animación de aparición y desaparición del rayo
         lightning.setAlpha(0);
         this.scene.tweens.add({
             targets: lightning,
@@ -366,29 +366,29 @@ export default class JupiterBoss extends BossBase {
 
         this.activeLightnings.push(lightning);
 
-        // Verificar si golpea al jugador
         this.checkPlayerHit(laneY);
     }
 
+    /**
+     * Verifica si el rayo golpea al jugador
+     * Si impacta, aplica daño o quita power-up según el estado del jugador
+     * @param {number} laneY - Posición Y del rayo para verificar colisión
+     */
     checkPlayerHit(laneY) {
         if (!this.player || this.player.isInBubble || this.player.isInvulnerable || this.player.isInvincible || this.player.isHurt) return;
 
-        // Obtener los bounds (límites) de Mario
         const playerBounds = this.player.getBounds();
 
-        // Definir el área del rayo
         const lightningWidth = 1000;
         const lightningHeight = 80;
         const lightningBounds = new Phaser.Geom.Rectangle(
-            this.player.x - lightningWidth / 2, // Centro en la posición X de Mario
-            laneY - lightningHeight / 2,        // Centro en la lane Y
+            this.player.x - lightningWidth / 2,
+            laneY - lightningHeight / 2,
             lightningWidth,
             lightningHeight
         );
         
-        // Verificar si los bounds de Mario se solapan con los bounds del rayo
         if (Phaser.Geom.Rectangle.Overlaps(playerBounds, lightningBounds) &&!this.scene.endTimer) {
-            // El jugador es golpeado por el rayo
             if (!this.scene.jugador.activePowerUp && !this.scene.jugador.isSuperSize) {
                 this.scene.jugador.hurt();
                 this.scene.endTimer=true;
@@ -397,23 +397,24 @@ export default class JupiterBoss extends BossBase {
                 this.scene.jugador.body.ignoreGravity = true;
                 this.scene.time.delayedCall(1000, () => {
                     this.scene.doubleEndTransition(()=>{
-                        this.scene.scene.restart(); // Se reinicia el nivel
+                        this.scene.scene.restart();
                     });
                 });
             } else {
                 this.scene.time.delayedCall(100, () => {
-                    this.scene.jugador.deactivatePowerUp(); // Se le quita el PowerUp
+                    this.scene.jugador.deactivatePowerUp();
                 });
             }
 
-            // Efecto visual cuando golpea al jugador
             this.scene.cameras.main.shake(250, 0.01);
         }
     }
 
-    // Limpiar efectos al terminar el ataque
+    /**
+     * Limpia todos los efectos visuales y finaliza el ataque
+     * Vuelve a estado NEUTRAL y permite atacar nuevamente
+     */
     finishAttack() {
-        // Limpiar efectos
         this.activeTelegraphs.forEach(telegraph => {
             if (telegraph.active) telegraph.destroy();
         });
@@ -428,49 +429,47 @@ export default class JupiterBoss extends BossBase {
         this.activeTriangles = [];
         this.activeLightnings = [];
 
-        // Volver a NEUTRAL y permitir nuevo ataque
         if (this.state === BOSS_STATE.ATTACK) {
-            this.canAttack = true; // Permitir atacar de nuevo, pero updateNeutral controlará si es en la misma zona
+            this.canAttack = true;
             this.changeState(BOSS_STATE.NEUTRAL);
 
-            // Si estaba en movimiento especial antes del ataque, restaurar el sprite jupiter_tired
             if (this.isInZoneMovement) {
                 this.setTexture('jupiter_tired');
             }
         }
     }
 
+    /**
+     * Resetea completamente el estado de ataque del boss
+     * Útil cuando se reinicia la batalla o se necesita un reset limpio
+     */
     resetAttackState() {
-        // Mantener la batalla activa
         this.isBattleActive = true;
     
-        // Resetear todas las variables de control de ataque
         this.lastAttackZoneId = null;
         this.canAttack = true;
         this.currentZoneId = null;
         this.hasLeftZoneAfterAttack = false;
 
-        // Resetear también el estado de movimiento de zona
         this.isInZoneMovement = false;
         this.zoneMovementStartTime = 0;
     
-        // Establecer sprite jupiter_neutral
         if (this.state === BOSS_STATE.NEUTRAL) {
             this.setTexture('jupiter_neutral');
         }
     
-        // Limpiar cualquier ataque en curso
         this.finishAttack();
     
-        // Si está en ATTACK, volver a NEUTRAL
         if (this.state === BOSS_STATE.ATTACK) {
             this.changeState(BOSS_STATE.NEUTRAL);
         }
     }
 
-    // Iniciar movimiento especial de zona
+    /**
+     * Inicia el movimiento especial de zona
+     * Cambia el comportamiento de movimiento y sprite durante un período limitado
+     */
     startZoneMovement() {
-        // Verificar que Mario esté en una zona válida
         const currentZone = this.getCurrentAttackZone();
         if (!currentZone || !this.zoneMovementEnabledIds.includes(currentZone.id) || this.isInZoneMovement || !this.isBattleActive) {
             return;
@@ -479,119 +478,111 @@ export default class JupiterBoss extends BossBase {
         this.isInZoneMovement = true;
         this.zoneMovementStartTime = this.scene.time.now;
 
-        // Establecer sprite jupiter_tired al inicio (fase lenta)
         if (this.state !== BOSS_STATE.ATTACK && this.state !== BOSS_STATE.DEAD) {
             this.setTexture('jupiter_tired');
         }
     }
 
-    // ---------- DERROTA ----------
+    /**
+     * Lógica al entrar en estado DEAD
+     * Cambia sprite y limpia efectos activos
+     */
     onEnterDead() {
-        // Usar sprite jupiter_dead
         this.setTexture('jupiter_dead');
-
-        // Limpiar efectos al morir
         this.finishAttack();
-
-        // Llamar al método padre para la lógica base
         super.onEnterDead();
     }
 
+    /**
+     * Reproduce la animación de muerte específica de Júpiter
+     */
     playDeathAnimation() {
-        // Limpiar cualquier ataque en curso
         this.finishAttack();
-
-        // Llamar al método padre con la key específica
         super.playDeathAnimation('jupiter_death');
     }
 
-    // ---------- TODOS LOS ESTADOS ----------
+    /**
+     * Método de actualización principal de Júpiter
+     * Maneja la máquina de estados, movimiento y actualización de sprite
+     * @param {number} time - Tiempo total del juego
+     * @param {number} delta - Delta time
+     */
     update(time, delta) {
-        // Llamar al update del padre para la máquina de estados base
         super.update(time, delta);
-    
-        // Movimiento continuo independientemente del estado
         this.updateBossMovement(time, delta);
-
-        // Asegurar que el sprite sea el correcto en cada frame
         this.updateSprite();
     }
 
+    /**
+     * Actualiza el movimiento de Júpiter
+     * Sigue al jugador en X con suavizado y oscila verticalmente
+     * @param {number} time - Tiempo total del juego
+     * @param {number} delta - Delta time
+     */
     updateBossMovement(time, delta) {
         if (this.state === BOSS_STATE.DEAD || !this.player || !this.isBattleActive) return;
 
         const camera = this.scene.cameras.main;
 
-        // Configuración de distancias
-        const cameraWidth = camera.width / camera.zoom; // Ancho real de la vista
-        const cameraHeight = camera.height / camera.zoom; // Altura real de la vista
+        const cameraWidth = camera.width / camera.zoom;
+        const cameraHeight = camera.height / camera.zoom;
         const cameraLeft = camera.scrollX;
         const cameraRight = cameraLeft + cameraWidth;
         const cameraTop = camera.scrollY;
         const cameraBottom = cameraTop + cameraHeight;
-        const oscillationSpeed = 0.001; // Velocidad de oscilación vertical
+        const oscillationSpeed = 0.001;
 
-        // 1. Seguir a Mario en el eje X manteniendo distancia
-        const marginLeft = 335; // Margen desde el borde derecho
+        const marginLeft = 335;
         const targetX = cameraLeft + marginLeft;
         const diffX = targetX - this.x;
 
-        // Determinar velocidad actual según el estado
         let currentMoveSpeed;
 
         if (this.isInZoneMovement) {
             const elapsed = time - this.zoneMovementStartTime;
         
             if (elapsed < this.zoneMovementDuration) {
-                // Fase 1: Movimiento lento durante 2 segundos
                 currentMoveSpeed = this.slowMoveSpeed;
             } else {
-                // Fase 2: Movimiento rápido para alcanzar la posición
                 currentMoveSpeed = this.fastMoveSpeed;
             
                 if (elapsed > this.zoneMovementDuration + 500) {
-                    // Ha alcanzado la posición, terminar el movimiento especial
                     this.isInZoneMovement = false;
                 }
             }
         
-            // Aplicar movimiento en X durante el movimiento especial
             this.x += diffX * currentMoveSpeed;
         } else {
-            // Movimiento suavizado en X
             this.x += diffX * this.neutralMoveSpeed;
         }
 
-        // 2. Movimiento oscilatorio en el eje Y
-        const minY = cameraTop + 275; // 275 píxeles desde el borde superior de la cámara
-        const maxY = cameraBottom - 25; // 25 píxeles desde el borde inferior de la cámara
+        const minY = cameraTop + 275;
+        const maxY = cameraBottom - 25;
         const centerY = (minY + maxY) / 2;
         const amplitude = (maxY - minY) / 2;
     
-        // Usar el tiempo acumulado para oscilación suave
         if (!this.oscillationTime) this.oscillationTime = 0;
         this.oscillationTime += delta * oscillationSpeed;
     
         this.y = centerY + Math.sin(this.oscillationTime) * amplitude;
 
-        // 3. Actualizar dirección para mirar hacia Mario
         this.flipX = this.player.x > this.x;
     }
 
-    // Método centralizado para actualizar el sprite según el estado actual
+    /**
+     * Actualiza el sprite según el estado y fase actual
+     * Centraliza la lógica de cambio de textura
+     */
     updateSprite() {
         if (this.state === BOSS_STATE.DEAD) {
             this.setTexture('jupiter_dead');
         } else if (this.state === BOSS_STATE.ATTACK) {
             this.setTexture('jupiter_attack');
         } else if (this.isInZoneMovement) {
-            // Durante movimiento especial, decidir según la fase
             const elapsed = this.scene.time.now - this.zoneMovementStartTime;
             if (elapsed < this.zoneMovementDuration) {
-                // Fase lenta: sprite jupiter_tired
                 this.setTexture('jupiter_tired');
             } else {
-                // Fase rápida: sprite jupiter_neutral
                 this.setTexture('jupiter_neutral');
             }
         } else {
@@ -599,7 +590,9 @@ export default class JupiterBoss extends BossBase {
         }
     }
 
-    // Asegurar limpieza si el boss es destruido
+    /**
+     * Sobrescribe el método destroy para asegurar limpieza completa
+     */
     destroy() {
         this.finishAttack();
         super.destroy();

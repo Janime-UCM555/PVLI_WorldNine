@@ -1,10 +1,14 @@
-
+/**
+ * Tipos de muerte disponibles para los enemigos
+ * @enum {string}
+ */
 export const DIE_TYPES = {
     STOMP:   'STOMP',    // Aplastado por Mario
     HAMMER:  'HAMMER',   // Golpeado por martillo
     STAR:    'STAR',     // Golpeado mientras Mario es invencible
     FALL:    'FALL',     // Caída al vacío
 };
+
 import{
     CATEGORY_PLAYER,
     CATEGORY_ENEMY,
@@ -13,8 +17,24 @@ import{
     CATEGORY_FALLOFF
 } from "../collisionCategories.js"
 
+/**
+ * Clase que representa un enemigo Goomba en el juego.
+ * El Goomba camina horizontalmente y al ser pisado se aplasta completamente.
+ * Es el enemigo más básico del juego.
+ * @extends Phaser.GameObjects.Sprite
+ */
 class Goomba extends Phaser.GameObjects.Sprite
 {
+    /**
+     * Constructor del Goomba
+     * @param {Phaser.Scene} scene - La escena de Phaser donde se añade el Goomba
+     * @param {number} x - Posición X inicial
+     * @param {number} y - Posición Y inicial
+     * @param {string} texture - Clave de la textura a usar
+     * @param {number} [speed=50] - Velocidad de movimiento horizontal
+     * @param {Phaser.Scene} currentScene - Referencia a la escena actual
+     * @param {number} type - Tipo de Goomba (0: normal, 1: roma, 2: egipcio, 3: griego)
+     */
     constructor(scene, x, y, texture, speed = 50, currentScene, type) {
         super(scene, x, y, texture, null, speed, currentScene, type);
 
@@ -32,8 +52,7 @@ class Goomba extends Phaser.GameObjects.Sprite
         this.direction = 1; // 1 = derecha, -1 = izquierda
         this.type = type;
 
-        // Configuración de física
-        //Sensores
+        // Configuración de física - Sensores
         this.blocked= {
             left: false,
             right: false,
@@ -122,13 +141,19 @@ class Goomba extends Phaser.GameObjects.Sprite
         }
     }
 
+    /**
+     * Método llamado cuando el Goomba muere
+     * A diferencia del Koopa, el Goomba siempre se aplasta independientemente del tipo de muerte
+     * @param {string} [killType=DIE_TYPES.STOMP] - Tipo de muerte (no afecta al Goomba)
+     */
     die(killType = DIE_TYPES.STOMP) {
         this.stomp();
     }
 
-
-
-    // Actualizar movimiento basado en visibilidad y dirección
+    /**
+     * Actualiza el movimiento del Goomba basado en visibilidad y dirección
+     * Solo se mueve cuando está visible en cámara. Reproduce la animación de caminar según el tipo
+     */
     updateMovement() {
         // Si está marcado para destrucción, no actualizar movimiento
         if (this.shouldBeDestroyed || !this.isAlive) return;
@@ -173,7 +198,10 @@ class Goomba extends Phaser.GameObjects.Sprite
         }
     }
 
-    // Cambiar dirección
+    /**
+     * Cambia la dirección de movimiento del Goomba
+     * Invierte la dirección y voltea el sprite horizontalmente
+     */
     changeDirection() {
         this.direction *= -1;
 
@@ -184,7 +212,10 @@ class Goomba extends Phaser.GameObjects.Sprite
         this.setVelocityX(this.speed * this.direction);
     }
 
-    // Manejar colisiones con paredes
+    /**
+     * Maneja las colisiones con paredes
+     * Cuando detecta una colisión lateral, retrocede ligeramente y cambia de dirección
+     */
     handleWallCollision() {
         if (!this.isAlive) return;
 
@@ -210,7 +241,11 @@ class Goomba extends Phaser.GameObjects.Sprite
         }
     }
 
-    // Manejar colisiones con otros enemigos
+    /**
+     * Maneja las colisiones con otros enemigos
+     * Separa físicamente los enemigos y hace que ambos cambien de dirección
+     * @param {Enemies} otherEnemy - Referencia al otro enemigo con el que colisionó
+     */
     handleEnemyCollision(otherEnemy) {
         // Ignorar si alguno está muerto
         if (!this.isAlive || !otherEnemy.isAlive) return;
@@ -249,7 +284,12 @@ class Goomba extends Phaser.GameObjects.Sprite
         otherEnemy.changeDirection();
     }
 
-    // Manejar colisiones con Mario
+    /**
+     * Maneja las colisiones con el jugador
+     * Si el jugador cae sobre el Goomba, lo aplasta. 
+     * Si colisiona lateralmente, causa daño al jugador o lo envía a estado de burbuja
+     * @param {Object} player - Referencia al objeto jugador
+     */
     handlePlayerCollision(player) {
         // Ignorar si está muerto
         if (!this.isAlive) return;
@@ -323,13 +363,16 @@ class Goomba extends Phaser.GameObjects.Sprite
         }
     }
 
-    // Ser aplastado por Mario
+    /**
+     * Aplasta al Goomba
+     * Cambia el estado a muerto, detiene el movimiento, cambia a sprite aplastado,
+     * otorga puntos al jugador y programa su destrucción
+     */
     stomp() {
         // Si está muerto o marcado para destrucción, no aplicar empuje
         if (!this.isAlive || this.shouldBeDestroyed) return;
         
         this.stompSound.play();
-
 
         this.isAlive = false;
         this.setVelocity(0, 0);
@@ -364,7 +407,10 @@ class Goomba extends Phaser.GameObjects.Sprite
         });
     }
 
-    // Detectar bordes de plataformas
+    /**
+     * Detecta bordes de plataformas para evitar que el Goomba se caiga
+     * Usa raycasting y verificación de tiles para determinar si hay suelo adelante
+     */
     checkForLedges() {
         if (!this.body || !this.blocked.bottom) return;
 
@@ -427,7 +473,11 @@ class Goomba extends Phaser.GameObjects.Sprite
             this.changeDirection();
         }
     }
-    // Destrucción segura
+
+    /**
+     * Destruye el Goomba de forma segura
+     * Detiene física, animaciones y elimina el objeto completamente
+     */
     safeDestroy() {
         // Si ya está marcado para destrucción, no hacer nada
         if (this.shouldBeDestroyed) return;
@@ -454,7 +504,10 @@ class Goomba extends Phaser.GameObjects.Sprite
         this.destroy();
     }
 
-    // Verificar visibilidad
+    /**
+     * Verifica si el Goomba está dentro del área visible de la cámara
+     * @returns {boolean} true si está visible, false en caso contrario
+     */
     checkVisibility() {
         // Si está marcado para destrucción, no verificar visibilidad
         if (this.shouldBeDestroyed) return false;
@@ -468,6 +521,13 @@ class Goomba extends Phaser.GameObjects.Sprite
         return isVisible;
     }
 
+    /**
+     * Método de actualización llamado cada frame
+     * Gestiona destrucción por salir de cámara o caer al vacío, colisiones con paredes
+     * y actualiza el movimiento del Goomba
+     * @param {number} time - Tiempo total transcurrido desde el inicio del juego
+     * @param {number} delta - Tiempo transcurrido desde el último frame
+     */
     update(time, delta) {
         // Salir inmediatamente si ya está marcado para destrucción
         if (!this.isAlive || this.shouldBeDestroyed) return;

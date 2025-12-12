@@ -6,24 +6,39 @@ import{
     CATEGORY_TERRAIN,
     CATEGORY_FALLOFF
 } from "../collisionCategories.js"
+
+/**
+ * Clase que representa un enemigo Koopa Troopa en el juego.
+ * El Koopa camina horizontalmente y al ser pisado se convierte en caparazón.
+ * Puede ser destruido completamente con martillo o estrella.
+ * @extends Phaser.GameObjects.Sprite
+ */
 class Koopa extends Phaser.GameObjects.Sprite
 {
+    /**
+     * Constructor del Koopa
+     * @param {Phaser.Scene} scene - La escena de Phaser donde se añade el Koopa
+     * @param {number} x - Posición X inicial
+     * @param {number} y - Posición Y inicial
+     * @param {string} texture - Clave de la textura a usar
+     * @param {number} [speed=50] - Velocidad de movimiento horizontal
+     * @param {number} type - Tipo de Koopa (0: verde, 1: rojo, 2: egipcio, 3: griego)
+     */
     constructor(scene, x, y, texture, speed = 50, type) {
         super(scene, x, y, texture);
 
         scene.add.existing(this);
         scene.matter.add.gameObject(this);
 
-        this.speed = speed; // Velocidad del Koopa
-        this.type = type; // Tipo de koopa
-        this.direction = -1; // 1 = derecha, -1 = izquierda
-        this.isAlive = true; // Estado de vivo o muerto
-        this.currentlyVisible = false; // Estado actual de visibilidad
-        this.shouldBeDestroyed = false; // Control de destrucción
-        this.isEnemy = true; // Marca como enemigo
+        this.speed = speed;
+        this.type = type;
+        this.direction = -1;
+        this.isAlive = true;
+        this.currentlyVisible = false;
+        this.shouldBeDestroyed = false;
+        this.isEnemy = true;
 
-        // Configuración de física
-        //Sensores
+        // Configuración de física - Sensores
         this.blocked= {
             left: false,
             right: false,
@@ -50,41 +65,21 @@ class Koopa extends Phaser.GameObjects.Sprite
         parts: [this.enemyBody,this.sensors.left, this.sensors.right,],
         friction: 0,
         frictionAir: 0,
-        restitution: 0.05, // El jugador no se pega a paredes
+        restitution: 0.05,
         label:"Koopa"
         });
         this.body.label="Koopa";
         this.setExistingBody(compoundBody);
         this.setFixedRotation();
         if (this.body) {
-            // this.body.setSize(
-            //     32,
-            //     30
-            // );
-            // this.body.setOffset(
-            //     0,
-            //     30
-            // );
-            // this.body.setCollideWorldBounds(false); // Desactivar colisión con bordes del mundo
-
-            // Asegurar que el cuerpo es dinámico y puede colisionar
-            // this.body.setImmovable(false);
             this.body.moves = true;
-
-            // Mejorar la detección de colisiones
             this.body.onWorldBounds = true;
-
-            this.setVelocityX(0); // Inicialmente detenido
-
-            // Configurar las propiedades de colisión
+            this.setVelocityX(0);
             this.setBounce(0, 0);
-            // this.setDrag(200, 0);
-            // El cuerpo a la posición inicial
-            M.Body.setPosition(compoundBody, { x, y });
 
-            // Asociamos el cuerpo al sprite
+            M.Body.setPosition(compoundBody, { x, y });
             this.setExistingBody(compoundBody);
-            this.setPosition(x, y); // sincronizar la posición del sprite
+            this.setPosition(x, y);
             this.setFixedRotation();
 
             this.stompSound = scene.sound.add('aplastar');
@@ -107,7 +102,6 @@ class Koopa extends Phaser.GameObjects.Sprite
                     this.numTouching.left += 1;
                 }
 
-                // verificamos si esta tocando pared derecha
                 if ((bodyA === this.sensors.right && (bodyB.isStatic||bodyB.label == "Pokey" ||bodyB.label == "Goomba" || bodyB.label == "Koopa")) ||
                 (bodyB === this.sensors.right && (bodyA.isStatic ||bodyA.label == "Pokey" ||bodyA.label == "Goomba" || bodyA.label == "Koopa")))
                 {
@@ -122,18 +116,25 @@ class Koopa extends Phaser.GameObjects.Sprite
         }
     }
 
+    /**
+     * Método llamado cuando el Koopa muere
+     * Si es aplastado (STOMP) se convierte en caparazón, en otros casos se destruye directamente
+     * @param {string} [killType=DIE_TYPES.STOMP] - Tipo de muerte
+     */
     die(killType = DIE_TYPES.STOMP) {
-    if (killType === DIE_TYPES.STOMP) {
-        this.stomp();       // se hace caparazón
-    } 
-    else {
-        this.safeDestroy(); // martillo / estrella lo matan directo
+        if (killType === DIE_TYPES.STOMP) {
+            this.stomp();
+        } 
+        else {
+            this.safeDestroy();
+        }
     }
-}
 
-    // Actualizar movimiento basado en visibilidad y dirección
+    /**
+     * Actualiza el movimiento del Koopa basado en visibilidad y dirección
+     * Solo se mueve cuando está visible en cámara. Reproduce la animación de caminar según el tipo
+     */
     updateMovement() {
-        // Si está marcado para destrucción, no actualizar movimiento
         if (this.shouldBeDestroyed) return;
 
         const isVisible = this.checkVisibility();
@@ -141,14 +142,12 @@ class Koopa extends Phaser.GameObjects.Sprite
         
         if (this.isAlive && !this.shouldBeDestroyed) {
             if (isVisible) {
-                // Aplicar movimiento en la dirección actual
                 const targetVelocity = this.speed * this.direction;
 
-                // Solo cambiar la velocidad si es diferente a la actual
                 if (this.body.velocity.x !== targetVelocity) {
                     this.setVelocityX(targetVelocity);
                 }
-            //
+
                 if (!this.anims.isPlaying || (this.type === 0 && this.anims.currentAnim.key !== 'Koopa_walk')) {
                     this.play('Koopa_walk');
                 } 
@@ -162,36 +161,36 @@ class Koopa extends Phaser.GameObjects.Sprite
                     this.play('Koopa_walk_G');
                 }
             } else {
-                // Detenerse completamente si no es visible
                 this.setVelocityX(0);
                 if (this.anims.isPlaying) {
                     this.anims.stop();
                 }
             }
         } else {
-            // Si está muerto, detener animación
             if (this.anims.isPlaying) {
                 this.anims.stop();
             }
         }
     }
 
-    // Cambiar dirección
+    /**
+     * Cambia la dirección de movimiento del Koopa
+     * Invierte la dirección y voltea el sprite horizontalmente
+     */
     changeDirection() {
         this.direction *= -1;
-
-        // Voltear horizontalmente
         this.flipX = (this.direction === 1);
-
-        // Aplicar la nueva dirección inmediatamente
         this.setVelocityX(this.speed * this.direction);
     }
 
-    // Manejar colisiones con paredes
+    /**
+     * Maneja las colisiones con paredes
+     * Cuando detecta una colisión lateral, retrocede ligeramente y cambia de dirección
+     * @param {Object} wall - Objeto pared con el que colisionó (no usado actualmente)
+     */
     handleWallCollision(wall) {
         if (!this.isAlive) return;
 
-        // Verificar si es una colisión lateral (no desde arriba/abajo)
         const isLateralCollision = 
             (this.blocked.right && this.direction === 1) ||
             (this.blocked.left && this.direction === -1) ||
@@ -199,7 +198,6 @@ class Koopa extends Phaser.GameObjects.Sprite
             (this.blocked.left && this.direction === -1);
 
         if (isLateralCollision) {
-            // Pequeño retroceso para evitar que se peguen
             const pushBack = 5;
             if (this.direction === 1) {
                 this.x -= pushBack;
@@ -207,51 +205,44 @@ class Koopa extends Phaser.GameObjects.Sprite
                 this.x += pushBack;
             }
     
-            // this.body.updateFromGameObject();
-    
-            // Cambiar dirección
             this.changeDirection();
         }
     }
 
-    // Manejar colisiones con otros enemigos
+    /**
+     * Maneja las colisiones con otros enemigos
+     * Separa físicamente los enemigos y hace que ambos cambien de dirección
+     * @param {Enemies} otherEnemy - Referencia al otro enemigo con el que colisionó
+     */
     handleEnemyCollision(otherEnemy) {
-        // Ignorar si alguno está muerto
         if (!this.isAlive || !otherEnemy.isAlive) return;
 
-        // Calcular superposición usando getBounds()
         const bounds1 = this.getBounds();
         const bounds2 = otherEnemy.getBounds();
 
         const overlapX = Math.min(bounds1.right, bounds2.right) - Math.max(bounds1.left, bounds2.left);
 
-        // Si hay superposición significativa
         if (overlapX > 5) {
-            // Separación física inmediata
             const separation = overlapX / 2 + 5;
-
-            // Calcular dirección de la colisión
             const dx = otherEnemy.x - this.x;
 
             if (dx > 0) {
-                // otherEnemy está a la derecha de this
                 this.x -= separation;
                 otherEnemy.x += separation;
             } else {
-                // this está a la derecha de otherEnemy
                 this.x += separation;
                 otherEnemy.x -= separation;
             }
         }
 
-        // Actualizar cuerpos físicos
-        // this.body.updateFromGameObject();
-        // otherEnemy.body.updateFromGameObject();
-
-        // Ambos cambian de dirección
         this.changeDirection();
         otherEnemy.changeDirection();
     }
+
+    /**
+     * Verifica si el Koopa está dentro del área visible de la cámara
+     * @returns {boolean} true si está visible, false en caso contrario
+     */
     checkVisibility() {
         if (this.shouldBeDestroyed) return false;
         
@@ -266,9 +257,14 @@ class Koopa extends Phaser.GameObjects.Sprite
         
         return isVisible;
     }
-    // Manejar colisiones con Mario
+
+    /**
+     * Maneja las colisiones con el jugador
+     * Si el jugador cae sobre el Koopa, lo convierte en caparazón. 
+     * Si colisiona lateralmente, causa daño al jugador
+     * @param {Object} player - Referencia al objeto jugador
+     */
     handlePlayerCollision(player) {
-        // Ignorar si está muerto
         if (!this.isAlive) return;
 
         if (player.isInvincible) {
@@ -276,34 +272,22 @@ class Koopa extends Phaser.GameObjects.Sprite
             return;
         }
 
-        // Verificar si Mario está cayendo y golpea desde arriba
-        // console.log(player.body.velocity.y);
         if (player.body.velocity.y>0.7) {
-            // Hacer a Mario invulnerable temporalmente
             player.isInvulnerable = true;
-
-            // Mario aplasta al Koopa
             player.canEnemyJump = true; 
             this.stomp();
-        
-            // Pequeño rebote para Mario
             player.setVelocityY(-4.5);
 
-            // Quitar invulnerabilidad temporal a Mario
             this.scene.time.delayedCall(300, () => {
                 player.canEnemyJump=false;
             });
             this.scene.time.delayedCall(150, () => {
                 player.isInvulnerable = false;
-                // player.canEnemyJump=false;
             });
         } else if (this.isAlive && !player.isBeingPushed && !player.isInvulnerable) {
-            // Colisión lateral
-            // Si Mario ha colisionado lateralmente con un Goomba siendo pequeño, Mario pasa a estado de burbuja si le quedan burbujas, si no se vuelve al menú
             if (!player.isSuperSize && !this.scene.endTimer) {
                 this.scene.sound.play('muerte');
 
-                // Detener cualquier movimiento de Mario antes de la burbuja
                 player.setVelocity(0, 0);
                 if (player.body) {
                     player.body.velocity.x = 0;
@@ -313,11 +297,11 @@ class Koopa extends Phaser.GameObjects.Sprite
                 if (!this.scene.isBoss)
                 {
                     if (player.bubblesLeft > 0) {
-                        player.Bubble(); // Entra en burbuja
+                        player.Bubble();
                     } else {
                         player.hurt();
                         player.setStatic(true);
-                        this.body.collisionFilter.mask = 0; // Desactivar completamente las colisiones
+                        this.body.collisionFilter.mask = 0;
                         this.setStatic(true);
                         this.scene.doubleEndTransition(()=>{this.scene.scene.launch('LevelSelection');
                             this.scene.scene.stop();});
@@ -334,15 +318,11 @@ class Koopa extends Phaser.GameObjects.Sprite
                     });
                 }
             } else {
-                // Colisión lateral
-                let pushDirection = 0; // Determinar dirección del empuje
+                let pushDirection = 0;
 
-                // Calcular la dirección de la colisión
                 if (player.x < this.x) {
-                    // Goomba está a la derecha de Mario -> empujar a Mario hacia la izquierda
                     pushDirection = -1;
                 } else {
-                    // Goomba está a la izquierda de Mario -> empujar a Mario hacia la derecha
                     pushDirection = 1;
                 }
 
@@ -351,9 +331,11 @@ class Koopa extends Phaser.GameObjects.Sprite
         }
     }
 
-    // Ser aplastado por Mario
+    /**
+     * Convierte al Koopa en caparazón
+     * Cambia el estado a muerto, detiene el movimiento, cambia a sprite de caparazón y programa su destrucción
+     */
     stomp() {
-        // Si está muerto o marcado para destrucción, no aplicar empuje
         if (!this.isAlive || this.shouldBeDestroyed) return;
         
         this.stompSound.play();
@@ -361,13 +343,11 @@ class Koopa extends Phaser.GameObjects.Sprite
         this.isAlive = false;
         this.setVelocity(0, 0);
         this.body.collisionFilter.mask = 0;
-        // this.body.checkCollision.none = true;
 
         if (this.anims.isPlaying) {
             this.anims.stop();
         }
         
-        // Cambiar a sprite de aplastado si existe
         if (this.scene.textures.exists('Koopa_shell_G') && this.type === 3) {
             this.setTexture('Koopa_shell_G');
         }
@@ -377,27 +357,28 @@ class Koopa extends Phaser.GameObjects.Sprite
 
         this.scene.increaseScore(200, 'score');
 
-        // Destruir después de un tiempo
         this.scene.time.delayedCall(2000, () => {
             this.safeDestroy();
         });
     }
 
-
+    /**
+     * Detecta bordes de plataformas para evitar que el Koopa se caiga
+     * Usa raycasting y verificación de tiles para determinar si hay suelo adelante
+     */
     checkForLedges() {
         if (!this.body) return;
 
         const checkDistance = 5;
-        const yOffset = 5; // Pequeño margen debajo de los pies
-        const futureX = this.x + (this.direction * (this.width / 2 + checkDistance)); // Calcular posición X considerando la dirección y el ancho del sprite
-        const futureY = this.body.bottom + yOffset;  // Calcular posición Y (justo debajo de los pies del Goomba)
+        const yOffset = 5;
+        const futureX = this.x + (this.direction * (this.width / 2 + checkDistance));
+        const futureY = this.body.bottom + yOffset;
 
         let hasGroundAhead = false;
 
-        // Verificar múltiples puntos para mayor precisión
         const checkPoints = [
-            { x: futureX, y: futureY }, // Punto futuro
-            { x: futureX + (this.direction * 5), y: futureY } // Punto futuro un poco más adelante
+            { x: futureX, y: futureY },
+            { x: futureX + (this.direction * 5), y: futureY }
         ];
 
         const rayHitsLabel = (label) => {
@@ -415,7 +396,6 @@ class Koopa extends Phaser.GameObjects.Sprite
             return false;
         };
 
-        // Verificar en groundLayer
         if (this.scene.groundLayer) {
             for (const point of checkPoints) {
                 const tile = this.scene.groundLayer.getTileAtWorldXY(point.x, point.y);
@@ -426,7 +406,6 @@ class Koopa extends Phaser.GameObjects.Sprite
             }
         }
 
-        // Si no ha encontrado en groundLayer, verificar en blockLayer
         if (!hasGroundAhead && this.scene.blockLayer) {
             for (const point of checkPoints) {
                 const tile = this.scene.blockLayer.getTileAtWorldXY(point.x, point.y);
@@ -441,68 +420,60 @@ class Koopa extends Phaser.GameObjects.Sprite
             hasGroundAhead = true;
         }
 
-        // Si no hay suelo adelante, cambiar dirección
         if (!hasGroundAhead) {
             this.changeDirection();
         }
     }
 
-    // Destrucción segura
+    /**
+     * Destruye el Koopa de forma segura
+     * Detiene física, animaciones y elimina el objeto completamente
+     */
     safeDestroy() {
-        // Si ya está marcado para destrucción, no hacer nada
         if (this.shouldBeDestroyed) return;
         
         this.shouldBeDestroyed = true;
         
-        // Detener todas las físicas inmediatamente
         if (this.body) {
             this.setVelocity(0, 0);
-            // this.body.checkCollision.none = true;
             this.body.enable = false;
         }
         
-        // Detener animaciones
         if (this.anims) {
             this.anims.stop();
         }
         
-        // Hacer invisible inmediatamente
         this.setVisible(false);
         this.setActive(false);
         
-        // Destruir el objeto
         this.destroy();
     }
     
-
+    /**
+     * Método de actualización llamado cada frame
+     * Gestiona destrucción por salir de cámara o caer al vacío, y actualiza el movimiento
+     * @param {number} time - Tiempo total transcurrido desde el inicio del juego
+     * @param {number} delta - Tiempo transcurrido desde el último frame
+     */
     update(time, delta) {
-        // Salir inmediatamente si ya está marcado para destrucción
         if (!this.isAlive || this.shouldBeDestroyed) return;
 
         const camera = this.scene.cameras.main;
 
-        // Destruir si se sale por la izquierda de la cámara
         if (this.x < camera.scrollX - 15) {
             this.safeDestroy();
-            return; // Salir inmediatamente después de marcar para destrucción
+            return;
         }
         
-        // Destruir si se cae al vacío
         if (this.y > this.scene.matter.world.bounds + 100) {
             this.safeDestroy();
-            return; // Salir inmediatamente después de marcar para destrucción
+            return;
         }
         if(this.blocked.right || this.blocked.left)
         {
             this.handleWallCollision();
         }
 
-        // Verificar bordes
-        if (this.isAlive && !this.shouldBeDestroyed) {
-            // this.checkForLedges();
-        }
-
-        // Actualizar movimiento solo si está vivo y no está marcado para destrucción
         if (this.isAlive && !this.shouldBeDestroyed) {
             this.updateMovement();
         }

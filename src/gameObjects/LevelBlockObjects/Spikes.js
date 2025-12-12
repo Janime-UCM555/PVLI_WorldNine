@@ -2,14 +2,30 @@ import SceneBlocks from "./SceneBlocks.js";
 import{
     CATEGORY_TERRAIN
 } from "../collisionCategories.js"
+/**
+ * Clase que representa pinchos peligrosos
+ * Causan daño o muerte al jugador al contacto, dependiendo del tamaño del jugador
+ * Soporta rotación y volteo para colocación flexible
+ * @extends SceneBlocks
+ */
 export class Spikes extends SceneBlocks {
+    /**
+     * Constructor de los pinchos
+     * @param {Phaser.Scene} scene - La escena donde se crean los pinchos
+     * @param {Object} obj - Objeto con datos del tilemap
+     * @param {number} obj.x - Posición X
+     * @param {number} obj.y - Posición Y
+     * @param {number} obj.rotation - Rotación en grados
+     * @param {boolean} obj.flippedHorizontal - Si está volteado horizontalmente
+     * @param {boolean} obj.flippedVertical - Si está volteado verticalmente
+     */
     constructor(scene, obj) {
-        // Pasamos el origin correcto ANTES de crear el body
         super(scene, obj, 'spikes');
 
         this.setSensor(false);
         this.setStatic(true);
-        // Aplicamos rotación 
+
+        // Aplicar rotación y volteo
         const angle = obj.rotation;
         this.setRotation(Phaser.Math.DegToRad(angle));
         this.setFlipX(obj.flippedHorizontal || false);
@@ -27,13 +43,18 @@ export class Spikes extends SceneBlocks {
         this.setCollisionCategory(CATEGORY_TERRAIN);
     }
 
+    /**
+     * Configura el sistema de colisiones con el jugador
+     * Si el jugador es pequeño, muere o entra en burbuja
+     * Si es grande, pierde el power-up
+     * @private
+     */
     setUpCollisions()
     {
         this.setOnCollide((data)=>
         {
             const { bodyA, bodyB } = data;
 
-            // detectar si el jugador cae encima
             const player = (bodyA.label === "Mario") ? bodyA : 
                            (bodyB.label === "Mario") ? bodyB : null;
 
@@ -45,7 +66,6 @@ export class Spikes extends SceneBlocks {
                 {
                     this.scene.sound.play('muerte');
 
-                    // Detener cualquier movimiento de Mario antes de la burbuja
                     playerGame.setVelocity(0, 0);
                     if (playerGame.body) {
                         playerGame.body.velocity.x = 0;
@@ -54,11 +74,11 @@ export class Spikes extends SceneBlocks {
                     if (!this.scene.isBoss)
                     {
                         if (this.scene?.jugador.bubblesLeft > 0) {
-                            this.scene?.jugador.Bubble(); // Entra en burbuja
+                            this.scene?.jugador.Bubble();
                         } else {
                             this.scene?.jugador.hurt();
                             this.scene?.jugador.setStatic(true);
-                            this.body.collisionFilter.mask = 0; // Desactivar completamente las colisiones
+                            this.body.collisionFilter.mask = 0;
                             this.setStatic(true);
                             this.scene.doubleEndTransition(()=>{this.scene.scene.launch('MainMenu');
                                 this.scene.scene.stop();});
@@ -74,8 +94,7 @@ export class Spikes extends SceneBlocks {
                         });
                     }
                 } else {
-                    // Colisión lateral
-                    let pushDirection = 0; // Determinar dirección del empuje
+                    let pushDirection = 0;
                     playerGame.takeDamage(pushDirection);
                 }
             }
