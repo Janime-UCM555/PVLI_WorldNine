@@ -10,7 +10,7 @@ import {
     CATEGORY_PLAYER,
     CATEGORY_ENEMY,
     CATEGORY_TERRAIN,
-} from "../../collisionCategories.js"
+} from "../collisionCategories.js"
 /**
  * Clase que representa una columna segmentada de Horus
  * Crea una columna vertical compuesta por múltiples tiles con física,
