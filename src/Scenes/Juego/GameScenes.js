@@ -188,17 +188,14 @@ class EscenaBase extends Phaser.Scene {
         
         // Determinar el tipo de nivel según la clave
         if (this.level == "Nivel_R" || this.level == "BossJ") {
-            console.log("Roma");
             this.levelType = "Roma";
             this.type = 1;
         }
         else if (this.level == "Nivel_D" || this.level == "BossH") {
-            console.log("Egipto");
             this.levelType = "Egipto";
             this.type = 2;
         }
         else if (this.level == "Nivel_G" || this.level == "BossHades") {
-            console.log("Grecia");
             this.levelType = "Grecia";
             this.type = 3;
         }
