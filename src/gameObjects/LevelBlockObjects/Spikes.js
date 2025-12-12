@@ -40,7 +40,8 @@ export class Spikes extends SceneBlocks {
         else if (angle=== 270 || angle === -90) {
             this.x -= this.width;
         }
-        this.setCollisionCategory(CATEGORY_TERRAIN);
+        this.setCollisionCategory([CATEGORY_TERRAIN]);
+        this.setUpCollisions();
     }
 
     /**

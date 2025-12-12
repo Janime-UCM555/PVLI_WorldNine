@@ -2,10 +2,15 @@
  * Categorías de colisión para el sistema de física Matter.js
  * @constant {number}
  */
-const CATEGORY_PLAYER  = 0x0001;
-const CATEGORY_ENEMY   = 0x0002;
-const CATEGORY_TERRAIN = 0x0004;
-
+/**
+ * Categorías de colisión de Matter.js
+ * @module collisionCategories
+ */
+import {
+    CATEGORY_PLAYER,
+    CATEGORY_ENEMY,
+    CATEGORY_TERRAIN,
+} from "../../collisionCategories.js"
 /**
  * Clase que representa una columna segmentada de Horus
  * Crea una columna vertical compuesta por múltiples tiles con física,
