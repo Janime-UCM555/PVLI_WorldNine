@@ -186,14 +186,6 @@ class BossJ extends GameScenes {
      */
     ganasPartida()
     {
-        this.textCoins = this.add.text(posUI, this.cameras.main.centerY, "".padStart(2,"0"),{fontFamily: 'aku-kamu'})
-            .setOrigin(1,4)
-            .setStroke('#000000ff', 6)
-            .setFill('#DBC716')
-            .setDepth(6)
-            .setFontSize(fontSize + 'px')
-            .setScrollFactor(0);
-
         // Animación de desvanecimiento del pilar
         const fadeTween = this.tweens.add({
             targets: this.pilar,

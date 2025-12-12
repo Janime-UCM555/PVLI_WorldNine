@@ -406,7 +406,7 @@ export default class JupiterBoss extends BossBase {
                 });
             } else {
                 this.scene.time.delayedCall(100, () => {
-                    this.scene.jugador.deactivatePowerUp();
+                    this.scene.jugador.powerUps.deactivatePowerUp();
                 });
             }
 

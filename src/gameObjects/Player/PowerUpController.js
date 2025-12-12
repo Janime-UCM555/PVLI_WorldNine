@@ -1,7 +1,11 @@
 // ==========================================================
 //               POWER UP CONTROLLER DEL PLAYER
 // ==========================================================
-
+/**
+ * Importación de los tipos de PowerUps
+ * @module PowerUps/PowerUps
+ */
+import { POWERUP_TYPES } from "../PowerUps/PowerUps.js";
 /**
  * Controlador de PowerUps del jugador.
  * Gestiona las habilidades especiales obtenidas mediante PowerUps:

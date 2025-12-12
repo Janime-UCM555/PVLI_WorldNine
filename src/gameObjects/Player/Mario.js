@@ -74,7 +74,6 @@ class Mario extends Phaser.GameObjects.Sprite
         this.isInBubble = false; // Controlar si está en la burbuja
         this.canDrop = false; // Indica si puede salir de la burbuja
         this.bubblesLeft = 2; // Número de burbujas restantes
-        this.slop = 0;
 
         this.canSunJump = false;
         this.inImpulse=false;
