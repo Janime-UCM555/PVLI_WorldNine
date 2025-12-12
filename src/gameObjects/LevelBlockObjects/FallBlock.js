@@ -1,3 +1,7 @@
+/**
+ * Importación de las categorías de colisión correspondientes
+ * @module collisionCategories
+ */
 import{
     CATEGORY_PLAYER,
     CATEGORY_ENEMY,
@@ -5,10 +9,20 @@ import{
     CATEGORY_FALLOFF,
     CATEGORY_TERRAIN
 } from "../collisionCategories.js"
+
+/**
+ * Importación de la clase madre
+ * @module SceneBlocks
+ */
 import SceneBlocks from "./SceneBlocks.js";
 
+/**
+ * Clase que representa un bloque que al pasar Mario por encima se cae al cabo de un tiempo
+ * @extends SceneBlocks
+ */
 export class FallBlock extends SceneBlocks {
     /**
+     * Constructor del FallBlock
      * @param {scene} scene 
      * @param {gameObject} obj 
      */
@@ -54,6 +68,11 @@ export class FallBlock extends SceneBlocks {
         this.sensor = sensor;
         this.setUpCollisions();
     }
+
+    /**
+     * Configura las colisiones para que se caigan al cabo de un tiempo si Mario pasa por encima
+     * @private
+     */
     setUpCollisions()
     {        
         this.setOnCollide((data)=>
@@ -101,6 +120,13 @@ export class FallBlock extends SceneBlocks {
             }
         });
     }
+
+    /**
+     * Restaura el bloque si se ha caído.
+     * Si se está cayendo actualiza su posición.
+     * @param {number} time - Tiempo total transcurrido
+     * @param {number} delta - Tiempo desde el último frame
+     */
     update(time, delta) {
         // this.fallBlock.getChildren().forEach(block => {
         if (this.x < this.scene.cameras.scrollX || this.y > this.scene.map.heightInPixels + 50)

@@ -1,3 +1,7 @@
+/**
+ * Importación de los tipos de muerte disponibles
+ * @module Goomba
+ */
 import { DIE_TYPES } from "./Goomba.js";
 
 /**

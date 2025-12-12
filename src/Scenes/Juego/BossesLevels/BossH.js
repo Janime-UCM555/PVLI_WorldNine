@@ -1,13 +1,32 @@
-// BossH.js
+/**
+ * Importación del jugador Mario.
+ * @module Player/Mario
+ */
 import Mario from '../../../gameObjects/Player/Mario.js';
+
+/**
+ * @fileoverview Escena del combate contra el jefe Horus.
+ * Nivel especial tipo boss fight contra Horus en Egipto.
+ * @module Scenes/BossH
+ */
 import HorusBoss, { HORUS_SHEET_KEY } from "../../../gameObjects/BossesObjects/HorusBoss.js";
 import {PowerUp, POWERUP_TYPES } from '../../../gameObjects/PowerUps/PowerUps.js';
 import GameScenes from '../GameScenes.js';
 import spawnPowerUp from '../../../gameObjects/PowerUps/PowerUpSpawn.js';
 import Pilar from '../../../gameObjects/LevelBlockObjects/Pilar.js';
 
+/**
+ * @class BossH
+ * @extends GameScenes
+ * @description Escena del combate contra Horus, el dios del viento.
+ * Arena de batalla con ambiente egipcio y pilar de arena.
+ * El jugador debe derrotar a Horus evitando a los enemigos y superando las columnas que le lance.
+ */
 export default class BossH extends GameScenes{
-
+    /**
+     * Crea una instancia del nivel Boss Horus.
+     * Configura las capas de fondo temáticas de egipto.
+     */
     constructor() {
         super('BossH', ()=>
             {
@@ -20,6 +39,9 @@ export default class BossH extends GameScenes{
             }, true);
     }
 
+    /**
+     * Precarga los recursos específicos del combate contra Horus.
+     */
     preload() {
         this.load.tilemapTiledJSON(this.mapKey, 'MapaDeTiled/Prueba.json');
         this.load.spritesheet(HORUS_SHEET_KEY, 'assets/GameSprites/Characters/Bosses/Horus/spritesheet_uniforme_completa.png', { frameWidth: 74, frameHeight: 69 });
@@ -34,6 +56,10 @@ export default class BossH extends GameScenes{
         this.impulsoActivo = null;
     }
 
+    /**
+     * Crea e inicializa la arena de combate contra Horus.
+     * Configura el pilar de fuego y el boss.
+     */
     create() {
 
         this.bossIntroStarted = false;
@@ -89,7 +115,11 @@ export default class BossH extends GameScenes{
         this.pilar = new Pilar(this,-1503,625,'pilar_arena');
     }
     
-
+    /**
+     * Crea los elementos de texto de la UI para el combate de jefe.
+     * Muestra FPS, puntuación y monedas.
+     * @override
+     */
     createText()
     {
         // Este gráfico representa la línea dónde se alinea la UI por la derecha
@@ -127,6 +157,12 @@ export default class BossH extends GameScenes{
             .setFontSize(fontSize + 'px')
             .setScrollFactor(0);
     }
+
+    /**
+     * Maneja la lógica cuando el jugador derrota a Horus.
+     * Desactiva las colisiones con la barra final.
+     * @override
+     */
     ganasPartida() {
 
         if (this.barraFinLayer) {
@@ -143,9 +179,23 @@ export default class BossH extends GameScenes{
 
         this.horus.defeat();
     }
+
+    /**
+     * Sobrescribe el método del temporizador para los niveles de jefe.
+     * Los niveles de jefe no usan temporizador de cuenta regresiva.
+     * @override
+     */
     timerMethod()
     {
     }
+
+    /**
+     * Sobrescribe el método update.
+     * Actualiza a Horus y maneja el momento de empezar la batalla.
+     * @param {number} time - Tiempo total transcurrido
+     * @param {number} delta - Tiempo desde el último frame
+     * @override
+     */
     update(time, delta) {
         super.update(time, delta);
 

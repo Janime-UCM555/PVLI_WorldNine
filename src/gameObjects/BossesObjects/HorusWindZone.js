@@ -1,6 +1,7 @@
-// HorusWindZone.js
-// Zona de viento de Horus: Mario la atraviesa, pero modifica su velocidad.
-
+/**
+ * Zona de viento de Horus: Mario la atraviesa, pero modifica su velocidad
+ * @extends Phaser.GameObjects.Rectangle
+ */
 export default class HorusWindZone extends Phaser.GameObjects.Rectangle {
     /**
      * @param {Phaser.Scene} scene
@@ -35,6 +36,13 @@ export default class HorusWindZone extends Phaser.GameObjects.Rectangle {
         }
     }
 
+    /**
+     * Se desplaza hacia la izquierda hasta que se sale de la pantalla, momento en el que se destruye.
+     * Si intersecta con Mario le reduce la velocidad a Mario.
+     * @param {number} time - Tiempo total transcurrido
+     * @param {number} delta - Tiempo desde el último frame
+     * @returns 
+     */
     preUpdate(time, delta) {
         super.preUpdate?.(time, delta);
 

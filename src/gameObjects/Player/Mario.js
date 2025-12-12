@@ -1,7 +1,26 @@
+/**
+ * Importación de los tipos de PowerUps
+ * @module PowerUps/PowerUps
+ */
 import { POWERUP_TYPES } from "../PowerUps/PowerUps.js";
+
+/**
+ * Importación del controlador del estado de burbuja
+ * @module Bubble
+ */
 import PlayerBubbleController from "./Bubble.js";
+
+/**
+ * Importación del controlador de PowerUps
+ * @module PowerUpController
+ */
 import PowerUpController from "./PowerUpController.js";
 
+
+/**
+ * Importación de las categorías de colisión correspondientes
+ * @module collisionCategories
+ */
 import{
     CATEGORY_PLAYER,
     CATEGORY_ENEMY,
@@ -9,8 +28,30 @@ import{
     CATEGORY_TERRAIN,
     CATEGORY_SENSOR
 } from "../collisionCategories.js"
+/**
+ * Clase principal del jugador (Mario)
+ * @extends Phaser.GameObjects.Sprite
+ */
+
 class Mario extends Phaser.GameObjects.Sprite
 {
+    /**
+     * Constructor de la clase Mario
+     * @param {Phaser.Scene} scene - Escena a la que pertenece
+     * @param {number} x - Posición X inicial
+     * @param {number} y - Posición Y inicial
+     * @param {string} texture - Textura/animación base
+     * @param {number} [speed=200] - Velocidad base de movimiento horizontal
+     * @param {number} [jumpForce=-225] - Fuerza base del salto (negativa hacia arriba)
+     * @param {boolean} [flipHorizontal=true] - Si el sprite debe voltearse horizontalmente
+     * @param {boolean} [inBoss=false] - Si está en un nivel de jefe (cambia animaciones)
+     * 
+     * @property {PlayerBubbleController} bubble - Controlador del estado de burbuja
+     * @property {PowerUpController} powerUps - Controlador de power-ups
+     * @property {boolean} isGrounded - Indica si está tocando el suelo
+     * @property {boolean} isInBubble - Indica si está en estado de burbuja
+     * @property {string|null} activePowerUp - Tipo de power-up activo actualmente
+     */
     constructor(scene, x, y, texture, speed = 200, jumpForce = -225, flipHorizontal = true, inBoss=false) {
         super(scene, x, y, texture);
         
@@ -219,6 +260,9 @@ class Mario extends Phaser.GameObjects.Sprite
         this.setupMouseInput();
     }
     
+    /**
+     * Configura la entrada de ratón para controlar el jugador.
+     */
     setupMouseInput() {
         // Limpiar eventos previos
         this.scene.input.off('pointerdown');
@@ -285,6 +329,11 @@ class Mario extends Phaser.GameObjects.Sprite
         });
     }
 
+    /**
+     * Maneja la lógica del salto del jugador
+     * @param {number} time - Tiempo actual del juego
+     * @param {number} delta - Tiempo transcurrido desde el último frame
+     */
     handleJump(time, delta) {
         if(this.inImpulse) {
             return;
@@ -328,6 +377,10 @@ class Mario extends Phaser.GameObjects.Sprite
         this.jumpRequested = false;
     }
 
+    /**
+     * Inicia un salto desde el suelo o usando doble salto
+     * @param {number} time - Tiempo actual del juego
+     */
     startJump(time) {
         // Iniciar el salto con velocidad mínima
         this.jumpVelocity = this.minJumpVelocity;
@@ -358,6 +411,11 @@ class Mario extends Phaser.GameObjects.Sprite
         }
     }
 
+    /**
+     * Aplica fuerza de salto progresiva mientras se mantiene presionado
+     * @param {number} time - Tiempo actual del juego
+     * @param {number} delta - Tiempo transcurrido desde el último frame
+     */
     applyProgressiveJumpForce(time, delta) {
         const holdTime = time - this.jumpStartTime;
         
@@ -377,13 +435,17 @@ class Mario extends Phaser.GameObjects.Sprite
         }
     }
 
-    // Activar empuje
+    /**
+     * Activa el estado de empuje (cuando es dañado)
+     */
     startPush() {
         this.isBeingPushed = true;
         this.isStopped = true; // También detener el movimiento automático
     }
 
-    // Desactivar empuje
+    /**
+     * Desactiva el estado de empuje
+     */
     endPush() {
         this.isBeingPushed = false;
         this.isStopped = false;
@@ -395,7 +457,9 @@ class Mario extends Phaser.GameObjects.Sprite
         }
     }
 
-    // Reanudar movimiento
+    /**
+     * Reanuda el movimiento automático del jugador
+     */
     resume() {
         this.isStopped = false;
         if (this.body) {
@@ -410,7 +474,9 @@ class Mario extends Phaser.GameObjects.Sprite
         }
     }
 
-    // Detener el jugador
+    /**
+     * Detiene el movimiento del jugador
+     */
     stop() {
         this.isStopped = true;
         if (this.body) {
@@ -429,7 +495,9 @@ class Mario extends Phaser.GameObjects.Sprite
         }
     }
     
-    // Detener el jugador
+    /**
+     * Activa la animación de victoria
+     */
     win() {
         this.hasWon = true;
         // Cambiar a animación idle cuando se detiene
@@ -437,7 +505,9 @@ class Mario extends Phaser.GameObjects.Sprite
     }
     
 
-    //Daña al jugador
+    /**
+     * Activa la animación de daño
+     */
     hurt() {
         this.isHurt = true;
 
@@ -453,6 +523,10 @@ class Mario extends Phaser.GameObjects.Sprite
         }
     }
 
+    /**
+     * Aplica daño al jugador con efectos visuales y físicos
+     * @param {number} pushDirection - Dirección del empuje (-1 izquierda, 1 derecha)
+     */
     takeDamage(pushDirection) {
         // Si ya es invencible (estrella) o está en ventana de daño, ignorar
         if (this.isInvincible || this.isInvulnerable) {
@@ -534,11 +608,18 @@ class Mario extends Phaser.GameObjects.Sprite
         });
     }
 
-    // Método para activar la burbuja:
+    /**
+     * Activa el estado de burbuja
+     */
     Bubble() {
         this.bubble.Bubble();
     }
 
+    /**
+     * Actualización principal del jugador cada frame
+     * @param {number} time - Tiempo actual del juego
+     * @param {number} delta - Tiempo transcurrido desde el último frame
+     */
     update(time, delta) {
         const dt = delta / 16.666;
         // Verificación de seguridad
@@ -633,6 +714,9 @@ class Mario extends Phaser.GameObjects.Sprite
         }
     }
 
+    /**
+     * Maneja las animaciones del jugador según su estado
+     */
     handleAnimations() {
         if (!this.body) return;
 
@@ -716,6 +800,9 @@ class Mario extends Phaser.GameObjects.Sprite
         }
     }
 
+    /**
+     * Configura los límites del mundo para colisiones
+     */
     setUpWorldBoundsCollision() {
         const world = this.scene.matter.world;
 
@@ -729,15 +816,30 @@ class Mario extends Phaser.GameObjects.Sprite
         world.on('afterupdate', this.handleAfterUpdate, this);
     }
 
+    /**
+     * Resetea contadores de sensores antes de la actualización
+     * @param {Object} event - Evento de beforeupdate
+     */
     handleBeforeUpdate(event) {
         // Resetear contadores de sensores antes de la actualización
         this.numTouching.left = 0;
         this.numTouching.right = 0;
         this.numTouching.bottom = 0;
     }
+
+    /**
+     * Verifica si un cuerpo es terreno
+     * @param {MatterJS.Body} body - Cuerpo a verificar
+     * @returns {boolean} True si es terreno
+     */
     isTerrain(body) {
         return (body.collisionFilter.category & CATEGORY_TERRAIN) !== 0;
     }
+
+    /**
+     * Maneja colisiones activas con sensores
+     * @param {Object} event - Evento de collisionactive
+     */
     handleCollisionActive(event) {
         for (let i = 0; i < event.pairs.length; i++)
         {
@@ -776,6 +878,10 @@ class Mario extends Phaser.GameObjects.Sprite
         };
     }
 
+    /**
+     * Actualiza estados después de las colisiones
+     * @param {Object} event - Evento de afterupdate
+     */
     handleAfterUpdate(event) {
         // Actualizar estados de bloqueo basados en sensores
         this.blocked.right = this.numTouching.right > 0;
@@ -786,7 +892,9 @@ class Mario extends Phaser.GameObjects.Sprite
         this.isGrounded = this.blocked.bottom;
     }
 
-    // Resetear estados
+    /**
+     * Resetea todos los estados del jugador a valores iniciales
+     */
     resetStates() {
         this.isJumping = false;
         this.isHoldingJump = false;

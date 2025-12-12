@@ -1,10 +1,23 @@
+/**
+ * Controlador del estado de burbuja del jugador
+ * Maneja la lógica completa del estado de rescate en burbuja, incluyendo:
+ * - Activación y desactivación de la burbuja
+ * - Movimiento automático en 3 fases
+ * - Oscilación vertical durante la fase 3
+ * - Salida controlada del estado
+ */
 export default class PlayerBubbleController {
-
+    /**
+     * Constructor del controlador de burbuja
+     * @param {Mario} player - Instancia del jugador a controlar
+     */
     constructor(player) {
         this.player = player;
     }
 
-
+    /**
+     * Activa el estado de burbuja del jugador
+     */
     Bubble() {
         const p = this.player;
         if (p.isInBubble) return;
@@ -22,7 +35,10 @@ export default class PlayerBubbleController {
         this.enterBubbleState();
     }
 
-
+    /**
+     * Inicia la fase 1 del estado de burbuja.
+     * @private
+     */
     enterBubbleState() {
         const p = this.player;
         const scene = p.scene;
@@ -117,6 +133,11 @@ export default class PlayerBubbleController {
         });
     }
 
+    /**
+     * Inicia la fase 2 del estado de burbuja (movimiento oscilatorio).
+     * Maneja el movimiento con oscilación
+     * @private
+     */
     startBubblePhase2() {
         const p = this.player;
         const scene = p.scene;
@@ -156,7 +177,10 @@ export default class PlayerBubbleController {
         });
     }
 
-
+    /**
+     * Sale del estado de burbuja.
+     * Restaura controles, física y animaciones normales del jugador.
+     */
     exitBubbleState() {
         const p = this.player;
         const scene = p.scene;
@@ -190,6 +214,10 @@ export default class PlayerBubbleController {
         p.isHoldingJump = false;
     }
 
+    /**
+     * Actualiza el estado de burbuja cada frame.
+     * Maneja el movimiento, oscilación y transiciones durante el estado de burbuja.
+     */
     update(time, delta) {
         const p = this.player;
         const dt = delta / 16.666;

@@ -12,11 +12,20 @@ export const POWERUP_TYPES = {
   JUMP_BOOTS: "jump_boots"
 };
 
+/**
+ * Importación de las categorías de colisión correspondientes
+ * @module collisionCategories
+ */
 import{
     CATEGORY_PLAYER,
     CATEGORY_TERRAIN,
     CATEGORY_POWERUP,
 } from "../collisionCategories.js"
+
+/**
+ * Importación de las monedas
+ * @module LevelBlockObjects/Coins
+ */
 import Coins from "../LevelBlockObjects/Coins.js";
 
 /**

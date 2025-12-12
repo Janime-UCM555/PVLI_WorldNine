@@ -124,6 +124,11 @@ class BossJ extends GameScenes {
         });
     }
 
+    /**
+     * Crea los elementos de texto de la UI para el combate de jefe.
+     * Muestra FPS, puntuación y monedas.
+     * @override
+     */
     createText()
     {
         // Este gráfico representa la línea dónde se alinea la UI por la derecha
@@ -179,18 +184,17 @@ class BossJ extends GameScenes {
      * Anima el pilar de nubes desvaneciéndose antes de completar el nivel.
      * @override
      */
-    ganasPartida() {
-        // Animación de desvanecimiento del pilar
-            this.textCoins = this.add.text(posUI, this.cameras.main.centerY, "".padStart(2,"0"),{fontFamily: 'aku-kamu'})
+    ganasPartida()
+    {
+        this.textCoins = this.add.text(posUI, this.cameras.main.centerY, "".padStart(2,"0"),{fontFamily: 'aku-kamu'})
             .setOrigin(1,4)
             .setStroke('#000000ff', 6)
             .setFill('#DBC716')
             .setDepth(6)
             .setFontSize(fontSize + 'px')
             .setScrollFactor(0);
-    }
-    ganasPartida()
-    {
+
+        // Animación de desvanecimiento del pilar
         const fadeTween = this.tweens.add({
             targets: this.pilar,
             alpha: 0,

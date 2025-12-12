@@ -1,8 +1,22 @@
+/**
+ * Importación de las categorías de colisión correspondientes
+ * @module collisionCategories
+ */
 import{
     CATEGORY_PLAYER,
     CATEGORY_SENSOR,
 } from "../collisionCategories.js"
+
+/**
+ * Importación de la clase madre
+ * @module SceneBlocks
+ */
 import SceneBlocks from "./SceneBlocks.js";
+
+/**
+ * Importación de las monedas del nivel
+ * @module Scenes/Juego/GameScenes
+ */
 import { purpleCoinsByLevel, collectedPurpleCoinsByLevel } from "../../Scenes/Juego/GameScenes.js";
 
 /**

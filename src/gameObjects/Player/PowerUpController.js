@@ -2,8 +2,18 @@
 //               POWER UP CONTROLLER DEL PLAYER
 // ==========================================================
 
+/**
+ * Controlador de PowerUps del jugador.
+ * Gestiona las habilidades especiales obtenidas mediante PowerUps:
+ * - Lanzamiento de martillos
+ * - Activación/desactivación de todos los PowerUps
+ * - Restauración de estados base
+ */
 export default class PowerUpController {
-
+    /**
+     * Constructor del controlador de PowerUps
+     * @param {Mario} player - Instancia del jugador a controlar
+     */
     constructor(player) {
         this.player = player;
     }
@@ -12,6 +22,10 @@ export default class PowerUpController {
     //                     TIRAR MARTILLO
     // ======================================================
 
+    /**
+     * Intenta lanzar un martillo (si el jugador tiene el PowerUp activo).
+     * @returns {boolean} True si se lanzó exitosamente, false si falló
+     */
     tryThrowHammer() {
         const p = this.player;
 
@@ -60,6 +74,17 @@ export default class PowerUpController {
     //               DESACTIVAR POWER UP ACTUAL
     // ======================================================
 
+    /**
+     * Desactiva el PowerUp actual del jugador.
+     * Restaura al jugador a su estado base o parcial según las opciones:
+     * - Quita efectos visuales (tinte, parpadeo)
+     * - Restaura tamaño y físicas
+     * - Resetea flags de habilidades
+     * - Maneja música y sonidos
+     * 
+     * @param {Object} [options] - Opciones de desactivación
+     * @param {boolean} [options.keepSize=false] - Mantener tamaño de Super Mario
+     */
     deactivatePowerUp(options = {}) {
         const player = this.player;
 
@@ -157,7 +182,7 @@ export default class PowerUpController {
             player.maxJumpVelocity;
 
         // -------------------------------
-        // 6. Determinar power-up activo
+        // 6. Determinar PowerUp activo
         // -------------------------------
         player.activePowerUp =
             keepSize && player.isSuperSize

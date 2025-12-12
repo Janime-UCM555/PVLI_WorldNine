@@ -1,5 +1,14 @@
+/**
+ * @fileoverview Enemigos que Hades puede spawnear
+ * @module BossesObjects/HadesBoss
+ */
 import Goomba from '../../gameObjects/Enemies/Goomba.js';
 import Koopa from '../../gameObjects/Enemies/Koopa.js';
+
+/**
+ * Importación de la clase madre y de los estados del boss
+ * @module BaseBoss
+ */
 import BossBase, { BOSS_STATE } from './BaseBoss.js';
 
 /**

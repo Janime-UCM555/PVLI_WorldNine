@@ -1,3 +1,7 @@
+/**
+ * Importación de la clase madre y de los estados del boss
+ * @module BaseBoss
+ */
 import BossBase, { BOSS_STATE } from './BaseBoss.js';
 
 /**

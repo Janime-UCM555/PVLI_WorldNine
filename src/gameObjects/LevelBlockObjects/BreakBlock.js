@@ -1,9 +1,28 @@
+/**
+ * Importación de la clase madre
+ * @module SceneBlocks
+ */
 import SceneBlocks from "./SceneBlocks.js";
+
+/**
+ * Importación de la clase para spawnear PowerUps
+ * @module PowerUps/PowerUpSpawn
+ */
 import spawnPowerUp from "../PowerUps/PowerUpSpawn.js";
+
+/**
+ * Importación de las categorías de colisión correspondientes
+ * @module collisionCategories
+ */
 import{
     CATEGORY_PLAYER,
     CATEGORY_TERRAIN
 } from "../collisionCategories.js"
+
+/**
+ * Importación de los tipos de PowerUps
+ * @module PowerUps/PowerUps
+ */
 import { POWERUP_TYPES } from "../PowerUps/PowerUps.js";
 export class Block extends SceneBlocks {
     /**

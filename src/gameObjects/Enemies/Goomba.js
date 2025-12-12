@@ -9,6 +9,10 @@ export const DIE_TYPES = {
     FALL:    'FALL',     // Caída al vacío
 };
 
+/**
+ * Importación de las categorías de colisión correspondientes
+ * @module collisionCategories
+ */
 import{
     CATEGORY_PLAYER,
     CATEGORY_ENEMY,

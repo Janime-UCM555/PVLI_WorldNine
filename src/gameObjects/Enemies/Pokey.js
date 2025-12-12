@@ -1,5 +1,13 @@
+/**
+ * Importación de los tipos de muerte disponibles
+ * @module Goomba
+ */
 import { DIE_TYPES } from "./Goomba.js";
 
+/**
+ * Importación de las categorías de colisión correspondientes
+ * @module collisionCategories
+ */
 import{
     CATEGORY_PLAYER,
     CATEGORY_ENEMY,
@@ -8,6 +16,7 @@ import{
     CATEGORY_FALLOFF,
     CATEGORY_DEBRIS
 } from "../collisionCategories.js"
+
 const M = Phaser.Physics.Matter.Matter;
 
 /**

@@ -1,3 +1,7 @@
+/**
+ * Clase madre de los bloques de los niveles
+ * @extends Phaser.Physics.Matter.Sprite
+ */
 export class SceneBlocks extends Phaser.Physics.Matter.Sprite {
     /**
    * @param {Phaser.Scene} scene

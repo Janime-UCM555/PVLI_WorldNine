@@ -1,4 +1,13 @@
+/**
+ * Importación de la clase madre
+ * @module SceneBlocks
+ */
 import SceneBlocks from "./SceneBlocks.js";
+
+/**
+ * Importación de las categorías de colisión correspondientes
+ * @module collisionCategories
+ */
 import{
     CATEGORY_PLAYER,
     CATEGORY_ENEMY,
@@ -6,6 +15,7 @@ import{
     CATEGORY_FALLOFF,
     CATEGORY_TERRAIN
 } from "../collisionCategories.js"
+
 /**
  * Bloque que pausa al jugador hasta que salte
  * Útil para crear puntos de espera o sincronización en el nivel

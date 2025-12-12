@@ -1,3 +1,7 @@
+/**
+ * Importación de las categorías de colisión correspondientes
+ * @module collisionCategories
+ */
 import{
     CATEGORY_PLAYER,
     CATEGORY_ENEMY,
@@ -5,8 +9,17 @@ import{
     CATEGORY_FALLOFF,
     CATEGORY_TERRAIN
 } from "../collisionCategories.js"
+
+/**
+ * Importación de la clase madre
+ * @module SceneBlocks
+ */
 import SceneBlocks from "./SceneBlocks.js";
 
+/**
+ * Bloque que puede ser atravesado por debajo
+ * @extends SceneBlocks
+ */
 export class OneWay extends SceneBlocks {
     /**
      * @param {scene} scene 
@@ -56,6 +69,11 @@ export class OneWay extends SceneBlocks {
         this.sensor = sensor;
         this.setUpCollisions();
     }
+
+    /**
+     * Configurar las colisiones
+     * @private
+     */
     setUpCollisions() {
         const handle = (event, bodyA, bodyB) => {
             if (!this.hasPlayer &&((bodyA.label === "oneWay"  && bodyA === this.sensor && bodyB.label === "Mario") ||

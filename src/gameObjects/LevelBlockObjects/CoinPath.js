@@ -1,5 +1,19 @@
+/**
+ * Importación de las monedas
+ * @module Coins
+ */
 import Coins from "./Coins.js";
+
+/**
+ * Importación de la clase madre
+ * @module SceneBlocks
+ */
 import SceneBlocks from "./SceneBlocks.js";
+
+/**
+ * Importación de las categorías de colisión correspondientes
+ * @module collisionCategories
+ */
 import{
     CATEGORY_PLAYER,
     CATEGORY_TERRAIN

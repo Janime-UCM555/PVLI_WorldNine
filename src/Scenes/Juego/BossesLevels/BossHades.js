@@ -19,9 +19,9 @@ import Mario from '../../../gameObjects/Player/Mario.js';
 /**
  * @class BossHades
  * @extends GameScenes
- * @description Escena del combate contra Hades, el dios del inframundo.
- * Arena de batalla con ambiente infernal y pilar de fuego.
- * El jugador debe derrotar a Hades evitando sus fuegos fatuos.
+ * @description Escena del combate contra Hades, el dios del viento.
+ * Arena de batalla con ambiente egipcio.
+ * El jugador debe derrotar a Horus evitando a los enemigos y superando las columnas que le lance.
  */
 class BossHades extends GameScenes {
     /**

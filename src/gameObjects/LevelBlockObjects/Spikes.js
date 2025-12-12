@@ -1,7 +1,17 @@
+/**
+ * Importación de la clase madre
+ * @module SceneBlocks
+ */
 import SceneBlocks from "./SceneBlocks.js";
+
+/**
+ * Importación de la categoría de colisión correspondiente
+ * @module collisionCategories
+ */
 import{
     CATEGORY_TERRAIN
 } from "../collisionCategories.js"
+
 /**
  * Clase que representa pinchos peligrosos
  * Causan daño o muerte al jugador al contacto, dependiendo del tamaño del jugador

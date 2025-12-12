@@ -1,13 +1,39 @@
+/**
+ * Importación de la clase para los botones
+ * @module gameObjects/UI/Button
+ */
 import Button from '../../gameObjects/UI/Button.js'
+
+/**
+ * Importación de la clase para las transiciones
+ * @module gameObjects/UI/Transition
+ */
 import TransitionCode from '../../gameObjects/UI/Transition.js'
+
+/**
+ * Importación de la clase con la información del progreso
+ * @module gameObjects/UI/SaveManager
+ */
 import saveManager from '../../gameObjects/UI/SaveManager.js'
 
+/**
+ * Escena de selección de niveles del juego.
+ * Maneja la interfaz de selección de mundos, niveles y jefes con sistema de desbloqueo progresivo.
+ * @extends Phaser.Scene
+ */
 class LevelSelection extends Phaser.Scene
 {
+    /**
+     * Constructor de la escena LevelSelection
+     */
     constructor(){
         super({key:'LevelSelection'});
     }
 
+    /**
+     * Inicializa la escena con datos de progreso.
+     * Configura mundos, botones y estado inicial del panel.
+     */
     init(){
         this.levelButtons = [];
         this.panelOpen = false;
@@ -45,11 +71,18 @@ class LevelSelection extends Phaser.Scene
         this.levelButtonsMap = new Map();
     }
 
+    /**
+     * Precarga los recursos necesarios para la escena
+     */
     preload(){
         this.load.image('level_selection', 'assets/GameSprites/Precarga/level_selection.png');
         this.load.image('lock', 'assets/GameSprites/Precarga/lock.png');
     }
 
+    /**
+     * Crea y muestra todos los elementos de la interfaz de selección de niveles.
+     * Configura fondo, música, botones de mundos y panel de información.
+     */
     create(){
         if (window.updateWebStatus) {
             window.updateWebStatus({
@@ -90,6 +123,10 @@ class LevelSelection extends Phaser.Scene
         );
     }
 
+    /**
+     * Crea la interfaz de usuario principal.
+     * Genera botones de mundos, panel y elementos informativos.
+     */
     createUI() {
         // Calcular dimensiones de cada zona (3 partes iguales)
         const screenWidth = this.cameras.main.width;
@@ -229,6 +266,9 @@ class LevelSelection extends Phaser.Scene
         this.createProgressionInfo();
     }
 
+    /**
+     * Crea y muestra información sobre el progreso del jugador
+     */
     createProgressionInfo() {
         // Agregar texto informativo sobre progreso
         const progression = saveManager.getCurrentProgression();
@@ -263,6 +303,10 @@ class LevelSelection extends Phaser.Scene
         ).setOrigin(0.5);
     }
 
+    /**
+     * Crea el panel de información de mundo (inicialmente oculto).
+     * Genera panel modal con detalles de nivel y jefe del mundo seleccionado.
+     */
     createWorldPanel() {
         const screenWidth = this.cameras.main.width;
         const screenHeight = this.cameras.main.height;
@@ -355,6 +399,10 @@ class LevelSelection extends Phaser.Scene
         this.levelButtonsContainer = this.add.container(0, 0).setDepth(103).setVisible(false);
     }
 
+    /**
+     * Crea botones para todos los niveles del juego.
+     * Inicializa botones de niveles y los organiza en un contenedor.
+     */
     createLevelButtons() {
         // Definir todos los niveles del juego
         const allLevels = [
@@ -409,7 +457,11 @@ class LevelSelection extends Phaser.Scene
         });
     }
 
-    // Método para verificar si un nivel está desbloqueado
+    /**
+     * Verifica si un nivel está desbloqueado según el progreso guardado
+     * @param {string} levelKey - Clave identificadora del nivel
+     * @returns {boolean} True si el nivel está desbloqueado, false en caso contrario
+     */
     checkIfLevelUnlocked(levelKey) {
         if (levelKey === 'Nivel_T') return true; // Tutorial siempre disponible
         
@@ -432,7 +484,11 @@ class LevelSelection extends Phaser.Scene
         return false;
     }
 
-    // Método auxiliar para aclarar colores
+    /**
+     * Aclara un color hexadecimal sumando un valor a cada componente RGB
+     * @param {number} color - Color en formato hexadecimal (0xRRGGBB)
+     * @returns {number} Color aclarado en formato hexadecimal
+     */
     lightenColor(color) {
         const r = Math.min(255, ((color >> 16) & 0xFF) + 40);
         const g = Math.min(255, ((color >> 8) & 0xFF) + 40);
@@ -440,6 +496,10 @@ class LevelSelection extends Phaser.Scene
         return (r << 16) | (g << 8) | b;
     }
 
+    /**
+     * Abre el panel de información de un mundo específico
+     * @param {Object} world - Datos del mundo seleccionado
+     */
     openWorldPanel(world) {
         this.panelOpen = true;
         this.selectedWorld = world;
@@ -549,7 +609,10 @@ class LevelSelection extends Phaser.Scene
         this.showWorldLevelButtons(world);
     }
 
-    // Mostrar botones de niveles del mundo
+    /**
+     * Muestra los botones de nivel y jefe correspondientes al mundo seleccionado
+     * @param {Object} world - Datos del mundo seleccionado
+     */
     showWorldLevelButtons(world) {
         // Mostrar el contenedor de botones
         this.levelButtonsContainer.setVisible(true);
@@ -647,6 +710,10 @@ class LevelSelection extends Phaser.Scene
         });
     }
 
+    /**
+     * Cierra el panel de información del mundo.
+     * Restaura la interactividad de los botones principales.
+     */
     closeWorldPanel() {
         this.panelOpen = false;
         
@@ -724,22 +791,35 @@ class LevelSelection extends Phaser.Scene
         this.closePanelButton.setVisible(false);
     }
 
+    /**
+     * Inicia la escena del tutorial
+     */
     playTutorial() {
         this.startScene(this.tutorialName);
     }
 
+    /**
+     * Inicia el nivel del mundo seleccionado
+     */
     playLevel() {
         if (this.selectedWorld) {
             this.startScene(this.selectedWorld.levelKey);
         }
     }
 
+    /**
+     * Inicia el jefe del mundo seleccionado
+     */
     playBossLevel() {
         if (this.selectedWorld) {
             this.startScene(this.selectedWorld.bossKey);
         }
     }
 
+    /**
+     * Inicia una escena específica con transición
+     * @param {string} sceneKey - Clave de la escena a iniciar
+     */
     startScene(sceneKey) {
         // Ocultar todos los botones de nivel antes de la transición
         this.levelButtonsMap.forEach((data, key) => {
@@ -774,6 +854,9 @@ class LevelSelection extends Phaser.Scene
         );
     }
     
+    /**
+     * Regresa al menú principal con transición
+     */
     returnToMainMenu() {
         // Ocultar todos los botones de nivel
         this.levelButtonsMap.forEach((data, key) => {
@@ -803,6 +886,11 @@ class LevelSelection extends Phaser.Scene
         );
     }
 
+    /**
+     * Obtiene el nombre legible para mostrar de un nivel
+     * @param {string} levelKey - Clave identificadora del nivel
+     * @returns {string} Nombre para mostrar del nivel
+     */
     getLevelDisplayName(levelKey) {
         const displayNames = {
             'Nivel_R': 'Roma',
@@ -814,10 +902,6 @@ class LevelSelection extends Phaser.Scene
         };
     
         return displayNames[levelKey] || levelKey;
-    }
-    
-    update() {
-        // Lógica de actualización si es necesaria
     }
 }
 export default LevelSelection;

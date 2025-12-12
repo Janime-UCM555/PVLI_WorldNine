@@ -1,14 +1,39 @@
+/**
+ * Importación de la clase para los botones
+ * @module gameObjects/UI/Button
+ */
 import Button from '../../gameObjects/UI/Button.js';
+
+/**
+ * Importación de la clase Mario
+ * @module gameObjects/Player/Mario
+ */
 import Mario from '../../gameObjects/Player/Mario.js';
+
+/**
+ * Importación de la clase de los PowerUps y los tipos de PowerUps
+ * @module gameObjects/PowerUps/PowerUps
+ */
 import { PowerUp, POWERUP_TYPES } from '../../gameObjects/PowerUps/PowerUps.js';
 
 const B_SPACING = 100;
 
+/**
+ * Escena de prueba que demuestra el funcionamiento de todos los power-ups del juego
+ * @extends Phaser.Scene
+ */
 class MapScene extends Phaser.Scene {
+  /**
+   * Constructor de la escena MapScene.
+   * Inicializa la escena con clave 'MapScene'.
+   */
   constructor() {
     super({ key: 'MapScene' });
   }
 
+  /**
+   * Precarga los recursos necesarios para la escena.
+   */
   preload() {
     // --- Power-Ups ---
     this.load.image('star', '../../../assets/GameSprites/PowerUps/star.png');
@@ -19,6 +44,10 @@ class MapScene extends Phaser.Scene {
     this.load.image('mushroom', '../../../assets/GameSprites/PowerUps/mushroom.png');
   }
 
+  /**
+   * Crea y configura todos los elementos de la escena.
+   * Inicializa física, jugador, power-ups y elementos de UI.
+   */
   create() {
     const w = this.cameras.main.width;
     const h = this.cameras.main.height;
@@ -85,12 +114,24 @@ class MapScene extends Phaser.Scene {
     this.scale.on('leaveFullscreen', () => { this.UIResize(this.scale.gameSize.width, this.scale.gameSize.height); });
   }
 
-  // Spawner simple (tu PowerUp ya añade físicas y movimiento)
+   /**
+   * Genera un power-up específico en las coordenadas dadas
+   * @param {number} x - Posición X en píxeles
+   * @param {number} y - Posición Y en píxeles
+   * @param {string} type - Tipo de power-up (de POWERUP_TYPES)
+   * @param {string} textureKey - Clave de textura para el power-up
+   * @returns {Phaser.GameObjects.Group} Grupo de power-ups actualizado
+   */
   spawnPowerUp(x, y, type, textureKey) {
     this.powerups.add(new PowerUp(this, x, y, type, textureKey));
     return this.powerups;
   }
 
+  /**
+   * Recalcula y reposiciona elementos de UI al redimensionar la ventana
+   * @param {number} width - Nuevo ancho de la pantalla
+   * @param {number} height - Nuevo alto de la pantalla
+   */
   UIResize(width, height) {
     this.ui.setPosition(width / 2, height / 2);
     this.mario.setPosition(width - 50, height - 50);
@@ -116,6 +157,11 @@ class MapScene extends Phaser.Scene {
      if(this.physics?.world) this.physics.world.setBounds(0, 0, width, height);
   }
 
+  /**
+   * Actualización de la escena cada frame
+   * @param {number} time - Tiempo actual del juego en milisegundos
+   * @param {number} delta - Tiempo transcurrido desde el último frame
+   */
   update(time, delta) {
     if (this.mario){
       this.mario.update(time, delta);

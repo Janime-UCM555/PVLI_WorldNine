@@ -1,3 +1,6 @@
+/**
+ * @fileoverview Importaciones necesarias para el flujo de escenas del juego.
+ */
 import PreloadScene from './Scenes/Titulo/PreloadScene.js';
 import MainMenu from './Scenes/Titulo/MainMenu.js';
 import LevelSelection from './Scenes/Titulo/LevelSelection.js';

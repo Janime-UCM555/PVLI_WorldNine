@@ -1,7 +1,13 @@
-// HorusBoss.js
-// Boss Horus basado en viento y columnas, usando BossBase y siguiendo a Mario.
-
+/**
+ * Importación de la clase madre y de los estados del boss
+ * @module BaseBoss
+ */
 import BossBase, { BOSS_STATE } from "./BaseBoss.js";
+
+/**
+ * @fileoverview Objetos que Horus puede spawnear
+ * @module BossesObjects/HorusBoss
+ */
 import Koopa from "../Enemies/Koopa.js";
 import Pokey from "../Enemies/Pokey.js";
 import HorusColumn from "./HorusColums.js";

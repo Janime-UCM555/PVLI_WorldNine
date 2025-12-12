@@ -1,4 +1,13 @@
+/**
+ * Clase que gestiona el sistema de guardado y carga de progreso del juego.
+ * Maneja el almacenamiento persistente de datos de niveles, puntuaciones y progreso de desbloqueo.
+ * @class SaveManager
+ */
 class SaveManager {
+    /**
+     * Constructor de la clase SaveManager.
+     * Inicializa las claves de guardado, datos por defecto y carga datos existentes.
+     */
     constructor() {
         this.saveKey = 'marioSaveData';
         this.defaultData = {
@@ -20,6 +29,10 @@ class SaveManager {
         this.bossLevels = ['BossJ', 'BossH', 'BossHades'];
     }
 
+    /**
+     * Carga los datos guardados desde localStorage.
+     * Recupera y parsea los datos guardados, asegurando que existan todas las propiedades requeridas.
+     */
     load() {
         try {
             const savedData = localStorage.getItem(this.saveKey);
@@ -44,6 +57,10 @@ class SaveManager {
         }
     }
 
+    /**
+     * Guarda los datos actuales en localStorage.
+     * Serializa y almacena el estado actual del progreso del juego.
+     */
     save() {
         try {
             localStorage.setItem(this.saveKey, JSON.stringify(this.data));
@@ -52,6 +69,12 @@ class SaveManager {
         }
     }
 
+    /**
+     * Actualiza la puntuación y progreso de un nivel
+     * @param {string} levelKey - Clave identificadora del nivel
+     * @param {number} score - Puntuación obtenida
+     * @param {number} purpleCoins - Cantidad de monedas moradas recolectadas
+     */
     updateLevelScore(levelKey, score, purpleCoins) {
         if (!this.data.levels[levelKey]) {
             if (levelKey === this.tutorial) {
@@ -79,7 +102,10 @@ class SaveManager {
         this.save();
     }
 
-    // Marcar nivel como completado
+    /**
+     * Marca un nivel como completado
+     * @param {string} levelKey - Clave identificadora del nivel a marcar como completado
+     */
     markLevelCompleted(levelKey) {
         if (!this.data.levels[levelKey]) {
             if (levelKey !== this.tutorial) {
@@ -99,7 +125,10 @@ class SaveManager {
         this.save();
     }
 
-    // Desbloquear niveles siguientes basados en progreso
+    /**
+     * Desbloquea los niveles siguientes basados en el progreso lineal
+     * @param {string} completedLevel - Clave del nivel recién completado
+     */
     unlockNextLevels(completedLevel) {
         const unlockMap = {
             'Nivel_T': ['Nivel_R'], // Completar Nivel_T desbloquea Nivel_R
@@ -119,16 +148,34 @@ class SaveManager {
         }
     }
 
-    // Verificar si el nivel está en la lista de niveles desbloqueados
+    /**
+     * Verifica si un nivel está desbloqueado
+     * @param {string} levelKey - Clave identificadora del nivel
+     * @returns {boolean} True si el nivel está desbloqueado, false en caso contrario
+     */
     isLevelUnlocked(levelKey) {
         return this.data.progress.unlockedLevels.includes(levelKey);
     }
 
+    /**
+     * Obtiene los datos de progreso de un nivel específico
+     * @param {string} levelKey - Clave identificadora del nivel
+     * @returns {Object} Datos del nivel (highScore, purpleCoins, completed)
+     */
     getLevelData(levelKey) {
         return this.data.levels[levelKey] || { highScore: 0, purpleCoins: 0, completed: false };
     }
 
-    // Obtener el progreso lineal actual
+    /**
+     * Obtiene el progreso lineal actual del jugador
+     * @returns {Object} Información sobre el siguiente nivel a completar y progreso general
+     * @property {string|null} lastCompleted - Último nivel completado
+     * @property {string|null} nextToUnlock - Siguiente nivel a desbloquear
+     * @property {string|null} nextToUnlockName - Nombre del siguiente nivel
+     * @property {number} currentStage - Número del nivel actual en la progresión
+     * @property {number} totalStages - Total de niveles en el juego
+     * @property {string} displayText - Texto descriptivo para mostrar al jugador
+     */
     getCurrentProgression() {
         // Orden lineal de desbloqueo con nombres descriptivos
         const progressionPath = [
@@ -170,11 +217,18 @@ class SaveManager {
         };
     }
 
+    /**
+     * Reinicia todos los datos guardados a los valores por defecto
+     */
     resetAllData() {
         this.data = JSON.parse(JSON.stringify(this.defaultData));
         this.save();
     }
 
+    /**
+     * Desbloquea todos los niveles y jefes, marcándolos como completados con puntuaciones máximas.
+     * Función de depuración/cheat para acceder a todo el contenido.
+     */
     unlockAllLevelsAndBosses() {
         // Todos los niveles y jefes en orden de progresión
         const allLevels = [
