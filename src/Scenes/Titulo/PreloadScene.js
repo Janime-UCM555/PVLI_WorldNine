@@ -274,6 +274,8 @@ class PreloadScene extends Phaser.Scene {
     this.load.image('bg_tileset_BH', 'GameSprites/Tilesets/Hell_BG.png');
     this.load.image('bg_tileset_Bosque', 'GameSprites/Tilesets/Forest_BG.png');
     this.load.image('bg_tileset_Titan', 'GameSprites/Tilesets/Titan_BG.png');
+    this.load.image('bg_tileset_Greece', 'GameSprites/Tilesets/Greece_BG.png');
+    this.load.image('bg_tileset_Sky', 'GameSprites/Tilesets/Sky_BG.png');
     this.load.spritesheet('barra_tileset', 'GameSprites/Items/barraFin.png', {
         frameWidth: 64,
         frameHeight: 32
@@ -335,7 +337,7 @@ class PreloadScene extends Phaser.Scene {
 
         // === MÚSICA ===
         this.load.audio('tutorial_music', 'sonidos/BGM/tutorial_theme.mp3');
-        this.load.audio('greece_music', 'sonidos/BGM/greece_music.mp3');
+        this.load.audio('greece_music', 'sonidos/BGM/greece_theme.mp3');
         this.load.audio('level_select', 'sonidos/BGM/level_select.mp3');
         this.load.audio('level_music', 'sonidos/BGM/level_theme.mp3');
         this.load.audio('Boss_Jupiter', 'sonidos/BGM/BossJ.mp3');

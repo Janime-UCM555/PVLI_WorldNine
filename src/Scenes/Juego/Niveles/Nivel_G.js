@@ -19,6 +19,13 @@ class Nivel_G extends GameScenes {
      */
     constructor() {
         super('Nivel_G', () => {
+            const tilesetBGD = this.map?.addTilesetImage('Greece_BG', 'bg_tileset_Greece');
+            const tilesetBGS = this.map?.addTilesetImage('Sky_BG', 'bg_tileset_Sky');
+            const tilesetBGP = this.map?.addTilesetImage('MapaTiles', 'mi_tileset');
+
+            // Crear capa de fondo del Coliseo
+            let bgLayer = this.map?.createLayer('CapaFondo', [tilesetBGD, tilesetBGP, tilesetBGS], 0, 0);
+
             // Configuración de capas de fondo para Grecia
             // (Actualmente comentado, puede añadirse si se necesita)
         }, false);
