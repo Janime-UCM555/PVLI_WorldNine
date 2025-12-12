@@ -62,7 +62,7 @@ class Nivel_D extends GameScenes {
             this.levelMusic.stop();
         }
         
-        spawnPowerUp(this, 50, 625, POWERUP_TYPES.HAMMER);
+        // spawnPowerUp(this, 50, 625, POWERUP_TYPES.HAMMER);
     }
 }
 

@@ -52,8 +52,8 @@ export const spawnPowerUp = (scene, x, y, type) =>
     }
 
     // Velocidades iniciales para simular que sale disparado del bloque
-    power.setVelocityX(power.body.velocity.x * 0.09315);
-    power.setVelocityY(-power.body.velocity.x / 2);
+    power?.setVelocityX(power.body.velocity.x * 0.09315);
+    power?.setVelocityY(-power.body.velocity.x / 2);
 
     // Añadir al grupo de PowerUps de la escena. En caso de no existir, mostrar advertencia.
     scene.powerups?.add(power) || console.warn("El grupo 'powerups' no existe en la escena.");

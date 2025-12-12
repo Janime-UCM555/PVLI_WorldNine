@@ -4,6 +4,7 @@
  */
 
 import GameScenes from '../GameScenes.js';
+import spawnPowerUp from '../../../gameObjects/PowerUps/PowerUpSpawn.js';
 
 /**
  * @class Nivel_R
@@ -53,6 +54,7 @@ class Nivel_R extends GameScenes {
             this.levelMusic = this.sound.add('level_music', { loop: true, volume: 1 });
             this.levelMusic.play();
         }
+        spawnPowerUp(this, 50, 625, POWERUP_TYPES.HAMMER);
     }
 }
 
