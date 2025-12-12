@@ -85,7 +85,7 @@ export default class BossH extends GameScenes{
             groundLayer: this.groundLayer,
 
         });
-
+//
         this.pilar = new Pilar(this,-1503,625,'pilar_arena');
     }
     
@@ -127,23 +127,21 @@ export default class BossH extends GameScenes{
             .setFontSize(fontSize + 'px')
             .setScrollFactor(0);
     }
-    ganasPartida()
-    {
-        const fadeTween = this.tweens.add({
-            targets: this.pilar,
-            alpha: 0,
-            scaleX: 0.4,
-            scaleY: 0.4,
-            duration: 1000,
-            ease: 'Cubic',
-            onComplete: () => {
-                // Destruir el pilar cuando esté completamente transparente
-                if (this.pilar) {
-                    this.pilar.destroy();
+    ganasPartida() {
+
+        if (this.barraFinLayer) {
+            this.barraFinLayer.getChildren().forEach(barra => {
+                // Si BarraFin es un Matter sprite:
+                if (barra.body && barra.setCollidesWith) {
+                barra.setCollidesWith([]); // que no choque con nada
                 }
-            }
-        });
-        super.ganasPartida();
+                if (barra.body && barra.body.collisionFilter) {
+                barra.body.collisionFilter.mask = 0; // por si acaso
+                }
+            });
+        }
+
+        this.horus.defeat();
     }
     timerMethod()
     {
@@ -158,22 +156,5 @@ export default class BossH extends GameScenes{
             this.bossIntroStarted = true;
             this.pilar.setStatic(false);
         }
-    }
-
-    ganasPartida() {
-
-        if (this.barraFinLayer) {
-            this.barraFinLayer.getChildren().forEach(barra => {
-                // Si BarraFin es un Matter sprite:
-                if (barra.body && barra.setCollidesWith) {
-                barra.setCollidesWith([]); // que no choque con nada
-                }
-                if (barra.body && barra.body.collisionFilter) {
-                barra.body.collisionFilter.mask = 0; // por si acaso
-                }
-            });
-        }
-        super.ganasPartida();
-        this.horus.defeat();
     }
 }
