@@ -176,7 +176,7 @@ export default class BossH extends GameScenes{
                 }
             });
         }
-
+        this.pilar.velocidadPilar = 0;
         this.horus.defeat();
     }
 
