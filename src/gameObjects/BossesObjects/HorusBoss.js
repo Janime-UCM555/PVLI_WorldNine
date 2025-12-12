@@ -248,6 +248,13 @@ export default class HorusBoss extends BossBase {
                     onComplete: () => {
                         this.changeState(BOSS_STATE.NEUTRAL);
                         this.player.setStatic(false); // liberar a Mario
+                        if ((!this.scene.levelMusic || !this.scene.levelMusic.isPlaying) && !this.scene.endTimer) {
+                            this.scene.levelMusic = this.scene.sound.add('Boss_Horus', { loop: false, volume: 1 });
+                            this.scene.levelMusic.play();
+                        } else if (this.scene.levelMusic) {
+                            this.scene.levelMusic.stop();
+                        }
+                        //Boss_Horus
                         this.lastAttackX = this.player ? this.player.x : 0;
                     },
                 });
