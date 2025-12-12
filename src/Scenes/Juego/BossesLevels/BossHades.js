@@ -186,7 +186,7 @@ class BossHades extends GameScenes {
                 }
             }
         });
-
+        this.pilar.velocidadPilar = 0;
         // Llamar a la lógica de victoria de la clase base
         super.ganasPartida();
     }
