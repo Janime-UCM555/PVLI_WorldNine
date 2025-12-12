@@ -136,7 +136,31 @@ class PreloadScene extends Phaser.Scene {
             frameWidth: 32,
             frameHeight: 56,
         });
+        this.load.spritesheet('mario_run_dj', 'GameSprites/Characters/Mario/Mario_run_DJ.png', {
+            frameWidth: 32,
+            frameHeight: 56,
+        });
+        this.load.spritesheet('mario_run_hammer', 'GameSprites/Characters/Mario/Mario_run_Hammer.png', {
+            frameWidth: 32,
+            frameHeight: 56,
+        });
+        this.load.spritesheet('mario_run_jump', 'GameSprites/Characters/Mario/Mario_run_Jump.png', {
+            frameWidth: 32,
+            frameHeight: 56,
+        });
         this.load.spritesheet('mario_jump', 'GameSprites/Characters/Mario/Mario_jump.png', {
+            frameWidth: 48,
+            frameHeight: 56,
+        });
+        this.load.spritesheet('mario_jump_dj', 'GameSprites/Characters/Mario/Mario_jump_DJ.png', {
+            frameWidth: 48,
+            frameHeight: 56,
+        });
+        this.load.spritesheet('mario_jump_hammer', 'GameSprites/Characters/Mario/Mario_jump_Hammer.png', {
+            frameWidth: 48,
+            frameHeight: 56,
+        });
+        this.load.spritesheet('mario_jump_jump', 'GameSprites/Characters/Mario/Mario_jump_Jump.png', {
             frameWidth: 48,
             frameHeight: 56,
         });
@@ -152,7 +176,23 @@ class PreloadScene extends Phaser.Scene {
             frameWidth: 48,
             frameHeight: 56,
         });
+        this.load.spritesheet('mario_victory_hammer', 'GameSprites/Characters/Mario/Mario_victory_Hammer.png', {
+            frameWidth: 48,
+            frameHeight: 56,
+        });
         this.load.spritesheet('mario_fall', 'GameSprites/Characters/Mario/Mario_fall.png', {
+            frameWidth: 48,
+            frameHeight: 56
+        });
+        this.load.spritesheet('mario_fall_dj', 'GameSprites/Characters/Mario/Mario_fall_DJ.png', {
+            frameWidth: 48,
+            frameHeight: 56
+        });
+        this.load.spritesheet('mario_fall_hammer', 'GameSprites/Characters/Mario/Mario_fall_Hammer.png', {
+            frameWidth: 48,
+            frameHeight: 56
+        });
+        this.load.spritesheet('mario_fall_jump', 'GameSprites/Characters/Mario/Mario_fall_Jump.png', {
             frameWidth: 48,
             frameHeight: 56
         });
@@ -160,15 +200,31 @@ class PreloadScene extends Phaser.Scene {
             frameWidth: 32,
             frameHeight: 56
         });
+        this.load.spritesheet('mario_walk_hammer', 'GameSprites/Characters/Mario/Mario_walk_Hammer.png', {
+            frameWidth: 32,
+            frameHeight: 56
+        });
         this.load.spritesheet('mario_throw', 'GameSprites/Characters/Mario/Mario_hammer_throw.png', {
             frameWidth: 48,
-            frameHeight: 55,
+            frameHeight: 56,
         });
         this.load.spritesheet('mario_bubble', 'GameSprites/Characters/Mario/Mario_bubble.png', {
             frameWidth: 72,
             frameHeight: 72,
         });
         this.load.spritesheet('mario_idle', 'GameSprites/Characters/Mario/Mario_idle.png', {
+            frameWidth: 32,
+            frameHeight: 56,
+        });
+        this.load.spritesheet('mario_idle_dj', 'GameSprites/Characters/Mario/Mario_idle_DJ.png', {
+            frameWidth: 32,
+            frameHeight: 56,
+        });
+        this.load.spritesheet('mario_idle_hammer', 'GameSprites/Characters/Mario/Mario_idle_Hammer.png', {
+            frameWidth: 32,
+            frameHeight: 56,
+        });
+        this.load.spritesheet('mario_idle_jump', 'GameSprites/Characters/Mario/Mario_idle_Jump.png', {
             frameWidth: 32,
             frameHeight: 56,
         });
@@ -448,8 +504,44 @@ class PreloadScene extends Phaser.Scene {
             repeat: -1
         });
         this.anims.create({
+            key: 'mario_run_dj',
+            frames: this.anims.generateFrameNumbers('mario_run_dj', { start: 0, end: 3 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mario_run_hammer',
+            frames: this.anims.generateFrameNumbers('mario_run_hammer', { start: 0, end: 3 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mario_run_jump',
+            frames: this.anims.generateFrameNumbers('mario_run_jump', { start: 0, end: 3 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
             key: 'mario_idle',
             frames: this.anims.generateFrameNumbers('mario_idle', { start: 0, end: 2 }),
+            frameRate: 1,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mario_idle_dj',
+            frames: this.anims.generateFrameNumbers('mario_idle_dj', { start: 0, end: 2 }),
+            frameRate: 1,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mario_idle_hammer',
+            frames: this.anims.generateFrameNumbers('mario_idle_hammer', { start: 0, end: 2 }),
+            frameRate: 1,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mario_idle_jump',
+            frames: this.anims.generateFrameNumbers('mario_idle_jump', { start: 0, end: 2 }),
             frameRate: 1,
             repeat: -1
         });
@@ -460,8 +552,44 @@ class PreloadScene extends Phaser.Scene {
             repeat: -1
         });
         this.anims.create({
+            key: 'mario_jump_dj',
+            frames: this.anims.generateFrameNumbers('mario_jump_dj', { start: 0, end: 1 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mario_jump_hammer',
+            frames: this.anims.generateFrameNumbers('mario_jump_hammer', { start: 0, end: 1 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mario_jump_jump',
+            frames: this.anims.generateFrameNumbers('mario_jump_jump', { start: 0, end: 1 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
             key: 'mario_fall',
             frames: this.anims.generateFrameNumbers('mario_fall', { start: 0, end: 1 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mario_fall_dj',
+            frames: this.anims.generateFrameNumbers('mario_fall_dj', { start: 0, end: 1 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mario_fall_hammer',
+            frames: this.anims.generateFrameNumbers('mario_fall_hammer', { start: 0, end: 1 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mario_fall_jump',
+            frames: this.anims.generateFrameNumbers('mario_fall_jump', { start: 0, end: 1 }),
             frameRate: 8,
             repeat: -1
         });
@@ -480,6 +608,12 @@ class PreloadScene extends Phaser.Scene {
         this.anims.create({
             key: 'mario_victory',
             frames: this.anims.generateFrameNumbers('mario_victory', { start: 0, end: 0 }),
+            frameRate: 8,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'mario_victory_hammer',
+            frames: this.anims.generateFrameNumbers('mario_victory_hammer', { start: 0, end: 0 }),
             frameRate: 8,
             repeat: -1
         });
