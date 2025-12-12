@@ -41,9 +41,9 @@ export default class BossH extends GameScenes{
         // ---------------------------------------------------------
         // MARIO
         // ---------------------------------------------------------
-        spawnPowerUp(this,32 * 5, 32 * 23, POWERUP_TYPES.MUSHROOM);
         this.jugador = new Mario(this, 32 * 5, 32 * 23, "mario_run", 5, -4, true);
         super.create();
+        spawnPowerUp(this,32 * 5, 32 * 23, POWERUP_TYPES.MUSHROOM);
 
         // ---------------------------------------------------------
         // ✨ LANES desde el TILEMAP
@@ -86,7 +86,7 @@ export default class BossH extends GameScenes{
 
         });
 
-        this.pilar = new Pilar(this,-903,625,'pilar_arena');
+        this.pilar = new Pilar(this,-1503,625,'pilar_arena');
     }
     
 
