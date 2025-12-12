@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="322" height="26" tilewidth="32" tileheight="32" infinite="0" nextlayerid="22" nextobjectid="518">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="322" height="26" tilewidth="32" tileheight="32" infinite="0" nextlayerid="22" nextobjectid="668">
+ <editorsettings>
+  <export target="TestObjetos.json" format="json"/>
+ </editorsettings>
  <tileset firstgid="1" name="MapaTiles" tilewidth="32" tileheight="32" tilecount="888" columns="8">
   <image source="../assets/GameSprites/Tilesets/base_tileset.png" width="256" height="3579"/>
   <tile id="0">
@@ -2225,7 +2228,7 @@
   <object id="55" gid="1594" x="480" y="576" width="32" height="32"/>
   <object id="56" gid="1594" x="512" y="576" width="32" height="32"/>
   <object id="57" gid="1594" x="544" y="576" width="32" height="32"/>
-  <object id="58" gid="1594" x="561" y="608" width="32" height="32"/>
+  <object id="58" gid="1594" x="576" y="608" width="32" height="32"/>
  </objectgroup>
  <objectgroup id="21" name="Enemigos">
   <object id="501" name="Koopa" gid="1593" x="672" y="704" width="41" height="60"/>
@@ -2249,9 +2252,7 @@
   </object>
  </objectgroup>
  <objectgroup id="11" name="BarraFin">
-  <object id="395" gid="572" x="3296" y="416" width="32" height="32"/>
-  <object id="396" gid="572" x="3328" y="416" width="32" height="32"/>
-  <object id="423" gid="571" x="3264" y="416" width="32" height="32"/>
+  <object id="571" gid="1612" x="3264" y="416" width="64" height="32"/>
  </objectgroup>
  <objectgroup id="14" name="PauseBlocks">
   <object id="310" name="BloquePausa" gid="374" x="2624" y="512" width="32" height="32"/>
@@ -2264,7 +2265,33 @@
   <object id="459" name="Pinchos" gid="372" x="544" y="704" width="32" height="32"/>
   <object id="460" name="Pinchos" gid="372" x="512" y="704" width="32" height="32"/>
   <object id="461" name="Pinchos" gid="372" x="480" y="704" width="32" height="32"/>
-  <object id="483" name="Pinchos" gid="2147484021" x="1824" y="544" width="32" height="32"/>
+  <object id="633" name="Pinchos" gid="372" x="768" y="544" width="32" height="32" rotation="180"/>
+  <object id="637" name="Pinchos" gid="372" x="1504" y="448" width="32" height="32" rotation="90"/>
+  <object id="638" name="Pinchos" gid="372" x="1504" y="480" width="32" height="32" rotation="90"/>
+  <object id="639" name="Pinchos" gid="372" x="1504" y="512" width="32" height="32" rotation="90"/>
+  <object id="640" name="Pinchos" gid="372" x="1504" y="544" width="32" height="32" rotation="90"/>
+  <object id="641" name="Pinchos" gid="372" x="1504" y="576" width="32" height="32" rotation="90"/>
+  <object id="642" name="Pinchos" gid="372" x="1504" y="608" width="32" height="32" rotation="90"/>
+  <object id="643" name="Pinchos" gid="372" x="1504" y="640" width="32" height="32" rotation="90"/>
+  <object id="644" name="Pinchos" gid="372" x="1504" y="672" width="32" height="32" rotation="90"/>
+  <object id="645" name="Pinchos" gid="372" x="1504" y="704" width="32" height="32" rotation="90"/>
+  <object id="646" name="Pinchos" gid="372" x="1504" y="736" width="32" height="32" rotation="90"/>
+  <object id="647" name="Pinchos" gid="372" x="1504" y="768" width="32" height="32" rotation="90"/>
+  <object id="648" name="Pinchos" gid="372" x="1504" y="800" width="32" height="32" rotation="90"/>
+  <object id="649" name="Pinchos" gid="372" x="1664" y="576" width="32" height="32" rotation="270"/>
+  <object id="650" name="Pinchos" gid="372" x="1664" y="608" width="32" height="32" rotation="270"/>
+  <object id="651" name="Pinchos" gid="372" x="1664" y="640" width="32" height="32" rotation="270"/>
+  <object id="652" name="Pinchos" gid="372" x="1664" y="672" width="32" height="32" rotation="270"/>
+  <object id="653" name="Pinchos" gid="372" x="1664" y="704" width="32" height="32" rotation="270"/>
+  <object id="654" name="Pinchos" gid="372" x="1664" y="736" width="32" height="32" rotation="270"/>
+  <object id="655" name="Pinchos" gid="372" x="1664" y="768" width="32" height="32" rotation="270"/>
+  <object id="656" name="Pinchos" gid="372" x="1664" y="800" width="32" height="32" rotation="270"/>
+  <object id="657" name="Pinchos" gid="372" x="1664" y="832" width="32" height="32" rotation="270"/>
+  <object id="658" name="Pinchos" gid="372" x="1824" y="544" width="32" height="32"/>
+  <object id="662" name="Pinchos" gid="1073742196" x="704" y="576" width="32" height="32"/>
+  <object id="665" name="Pinchos" gid="372" x="864" y="576" width="32" height="32" rotation="-90"/>
+  <object id="666" name="Pinchos" gid="372" x="768" y="544" width="32" height="32" rotation="90"/>
+  <object id="667" name="Pinchos" gid="2147484020" x="800" y="544" width="32" height="32" rotation="90"/>
  </objectgroup>
  <objectgroup id="20" name="OneWays">
   <object id="462" gid="574" x="637.485" y="480" width="32" height="32"/>
@@ -2319,8 +2346,8 @@
  </objectgroup>
  <objectgroup id="17" name="Impulsos">
   <object id="485" name="ImpulsoB" gid="1620" x="1504" y="416" width="32" height="32"/>
-  <object id="486" name="ImpulsoM" gid="1623" x="1600" y="416" width="32" height="32"/>
-  <object id="487" name="ImpulsoA" gid="1626" x="1728" y="416" width="32" height="32"/>
+  <object id="486" name="ImpulsoM" gid="1623" x="1664" y="416" width="32" height="32"/>
+  <object id="487" name="ImpulsoA" gid="1626" x="1824" y="320" width="32" height="32"/>
  </objectgroup>
  <objectgroup id="18" name="CaminoMonedas">
   <object id="455" name="PasoMonedasArDer" gid="668" x="2016" y="512" width="32" height="32"/>
@@ -2329,41 +2356,284 @@
   <object id="458" name="PasoMonedasAbDer" gid="668" x="2240" y="384" width="32" height="32" rotation="90"/>
  </objectgroup>
  <objectgroup id="13" name="Bloques">
-  <object id="213" gid="369" x="3808" y="448" width="32" height="32">
+  <object id="213" gid="369" x="1920" y="352" width="32" height="32">
    <properties>
     <property name="Breakable" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="214" gid="369" x="3744" y="448" width="32" height="32">
+  <object id="214" gid="369" x="1856" y="352" width="32" height="32">
    <properties>
     <property name="Breakable" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="224" name="?" gid="370" x="3776" y="448" width="32" height="32">
+  <object id="437" gid="369" x="1824" y="448" width="32" height="32">
+   <properties>
+    <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="439" gid="369" x="1952" y="448" width="32" height="32">
+   <properties>
+    <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="518" gid="369" x="2400" y="448" width="32" height="32">
+   <properties>
+    <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="519" gid="369" x="2368" y="448" width="32" height="32">
+   <properties>
+    <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="520" gid="369" x="2432" y="448" width="32" height="32">
+   <properties>
+    <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="522" gid="369" x="1024" y="288" width="32" height="32">
+   <properties>
+    <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="523" gid="369" x="960" y="288" width="32" height="32">
+   <properties>
+    <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="524" name="?" gid="370" x="992" y="288" width="32" height="32">
    <properties>
     <property name="PowerUp" value="star"/>
     <property name="Spawn" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="289" name="?" gid="370" x="3776" y="544" width="32" height="32"/>
-  <object id="436" gid="369" x="3744" y="544" width="32" height="32">
+  <object id="526" gid="369" x="960" y="384" width="32" height="32">
    <properties>
     <property name="Breakable" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="437" gid="369" x="3712" y="544" width="32" height="32">
+  <object id="527" gid="369" x="928" y="384" width="32" height="32">
    <properties>
     <property name="Breakable" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="438" gid="369" x="3808" y="544" width="32" height="32">
+  <object id="529" gid="369" x="1056" y="384" width="32" height="32">
    <properties>
     <property name="Breakable" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="439" gid="369" x="3840" y="544" width="32" height="32">
+  <object id="530" gid="369" x="704" y="288" width="32" height="32">
    <properties>
     <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="531" gid="369" x="640" y="288" width="32" height="32">
+   <properties>
+    <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="532" name="?" gid="370" x="672" y="288" width="32" height="32">
+   <properties>
+    <property name="PowerUp" value="star"/>
+    <property name="Spawn" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="534" gid="369" x="640" y="384" width="32" height="32">
+   <properties>
+    <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="535" gid="369" x="608" y="384" width="32" height="32">
+   <properties>
+    <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="537" gid="369" x="736" y="384" width="32" height="32">
+   <properties>
+    <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="538" gid="369" x="864" y="288" width="32" height="32">
+   <properties>
+    <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="539" gid="369" x="800" y="288" width="32" height="32">
+   <properties>
+    <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="540" name="?" gid="370" x="832" y="288" width="32" height="32">
+   <properties>
+    <property name="PowerUp" value="star"/>
+    <property name="Spawn" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="542" gid="369" x="800" y="384" width="32" height="32">
+   <properties>
+    <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="543" gid="369" x="768" y="384" width="32" height="32">
+   <properties>
+    <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="545" gid="369" x="896" y="384" width="32" height="32">
+   <properties>
+    <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="546" gid="369" x="1184" y="288" width="32" height="32">
+   <properties>
+    <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="547" gid="369" x="1120" y="288" width="32" height="32">
+   <properties>
+    <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="548" name="?" gid="370" x="1152" y="288" width="32" height="32">
+   <properties>
+    <property name="PowerUp" value="star"/>
+    <property name="Spawn" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="550" gid="369" x="1120" y="384" width="32" height="32">
+   <properties>
+    <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="551" gid="369" x="1088" y="384" width="32" height="32">
+   <properties>
+    <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="553" gid="369" x="1216" y="384" width="32" height="32">
+   <properties>
+    <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="554" gid="369" x="1344" y="288" width="32" height="32">
+   <properties>
+    <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="555" gid="369" x="1280" y="288" width="32" height="32">
+   <properties>
+    <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="556" name="?" gid="370" x="1312" y="288" width="32" height="32">
+   <properties>
+    <property name="PowerUp" value="star"/>
+    <property name="Spawn" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="558" gid="369" x="1280" y="384" width="32" height="32">
+   <properties>
+    <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="559" gid="369" x="1248" y="384" width="32" height="32">
+   <properties>
+    <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="561" gid="369" x="1376" y="384" width="32" height="32">
+   <properties>
+    <property name="Breakable" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="572" name="?" gid="370" x="672" y="384" width="32" height="32">
+   <properties>
+    <property name="PowerUp" value="star"/>
+    <property name="Spawn" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="573" name="?" gid="370" x="704" y="384" width="32" height="32">
+   <properties>
+    <property name="PowerUp" value="star"/>
+    <property name="Spawn" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="574" name="?" gid="370" x="832" y="384" width="32" height="32">
+   <properties>
+    <property name="PowerUp" value="star"/>
+    <property name="Spawn" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="575" name="?" gid="370" x="864" y="384" width="32" height="32">
+   <properties>
+    <property name="PowerUp" value="star"/>
+    <property name="Spawn" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="576" name="?" gid="370" x="992" y="384" width="32" height="32">
+   <properties>
+    <property name="PowerUp" value="star"/>
+    <property name="Spawn" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="577" name="?" gid="370" x="1024" y="384" width="32" height="32">
+   <properties>
+    <property name="PowerUp" value="star"/>
+    <property name="Spawn" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="578" name="?" gid="370" x="1152" y="384" width="32" height="32">
+   <properties>
+    <property name="PowerUp" value="star"/>
+    <property name="Spawn" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="579" name="?" gid="370" x="1184" y="384" width="32" height="32">
+   <properties>
+    <property name="PowerUp" value="star"/>
+    <property name="Spawn" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="580" name="?" gid="370" x="1312" y="384" width="32" height="32">
+   <properties>
+    <property name="PowerUp" value="star"/>
+    <property name="Spawn" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="581" name="?" gid="370" x="1344" y="384" width="32" height="32">
+   <properties>
+    <property name="PowerUp" value="star"/>
+    <property name="Spawn" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="582" name="?" gid="370" x="1888" y="352" width="32" height="32">
+   <properties>
+    <property name="PowerUp" value="star"/>
+    <property name="Spawn" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="583" name="?" gid="370" x="1888" y="448" width="32" height="32">
+   <properties>
+    <property name="PowerUp" value="star"/>
+    <property name="Spawn" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="584" name="?" gid="370" x="1856" y="448" width="32" height="32">
+   <properties>
+    <property name="PowerUp" value="star"/>
+    <property name="Spawn" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="585" name="?" gid="370" x="1920" y="448" width="32" height="32">
+   <properties>
+    <property name="PowerUp" value="star"/>
+    <property name="Spawn" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="586" name="?" gid="370" x="2400" y="352" width="32" height="32">
+   <properties>
+    <property name="PowerUp" value="star"/>
+    <property name="Spawn" type="bool" value="true"/>
    </properties>
   </object>
  </objectgroup>
@@ -2413,7 +2683,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,185,194,186,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,185,194,186,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,213,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,210,212,0,0,0,209,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,185,195,304,197,188,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,185,186,0,185,196,194,196,195,194,195,194,195,195,196,194,186,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,185,194,194,196,194,194,186,0,0,0,0,0,0,0,0,0,0,0,0,0,0,203,198,197,199,207,0,0,0,0,0,0,0,0,0,0,0,244,195,196,196,195,196,186,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,187,303,195,304,199,197,199,199,198,197,197,199,199,197,199,188,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,187,0,0,0,0,0,303,196,186,0,0,0,0,185,186,0,0,0,0,0,0,304,199,197,197,207,0,0,0,0,0,185,196,194,194,196,196,304,199,197,198,198,197,188,0,0,185,194,195,195,195,196,196,195,196,195,194,195,196,304,197,198,197,199,198,197,199,198,198,197,198,199,199,198,188,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
