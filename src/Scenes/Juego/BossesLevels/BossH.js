@@ -75,7 +75,7 @@ export default class BossH extends GameScenes{
 
             laneYPositions: laneYPositions, 
 
-            columnSpacingX: 260,
+            columnSpacingX: 256,
 
             koopaTexture: "Koopa_walk_D",
             koopaSpeed: 3,
