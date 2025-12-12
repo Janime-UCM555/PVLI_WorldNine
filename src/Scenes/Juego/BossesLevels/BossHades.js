@@ -83,7 +83,7 @@ class BossHades extends GameScenes {
 
         // Música de combate contra jefe
         if ((!this.levelMusic || !this.levelMusic.isPlaying) && !this.endTimer) {
-            this.levelMusic = this.sound.add('Boss_Jupiter', { loop: false, volume: 1 });
+            this.levelMusic = this.sound.add('Boss_Hades', { loop: false, volume: 1 });
             this.levelMusic.play();
         } else if (this.levelMusic) {
             this.levelMusic.stop();

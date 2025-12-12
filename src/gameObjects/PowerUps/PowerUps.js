@@ -11,13 +11,13 @@ export const POWERUP_TYPES = {
   DASH: "dash",
   JUMP_BOOTS: "jump_boots"
 };
+
 import{
     CATEGORY_PLAYER,
     CATEGORY_TERRAIN,
     CATEGORY_POWERUP,
 } from "../collisionCategories.js"
 import Coins from "../LevelBlockObjects/Coins.js";
-// import Coins from "../LevelBlockObjects/Coins.js";
 
 /**
  * @typedef {'mushroom' | 'star' | 'hammer' | 'double_jump' | 'dash' | 'jump_boots'} PowerUpType
@@ -27,7 +27,7 @@ import Coins from "../LevelBlockObjects/Coins.js";
  * Velocidad horizontal básica de los Power-Ups.
  * @constant {number}
  */
-const POWERUP_SPEED = 50;  // Velocidad horizontal básica de los Power-Ups
+const POWERUP_SPEED = 50;
 
 /**
  * Clase base para todos los Power-Ups del juego.
@@ -37,6 +37,7 @@ const POWERUP_SPEED = 50;  // Velocidad horizontal básica de los Power-Ups
  * - Detectar colisiones laterales y rebotar en paredes.
  * - Gestionar la recogida genérica del power-up por el jugador.
  * - Activar/desactivar estados del jugador (estrella, Super Mario, etc.).
+ * @extends Phaser.GameObjects.Sprite
  */
 export class PowerUp extends Phaser.GameObjects.Sprite {
   /**
@@ -117,7 +118,7 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
     };
 
     const compoundBody = M.Body.create({
-      parts: [this.playerBody, this.sensors.left, this.sensors.right, this.sensors.bottom /*, this.sensors.up*/],
+      parts: [this.playerBody, this.sensors.left, this.sensors.right, this.sensors.bottom],
       friction: 0,
       frictionAir: 0,
       restitution: 0.05, // El power-up no se pega a paredes
@@ -125,24 +126,22 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
     });
 
     this.setExistingBody(compoundBody);
-    // El cuerpo a la posición inicial
     M.Body.setPosition(compoundBody, { x, y });
 
-    // // Apply to all parts
-    // this.enemyBody.collisionFilter.category = CATEGORY_ENEMY;
-    // this.enemyBody.collisionFilter.mask = mask;
     this.setCollisionCategory(CATEGORY_POWERUP);
     this.setCollidesWith([CATEGORY_PLAYER, CATEGORY_TERRAIN]);
 
-    // Asociamos el cuerpo al sprite
-    this.setPosition(x, y); // sincronizar la posición del sprite
+    this.setPosition(x, y);
     this.setFixedRotation();
 
     // Movimiento básico (rebote ligero y desplazamiento)
     this.setBounce(0.1, 1);
     this.setVelocityX(POWERUP_SPEED);
 
-    /** Velocidad usada al rebotar contra paredes. */
+    /** 
+     * Velocidad usada al rebotar contra paredes.
+     * @type {number}
+     */
     this.SPEED = 5;
     
     // Reset de contadores de sensores antes de cada update de Matter
@@ -161,7 +160,7 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
         {
           return;
         }
-        // -------- 1) Filtrar: solo nos interesan colisiones que involucren ESTE power-up --------
+        // Filtrar: solo nos interesan colisiones que involucren ESTE power-up
         const involvesThisPowerUp =
           bodyA === this.playerBody || bodyB === this.playerBody ||
           bodyA === this.sensors.left || bodyB === this.sensors.left ||
@@ -169,26 +168,24 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
           bodyA === this.sensors.bottom || bodyB === this.sensors.bottom;
 
         if (!involvesThisPowerUp) {
-          // La colisión es entre otras cosas que no son este power-up => ignorar
           continue;
         }
 
-        // -------- 2) ¿Ha chocado este power-up con Mario? --------
+        // ¿Ha chocado este power-up con Mario?
         const isThisPowerBody =
           bodyA === this.playerBody || bodyB === this.playerBody;
         const isMarioBody =
           bodyA.label === "Mario" || bodyB.label === "Mario";
 
         if (isThisPowerBody && isMarioBody) {
-          // Sacar el gameObject del cuerpo de Mario
           const marioBody = bodyA.label === "Mario" ? bodyA : bodyB;
           const player = marioBody.gameObject;
 
-          this.collect(player); // SOLO este power-up se recoge
-          continue;             // No hace falta procesar sensores para este par
+          this.collect(player);
+          continue;
         }
 
-        // -------- 3) Sensores para rebotar con el terreno --------
+        // Sensores para rebotar con el terreno
         if (bodyA === this.sensors.left || bodyB === this.sensors.left) {
           this.numTouching.left++;
         }
@@ -220,7 +217,7 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
    *
    * Los power-ups específicos suelen extender este método con `super.collect(player)`.
    *
-   * @param {any} player - Instancia del jugador que recoge el power-up.
+   * @param {Object} player - Instancia del jugador que recoge el power-up.
    */
   collect(player) {
     if (!this.active) return;
@@ -237,7 +234,7 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
    * Activa el estado "Super Size" (tipo seta).
    * Escala el sprite del jugador y marca el estado interno.
    *
-   * @param {any} player - Instancia del jugador.
+   * @param {Object} player - Instancia del jugador.
    */
   enableSuperSize(player) {
     // Evita duplicar
@@ -254,6 +251,7 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
 
   /**
    * Update simple para rebotar en paredes y mantener el movimiento horizontal.
+   * Garantiza una velocidad mínima y cambia de dirección al chocar con obstáculos.
    *
    * @param {number} time - Tiempo actual del juego.
    * @param {number} delta - Tiempo transcurrido desde el último frame.
@@ -269,7 +267,7 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
     } else if (this.blocked.right) {
       this.setVelocityX(-Math.abs(this.SPEED));
     }
-
   }
 }
+
 export default PowerUp;

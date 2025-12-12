@@ -4,6 +4,7 @@ import { PowerUp, POWERUP_TYPES } from './PowerUps.js';
  * PowerUp de tipo Seta.
  * Convierte al jugador en estado Super, aumentando su tamaño
  * y permitiéndole resistir un impacto adicional.
+ * @extends PowerUp
  */
 export default class Mushroom extends PowerUp {
 
@@ -19,8 +20,8 @@ export default class Mushroom extends PowerUp {
 
     /**
      * Se ejecuta cuando el jugador recoge la seta.
-     * Activa el estado Super del jugador.
-     * @param {Player} player - Jugador que recoge el power-up.
+     * Activa el estado Super del jugador, aumentando su tamaño si aún no lo era.
+     * @param {Object} player - Jugador que recoge el power-up.
      */
     collect(player) {
 
