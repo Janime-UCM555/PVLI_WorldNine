@@ -1232,7 +1232,7 @@
                  "type":"",
                  "visible":true,
                  "width":32,
-                 "x":3072,
+                 "x":3008,
                  "y":576
                 }, 
                 {
@@ -1282,6 +1282,18 @@
                  "width":32,
                  "x":3104,
                  "y":384
+                }, 
+                {
+                 "gid":5663,
+                 "height":32,
+                 "id":257,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":32,
+                 "x":3136,
+                 "y":576
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -2009,6 +2021,78 @@
                  "width":32,
                  "x":8480,
                  "y":544
+                }, 
+                {
+                 "gid":5689,
+                 "height":32,
+                 "id":254,
+                 "name":"ImpulsoM",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":32,
+                 "x":3072,
+                 "y":608
+                }, 
+                {
+                 "gid":5689,
+                 "height":32,
+                 "id":255,
+                 "name":"ImpulsoM",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":32,
+                 "x":3104,
+                 "y":608
+                }, 
+                {
+                 "gid":5689,
+                 "height":32,
+                 "id":256,
+                 "name":"ImpulsoM",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":32,
+                 "x":3040,
+                 "y":608
+                }, 
+                {
+                 "gid":5689,
+                 "height":32,
+                 "id":258,
+                 "name":"ImpulsoM",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":32,
+                 "x":8448,
+                 "y":576
+                }, 
+                {
+                 "gid":5689,
+                 "height":32,
+                 "id":259,
+                 "name":"ImpulsoM",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":32,
+                 "x":8416,
+                 "y":576
+                }, 
+                {
+                 "gid":5689,
+                 "height":32,
+                 "id":260,
+                 "name":"ImpulsoM",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":32,
+                 "x":8480,
+                 "y":576
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -2825,7 +2909,7 @@
          "y":0
         }],
  "nextlayerid":15,
- "nextobjectid":254,
+ "nextobjectid":261,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.2",

@@ -38,7 +38,7 @@ class Nivel_R extends GameScenes {
         this.score = 0;
         this.coinScore = 0;
         this.purpleCoinScore = 0;
-        this.timer = 60;
+        this.timer = 70;
     }
 
     /**

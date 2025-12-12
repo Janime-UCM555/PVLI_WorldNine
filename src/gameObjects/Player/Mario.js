@@ -1,4 +1,7 @@
 import { POWERUP_TYPES } from "../PowerUps/PowerUps.js";
+import PlayerBubbleController from "./Bubble.js";
+import PowerUpController from "./PowerUpController.js";
+
 import{
     CATEGORY_PLAYER,
     CATEGORY_ENEMY,
@@ -24,6 +27,8 @@ class Mario extends Phaser.GameObjects.Sprite
         this.isStopped = false; // Controlar si está detenido
         this.isBeingPushed = false; // Indica si está siendo empujado
         this.isInvulnerable = false; // Controlar la invulnerabilidad temporal
+        this.bubble = new PlayerBubbleController(this);
+        this.powerUps = new PowerUpController(this);
         this.bubblePhase = 0; // 0: no burbuja, 1: espera, 2: movimiento fase1, 3: fase2
         this.isInBubble = false; // Controlar si está en la burbuja
         this.canDrop = false; // Indica si puede salir de la burbuja
@@ -240,7 +245,7 @@ class Mario extends Phaser.GameObjects.Sprite
                 // Si está en burbuja y puede salir, manejar la salida
                 if (this.isInBubble && this.canDrop) {
                     this.scene.sound.play("bubblePop");
-                    this.exitBubbleState();
+                    this.bubble.exitBubbleState();
                     return;
                 }
                 // Comportamiento normal de salto
@@ -263,7 +268,8 @@ class Mario extends Phaser.GameObjects.Sprite
             }
             if (pointer.rightButtonDown()) {
                 if (this.canThrowHammer) {
-                    this.tryThrowHammer();
+                    this.powerUps.tryThrowHammer();
+                    // this.tryThrowHammer();
                 }
             }
         });
@@ -468,7 +474,7 @@ class Mario extends Phaser.GameObjects.Sprite
         if (hasNonMushroomPower) {
             // Tenías martillo / doble salto / dash / botas
             // → Pierdes ese power-up ofensivo, pero te quedas como Super Mario
-            this.deactivatePowerUp({ keepSize: true });
+            this.powerUps.deactivatePowerUp({ keepSize: true });
 
             // Nos aseguramos de marcar que ahora estás en estado "solo champiñón"
             if (hasMushroom || this.isSuperSize) {
@@ -482,7 +488,7 @@ class Mario extends Phaser.GameObjects.Sprite
             this.hurtSound.play();
         } else if (!this.isInBubble) {
             // Solo champiñón → lo pierdes y te quedas pequeño
-            this.deactivatePowerUp({ keepSize: false });
+            this.powerUps.deactivatePowerUp({ keepSize: false });
             this.hurtSound.play();
         } 
 
@@ -528,233 +534,9 @@ class Mario extends Phaser.GameObjects.Sprite
         });
     }
 
-
+    // Método para activar la burbuja:
     Bubble() {
-        if (this.isInBubble) {
-            return;
-        }
-
-        // this.bubblesLeft -= 1;
-
-        this.isInBubble = true;
-
-        // Detener cualquier movimiento previo inmediatamente
-        this.setVelocity(0, 0);
-        // Detener el movimiento automático
-        this.isStopped = true;
-        if (this.body) {
-            this.setVelocityX(0);
-            this.setVelocityY(0);
-            this.body.ignoreGravity = true;
-        }
-
-        this.enterBubbleState();
-    }
-
-    enterBubbleState() {
-        const camera = this.scene.cameras.main;
-        const velBubble = -3; // Velocidad burbuja a la izquierda
-
-        // 1. Marcar el estado inmediatamente
-        this.isInBubble = true;
-        this.canDrop = false;
-        this.bubblePhase = 1;
-        // 1.5. Asegurarse de desactivar power-ups
-        this.deactivatePowerUp({ keepSize: false });
-
-        // 2. Detener inmediatamente todas las físicas
-        this.setVelocity(0, 0);
-        if (this.body) {
-            this.body.ignoreGravity = true;
-            this.setSensor(true);
-            this.body.collisionFilter.mask = 0; // Desactivar completamente las colisiones
-            // Forzar velocidad cero
-            this.setVelocityX(0);
-            this.setVelocityY(0);
-        }
-
-        // 3. Cambiar a textura de burbuja
-        this.play('mario_bubble', true);
-
-        // 4. Posicionar a Mario cerca del punto de caída
-        const cameraViewHeight = camera.height / camera.zoom;
-        let initialX = this.x;
-        let initialY = this.y;
-
-        initialX = Phaser.Math.Clamp(initialX, 100, this.scene.map.widthInPixels - 100);
-        initialY = Phaser.Math.Clamp(initialY, 100, this.scene.map.heightInPixels + 100);
-
-        this.x = initialX;
-        this.y = initialY;
-
-        // 5. Esperar 2500ms sin moverse (Fase 1 - Espera)
-        this.scene.time.delayedCall(1000, () => {
-            if (!this.isInBubble) return;
-            this.scene.sound.play("bubbleCreate");
-            this.bubblePhase = 2; // Fase 1 - Movimiento
-        
-            // 6. Movimiento diagonal
-            this.setVelocityX(velBubble); // Velocidad hacia izquierda
-            
-            // Calcular velocidad Y para llegar a la posición Y objetivo (290)
-            const targetY = 290; // Posición Y objetivo
-            const currentY = this.y;
-
-            // Calcular posición intermedia (90% del camino) para el movimiento constante
-            const intermediateY = currentY + ((targetY - currentY) * 0.9);
-
-            // Primer tween: movimiento constante (1000ms)
-            this.scene.tweens.add({
-                targets: this,
-                y: intermediateY,
-                duration: 1000,
-                ease: 'Linear', // Movimiento completamente lineal/constante
-                onUpdate: () => {
-                    // Mantener velocidad X constante
-                    if (this.x > 50) {
-                        this.setVelocityX(velBubble);
-                    } else {
-                        this.setVelocityX(0);
-                    }
-                },
-                onComplete: () => {
-                    // Guardar velocidades iniciales
-                    const startVelX = velBubble;
-                    const endVelX = -2.45;
-
-                    // Segundo tween: desaceleración (250ms)
-                    this.scene.tweens.add({
-                        targets: this,
-                        y: targetY,
-                        duration: 250,
-                        ease: 'Cubic.Out',
-                        onUpdate: (tween) => {
-                            // Calcular progreso manualmente (0 a 1)
-                            const progress = tween.progress;
-            
-                            // Interpolar velocidad X basada en el progreso
-                            const currentVelX = startVelX + ((endVelX - startVelX) * progress);
-            
-                            // Aplicar velocidad
-                            if (this.x > 50) {
-                                this.setVelocityX(currentVelX);
-                            } else {
-                                this.setVelocityX(0);
-                            }
-
-                            // Actualizar cuerpo de Matter
-                            if (this.body) {
-                                const M = Phaser.Physics.Matter.Matter;
-                                M.Body.setPosition(this.body, { 
-                                    x: this.x, 
-                                    y: this.y 
-                                });
-                            }
-                        },
-                        onComplete: () => {
-                            if (this.isInBubble) {
-                                this.startBubblePhase2();
-                            }
-                        }
-                    });
-                }
-            });
-
-            // 7. Permitir salir después de 400ms de empezar el movimiento
-            this.scene.time.delayedCall(400, () => {
-                if (this.isInBubble) {
-                    this.canDrop = true;
-                }
-            });
-        });
-    }
-
-    startBubblePhase2() {
-        if (!this.isInBubble) return;
-
-        this.bubblePhase = 3; // Fase 2
-    
-        // 1. Detener movimiento vertical inicial
-        this.setVelocityY(0);
-    
-        // 2. Configurar velocidad horizontal inicial
-        this.setVelocityX(-2.45);
-    
-        // 3. Configurar movimiento oscilatorio vertical
-        this.bubbleOscillation = {
-            amplitude: 40, // Amplitud de la oscilación
-            frequency: 0.002, // Frecuencia de la oscilación
-            baseY: this.y, // Posición base para la oscilación
-            startTime: this.scene.time.now
-        };
-
-        // 4. Acelerar gradualmente después de 1500ms
-        this.scene.time.delayedCall(1500, () => {
-            if (this.isInBubble && this.bubblePhase === 3) {
-                // Solo acelerar si no ha llegado al borde izquierdo
-                if (this.x > 50) {
-                    // Transición suave a mayor velocidad
-                    this.scene.tweens.add({
-                        targets: this.body.velocity,
-                        x: -5.75,
-                        duration: 1250, // Duración de la transición en ms
-                        ease: 'Cubic.InOut',
-                        onComplete: () => {
-                            if (this.isInBubble && this.bubblePhase === 3) {
-                                // Establecer velocidad constante después de la transición
-                                this.setVelocityX(-5.75);
-                            }
-                        }
-                    });
-                }
-            }
-        });
-    }
-
-    exitBubbleState() {
-        if (!this.isInBubble) {
-            return;
-        }
-    
-        // 1. Limpiar propiedades de la burbuja
-        this.isInBubble = false;
-        this.canDrop = false;
-        this.bubblePhase = 0;
-        this.bubbleOscillation = null;
-        
-        // Parar todos los tweens que afecten al jugador y a su velocidad
-        this.scene.tweens.killTweensOf(this);
-        if (this.body) {
-            this.scene.tweens.killTweensOf(this.body.velocity);
-        }
-
-        // 2. Reactivar el cuerpo físico
-        if (this.body) {
-            this.body.ignoreGravity = false; // Reactivar gravedad
-            this.setSensor(false); // Restaurar colisiones normales
-            this.body.collisionFilter.mask = 0xFFFFFFFF; // Máscara para colisionar con todo
-        }
-    
-        // 3. Cambiar a animación de caída
-        if (!this.inBoss)
-        {
-            this.play('mario_fall', true);
-        }
-        else if(this.inBoss){
-            this.play('mario_panicfall', true);
-        }
-    
-        // 4. Resetear velocidades para caída
-        this.setVelocityX(0);
-        this.setVelocityY(0);
-
-        // 5. Posicionar a Mario en una posición segura
-        this.x = Math.max(this.x, 50);
-        this.y = Math.max(this.y, 100);
-
-        // 6. Resetear estados de salto
-        this.isJumping = false;
-        this.isHoldingJump = false;
+        this.bubble.Bubble();
     }
 
     update(time, delta) {
@@ -771,57 +553,11 @@ class Mario extends Phaser.GameObjects.Sprite
             return;
         }
 
-        // Si está en burbuja, no ejecutar la lógica normal
-        if (this.isInBubble) {
-            // Forzar gravedad cero durante todo el estado de burbuja
-            if (this.body) {
-                this.body.ignoreGravity = true;
+        // Lógica de burbuja primero
+        this.bubble.update(time, delta);
 
-                // En fase 2 y 3, mantener la velocidad X constante si no hay tweens activos
-                if (this.bubblePhase === 2 || this.bubblePhase === 3) {
-                    // Solo aplicar si no está cerca del borde izquierdo
-                    if (this.x > 50) {
-                        // Mantener velocidad X mínima en fase 3
-                        if (this.bubblePhase === 3 && this.body.velocity.x > -2.45) {
-                            this.setVelocityX(-2.45 * dt);
-                        }
-                    } else {
-                        // Detener al llegar al borde izquierdo
-                        this.setVelocityX(0);
-                    }
-                
-                    // Mantener velocidad Y en 0 para fase 3
-                    if (this.bubblePhase === 3) {
-                        // Mantener velocidad X constante si no está cerca del borde
-                        if (this.x > 50) {
-                            // Si ya ha completado la aceleración, mantener velocidad constante
-                            const currentTime = this.scene.time.now;
-                            if (currentTime - this.bubbleOscillation.startTime > 2500) { // 1500 + 1000 = 2500ms
-                                this.setVelocityX(-5.75* dt);
-                            }
-                        } else {
-                            // Detener al llegar al borde izquierdo
-                            this.setVelocityX(0);
-                        }
-
-                        this.setVelocityY(0);
-                    }
-                }
-            }
-
-            // Actualizar movimiento oscilatorio de la fase 2 de la burbuja
-            if (this.bubblePhase === 3 && this.bubbleOscillation) {
-                const elapsed = time - this.bubbleOscillation.startTime;
-                
-                // Aplicar oscilación vertical
-                const oscillationY = Math.sin(elapsed * this.bubbleOscillation.frequency) * this.bubbleOscillation.amplitude;
-                this.y = this.bubbleOscillation.baseY + oscillationY;
-            }
-
-            // Manejar animaciones
-            this.handleAnimations();
-            return; // Salir inmediatamente - no ejecutar física normal
-        }
+        // ↓ SI ESTÁ EN BURBUJA YA RETORNÓ, tu código sigue normal ↓
+        if (this.isInBubble) return;
 
         if (this.footstepCooldown > 0) {
             this.footstepCooldown -= delta;
@@ -1068,140 +804,7 @@ class Mario extends Phaser.GameObjects.Sprite
         this.bubblesLeft = 2;
         this.setScale(this.base.scaleX, this.base.scaleY);
         this.isSuperSize = false;
-        this.deactivatePowerUp();
+        this.powerUps.deactivatePowerUp();
     }
-    
-    tryThrowHammer() {
-    if (!this.canThrowHammer) return;
-
-    const currentTime = this.scene.time.now || 0;
-    if (currentTime < this.hammerCooldown) return;
-    this.hammerCooldown = currentTime + 1000; // 1 segundo de cooldown
-
-    if (!this.scene.hammers) {
-        console.warn("No hay grupo de martillos en la escena.");
-        return;
-    }
-
-    if (!this.scene.requestHammer) {
-        console.warn("La escena no tiene el método requestHammer.");
-        return;
-    }
-
-    const hammer = this.scene.requestHammer(this);
-    if (!hammer) return;
-
-    // Dirección según hacia dónde mira Mario
-    const dir = 1;
-
-    // Offset respecto al sprite (no usamos body.width porque es Matter)
-    const offsetX = this.width * this.scaleX * 0.6 * dir;
-    const offsetY = this.height * this.scaleY * 0.2;
-
-    hammer.setPosition(this.x + offsetX, this.y - offsetY);
-
-    // 💡 Velocidad en la misma escala que Mario (speed ≈ 3.5)
-    const hammerSpeedX = this.speed * 2.5 * dir; // algo tipo 8–9
-    const hammerSpeedY = -6;                      // pequeño salto en arco
-
-    if (hammer.setVelocity) {
-        hammer.setVelocity(hammerSpeedX, hammerSpeedY);
-    } else if (hammer.body && hammer.body.setVelocity) {
-        hammer.body.setVelocity(hammerSpeedX, hammerSpeedY);
-    }
-
-    if (this.scene.anims.exists('mario_throw')) {
-        this.play('mario_throw', true);
-    }
-}
-
-/**
-   * Desactiva el power-up actual del jugador.
-   * 
-   * - Limpia timers y sonidos de estrella.
-   * - Restaura tinte, alpha y tamaño (si no se indica `keepSize`).
-   * - Resetea flags de habilidades (dash, doble salto, martillo, etc.).
-   * - Restaura velocidad y parámetros de salto a sus valores base.
-   * - Ajusta `activePowerUp` según si el jugador sigue siendo Super.
-   *
-   * @param {{ keepSize?: boolean }} [options] - Opciones adicionales.
-   */
-  deactivatePowerUp(options = {}) {
-     const player = this;
-
-    // Si no hay power-up activo y no es Super Mario, no hacer nada
-    if (!player.activePowerUp && !player.isSuperSize) return;
-
-    const keepSize = options.keepSize ?? false;
-
-    // 1. Quitar efectos de estrella
-    if (player.invEvent?.remove) {
-      player.invEvent.remove(false);
-      player.invEvent = null;
-    }
-
-    if (player.invTimer?.remove) {
-      player.invTimer.remove(false);
-      player.invTimer = null;
-    }
-
-    if (player.warningTimer?.remove) {
-      player.warningTimer.remove(false);
-      player.warningTimer = null;
-    }
-
-    if (player.starman && player.starman.isPlaying) {
-      player.starman.stop();
-    }
-    if (player.starEndingSound && player.starEndingSound.isPlaying) {
-      player.starEndingSound.stop();
-    }
-    if (player.scene.levelMusic && player.scene.levelMusic.isPaused && !player.scene.endTimer) {
-      player.scene.levelMusic.resume();
-    }
-
-    // 2. Restaurar apariencia
-    player.clearTint();
-    player.alpha = 1;
-
-    // 3. Restaurar tamaño si toca
-    if (!keepSize && player.isSuperSize) {
-      player.setScale(player.base.scaleX, player.base.scaleY);
-
-      // Solo si es arcade, esto existe
-      if (player.baseBody && player.body && player.body.setSize) {
-        player.body.setSize(
-          player.baseBody.w * player.base.scaleX,
-          player.baseBody.h * player.base.scaleY
-        );
-        player.body.setOffset(player.baseBody.offsetX, player.baseBody.offsetY);
-      }
-
-      player.isSuperSize = false;
-    }
-
-    // 4. Resetear flags y multiplicadores
-    player.isInvincible = false;
-    player.canThrowHammer = false;
-    player.canDoubleJump = false;
-    player.hasDoubleJumped = false;
-    player.canDash = false;
-    player.isDashing = false;
-    player.canHighJump = false;
-    player.highJumpMultiplier = 1.5;
-
-    // 5. Restaurar velocidad y salto base
-    player.speed = player.base.speed;
-    player.minJumpVelocity = player.base.minJumpVelocity ?? player.minJumpVelocity;
-    player.maxJumpVelocity =
-      player.base.maxJumpVelocity ??
-      player.base.jumpForce ??
-      player.maxJumpVelocity;
-
-    // 6. Power-up activo
-    player.activePowerUp = keepSize && player.isSuperSize
-      ? POWERUP_TYPES.MUSHROOM
-      : null;
-  }
 }
 export default Mario;
