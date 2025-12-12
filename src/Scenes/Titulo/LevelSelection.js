@@ -93,7 +93,7 @@ class LevelSelection extends Phaser.Scene
 
         // Música de fondo
         if (!this.menuMusic || !this.menuMusic.isPlaying) {
-            this.menuMusic = this.sound.add('menu_music', { loop: true, volume: 1 });
+            this.menuMusic = this.sound.add('level_select', { loop: true, volume: 1 });
             this.menuMusic.play();
         }
 

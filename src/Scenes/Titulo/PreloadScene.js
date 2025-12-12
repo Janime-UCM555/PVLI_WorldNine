@@ -335,6 +335,8 @@ class PreloadScene extends Phaser.Scene {
 
         // === MÚSICA ===
         this.load.audio('tutorial_music', 'sonidos/BGM/tutorial_theme.mp3');
+        this.load.audio('greece_music', 'sonidos/BGM/greece_music.mp3');
+        this.load.audio('level_select', 'sonidos/BGM/level_select.mp3');
         this.load.audio('level_music', 'sonidos/BGM/level_theme.mp3');
         this.load.audio('Boss_Jupiter', 'sonidos/BGM/BossJ.mp3');
         this.load.audio('Boss_Horus', 'sonidos/BGM/BossH.mp3');
