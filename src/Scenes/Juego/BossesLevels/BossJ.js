@@ -89,7 +89,6 @@ class BossJ extends GameScenes
         // graphics.setScrollFactor(0);
 
         const fontSize = 29; // 50 / 1.65 ≈ 29
-        // document.fonts.load('32px aku-kamu').then(() => {
             this.fpsText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -',{fontFamily: 'aku-kamu'})
             .setOrigin(-2,5)
             .setStroke('#000000ff', 6)
@@ -114,7 +113,6 @@ class BossJ extends GameScenes
             .setDepth(6)
             .setFontSize(fontSize + 'px')
             .setScrollFactor(0);
-        // });
     }
     ganasPartida()
     {

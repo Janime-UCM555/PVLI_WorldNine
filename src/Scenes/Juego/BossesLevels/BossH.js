@@ -1,21 +1,10 @@
 // BossH.js
 import Mario from '../../../gameObjects/Player/Mario.js';
 import HorusBoss, { HORUS_SHEET_KEY } from "../../../gameObjects/BossesObjects/HorusBoss.js";
-import Star from '../../../gameObjects/PowerUps/Star.js';
 import {PowerUp, POWERUP_TYPES } from '../../../gameObjects/PowerUps/PowerUps.js';
-import Hammer from '../../../gameObjects/PowerUps/Hammer.js';
-import DoubleJump from '../../../gameObjects/PowerUps/DoubleJump.js';
-import Mushroom from '../../../gameObjects/PowerUps/Mushroom.js';
-import JumpBoots from '../../../gameObjects/PowerUps/HighJump.js';
 import GameScenes from '../GameScenes.js';
 import spawnPowerUp from '../../../gameObjects/PowerUps/PowerUpSpawn.js';
 import Pilar from '../../../gameObjects/LevelBlockObjects/Pilar.js';
-
-const CATEGORY_PLAYER  = 0x0001;
-const CATEGORY_ENEMY   = 0x0002;
-const CATEGORY_POWERUP = 0x0003;
-const CATEGORY_TERRAIN = 0x0004;
-const CATEGORY_FALLOFF = 0x0005;
 
 export default class BossH extends GameScenes{
 
@@ -52,7 +41,7 @@ export default class BossH extends GameScenes{
         // ---------------------------------------------------------
         // MARIO
         // ---------------------------------------------------------
-       
+        spawnPowerUp(this,32 * 5, 32 * 23, POWERUP_TYPES.MUSHROOM);
         this.jugador = new Mario(this, 32 * 5, 32 * 23, "mario_run", 5, -4, true);
         super.create();
 
@@ -97,11 +86,68 @@ export default class BossH extends GameScenes{
 
         });
 
-        this.pilar = new Pilar(this,-903,625,'pilar_ny');
-        this.pilar.setStatic(true);
+        this.pilar = new Pilar(this,-903,625,'pilar_arena');
     }
     
 
+    createText()
+    {
+        // Este gráfico representa la línea dónde se alinea la UI por la derecha
+
+        // var graphics = this.add.graphics();
+
+        const posUI = this.cameras.main.centerX+this.cameras.main.centerX/2; // Posición UI por la derecha
+        // graphics.lineStyle(1, 0xffffff, 1);
+        // graphics.lineBetween(posUI, 0,posUI, 600);
+        // graphics.setScrollFactor(0);
+
+        const fontSize = 29; // 50 / 1.65 ≈ 29
+            this.fpsText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, '- phaser text stroke -',{fontFamily: 'aku-kamu'})
+            .setOrigin(-2,5)
+            .setStroke('#000000ff', 6)
+            .setFill('#38b762ff')
+            .setFontSize(fontSize + 'px')
+            .setDepth(6)
+            // .setText("60")
+            .setScrollFactor(0);
+
+            this.textScore = this.add.text(posUI, this.cameras.main.centerY,"".padStart(10,"0"),{fontFamily: 'aku-kamu'})
+            .setOrigin(1,5)
+            .setStroke('#000000ff', 6)
+            .setFill('#ffffffff')
+            .setDepth(6)
+            .setFontSize(fontSize + 'px')
+            .setScrollFactor(0);
+
+            this.textCoins = this.add.text(posUI, this.cameras.main.centerY, "".padStart(2,"0"),{fontFamily: 'aku-kamu'})
+            .setOrigin(1,4)
+            .setStroke('#000000ff', 6)
+            .setFill('#DBC716')
+            .setDepth(6)
+            .setFontSize(fontSize + 'px')
+            .setScrollFactor(0);
+    }
+    ganasPartida()
+    {
+        const fadeTween = this.tweens.add({
+            targets: this.pilar,
+            alpha: 0,
+            scaleX: 0.4,
+            scaleY: 0.4,
+            duration: 1000,
+            ease: 'Cubic',
+            onComplete: () => {
+                // Destruir el pilar cuando esté completamente transparente
+                if (this.pilar) {
+                    this.pilar.destroy();
+                }
+            }
+        });
+        super.ganasPartida();
+    }
+    timerMethod()
+    {
+    }
     update(time, delta) {
         super.update(time, delta);
 
@@ -110,7 +156,6 @@ export default class BossH extends GameScenes{
         if (!this.bossIntroStarted && this.jugador.x >= this.map.tileToWorldX(30)) {
             this.horus.startBattle();
             this.bossIntroStarted = true;
-            this.pilar.setTint(0xFFFF00);
             this.pilar.setStatic(false);
         }
     }
@@ -128,11 +173,7 @@ export default class BossH extends GameScenes{
                 }
             });
         }
-
+        super.ganasPartida();
         this.horus.defeat();
-    }
-
-    restartLevel() {
-        super.restartLevel();
     }
 }

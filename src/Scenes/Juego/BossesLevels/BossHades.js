@@ -57,7 +57,7 @@ class BossHades extends GameScenes
         else if(this.levelMusic){
             this.levelMusic.stop();
         }
-        this.pilar = new Pilar(this,-1000,625,'pilar_f');
+        this.pilar = new Pilar(this,-1000,625,'pilar_fuego');
         this.pilar.setDepth(2);
         // const bossAttacks = this.map.getObjectLayer('ApareceJefe').objects;
         let id = 0;

@@ -18,6 +18,9 @@ Canva 0: [[Hito
 Canva 1: [[Hito
 2]](https://www.canva.com/design/DAG3QCwbb8M/S5ueFPO_Ns44HpqeBUyLNw/edit?utm_content=DAG3QCwbb8M&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
 
+Canva 2: [[Hito
+3]](https://www.canva.com/design/DAG6WK6OV54/YSxHIjOr2gRc7eHdW4YOiw/edit)
+
 ![Logo](./assets/GDD_Images/Ninetendo.png "LogoImg")
 >
 > **Equipo de desarrollo:**
@@ -30,7 +33,7 @@ Canva 1: [[Hito
 
 -   Jaime Nieto Méndez
 
-> Última Actualización: 24/11/2025
+> Última Actualización: 11/12/2025
 
 ## 1.  **Resumen**
 
@@ -329,7 +332,7 @@ Mario].
 
 #### 5.1.2  **Zagreus**
 
-<img src="./assets/GDD_Images/Zagreus.png" width=50 height=50>
+<img src="./assets/GDD_Images/Zagreus.png" width=50 height=100>
 Zagreus actúa como la clásica damisela en peligro (Princesa Peach) de 
 los juegos de Mario. Sirve como motivación para que Mario se embarque 
 en la aventura.
@@ -639,7 +642,7 @@ estará esperando el boss final del juego.
 **Boss 3:**
 
 El tercer boss aplicará todas las mecánicas introducidas anteriormente y
-durará significativamente más que el primero. Al aguantar lo suficiente
+durará más que el primero. Al aguantar lo suficiente
 Zagreus nos estará esperando encerrado y se reproducirá la cinemática
 final.
 
@@ -725,144 +728,4 @@ Estas son las referencias usadas para entender este documento.
 
 #
 
--   Hito 1 *(Fecha Límite)* : 03 de octubre 0:00 CEST
 
-    -   Presentación: [~~[enlace]~~](https://www.canva.com/design/DAGzb2nEieU/D1J-uxTLH2PvjY1JjPl8IA/edit?utm_content=DAGzb2nEieU&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton) *(Requisitos abajo)*
-
-        -   Miembros del grupo
-
-        -   Nombre del estudio (definitivo)
-
-        -   Nombre del juego (puede ser nombre en clave o ser el definitivo)
-
-        -   Género(s) de juego
-
-        -   Objetivo de juego y Mecánicas
-
-        -   Estilo gráfico, lore, narrativa\...
-
-        -   Público objetivo del juego (edad, perfil de jugador\...)
-
-        -   Juegos similares o que sirven como inspiración
-
-        -   Redes sociales y enlace al repositorio GitHub donde se trabajará
-
-        -   Cada grupo tendrá un máximo de 7 minutos para presentar, y se usará la sesión del viernes para presentar en el aula.
-
-    -   Entrega en el Campus Virtual:
-
-        -   Solo debe entregar un miembro del grupo
-
-        -   Las diapositivas o recursos que se utilizarán durante la
-            presentación en PDF. Además podrá subirse un archivo con
-            un enlace (a Google Drive u otra plataforma). Es
-            obligatorio que aparezca el enlace al repositorio GitHub
-            creado. ([Es el mismo enlace que el apartado de
-            encima.]{.underline})
-
-        -   El GitHub debe contener un PDF con las principales ideas del
-            proyecto (borrador de GDD con el mayor número de detalles
-            posibles hasta el momento, aunque aún no tiene porqué
-            tener una estructura clara. Debería haber imágenes sobre
-            cómo será el juego que pueden ser fotos de bocetos hechos
-            a mano). ([Este mismo Documento]{.underline})
-
-        -   La página web: [[https://janime-ucm555.github.io/PVLI_WorldNine/]](https://janime-ucm555.github.io/PVLI_WorldNine/) (.io en Github Pages) debe contener los siguientes elementos:
-
-            -   Título del juego y nombre del estudio
-
-            -   Descripción breve del juego
-
-            -   Autores y Créditos
-
-            -   Redes sociales y enlace al repositorio de Github
-
--   Hito 2 *(Fecha Límite)* : 07 de noviembre 16:00 CET
-
-Objetivo: Presentar el avance realizado en el proyecto (primeras
-mecánicas implementadas y web).
-
-La presentación en clase debe contener al menos:
-
--   La idea general del juego, con género, objetivo, mecánicas, dinámicas y demás.
-
--   Mostrar el diseño de algún nivel y pantalla de juego (pueden ser bocetos, pero deben ser claros)
-
--   Explicar la narrativa del juego de forma breve.
-
--   Qué se ha desarrollado hasta el momento.
-
--   Plan de lo que falta por desarrollar.
-
--   Demo corta, con lo que haya hasta el momento.
-
-Cada grupo tendrá un máximo de 7 minutos para presentar, y se usará la esión del viernes para presentar en el aula. Deben estar todos los integrantes del grupo que presenta en la tarima (aunque no todos hablen) - excepto causa justificada.
-
-Antes del día de la presentación el repositorio debe estar actualizado
-con:
-
--   La siguiente estructura:
-
-    -   index.html, con la página web del proyecto (el archivo que se verá al activar GitHub pages)
-
-    -   /src, con el código
-
-    -   /assets, con los recursos de audio, vídeo, mapas y demás (debidamente organizados)
-
-    -   README.md, el archivo en [Markdown](https://guides.github.com/features/mastering-markdown/) (.md \--\> Markdown) que se verá en la raíz de la página del repositorio. Tiene que contener lo siguiente:
-
-        -   Que el proyecto es un trabajo universitario
-
-        -   Redes sociales creadas para el proyecto (opcional)
-
-        -   Una descripción general del proyecto
-
-        -   Capturas del juego
-
-        -   [Un enlace a la página web pública con la versión de publicación del juego]{.underline}
-
-    -   GDD.md, el *game design document* (puede formar parte del README.md)
-
-    -   assets.md, descripción de los assets, las decisiones de dirección artística y donde se han obtenido. 
-        En caso de los assets propios debe indicarse la licencia ya sea propietaria o libre (puede formar parte del README.md)
-
-    -   La página web (.io) debe contener los siguientes elementos:
-
-        -   Título del juego y nombre del estudio
-
-        -   Canvas en el que se ejecuta el juego (importante que se ejecute el juego).
-
-        -   Instrucciones del juego (objetivo y controles)
-
-        -   Descripción breve del juego
-
-        -   Autores y Créditos
-
-        -   Redes sociales y enlace al repositorio de Github
-
-> Además es obligatorio que a estas alturas el proyecto aparezca ya en
-> el [Histórico de
-> Proyectos](https://cvdof.ucm.es/moodle/mod/wiki/view.php?id=279615).
->
-> ¿Qué se debe entregar?
-
--   Las diapositivas o recursos que se utilizarán durante la presentación en PDF. Además podrá subirse un archivo con un enlace (a GoogleDrive u otra plataforma).
-
-> Además,debe realizarse la entrega individual \"Aportación de cada
-> miembro - Hito 2\"
->
-> ¿Insignias relacionadas?
->
-> 6 insignias relacionadas con:
-
--   Presentación en clase (diapositivas y ponencia claras, que cumpla el objetivo de la presentación, y que consiga enganchar a la audiencia)
-
--   Web en Github (desplegada, con toda la información, agradable visualmente y consistente con la idea e juego).
-
--   Repositorio y código (Repositorio bien estructurado, coherente, código documentado, y avances significativos en el juego)
-
--   Documentación (Documentación detallada, bien formateada y legible)
-
--   Tiempo de Entrega (Realizar la entrega 36h antes y no tener cambios desde entonces hasta después de la defensa del Hito)
-
--   Redes sociales (Publicaciones, teniendo que existir algunas relacionadas con el proyecto y su avance, y la asignatura)

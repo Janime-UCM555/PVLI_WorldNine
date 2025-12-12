@@ -2724,29 +2724,6 @@
                 {
                  "gid":5662,
                  "height":30,
-                 "id":242,
-                 "name":"Pokey",
-                 "properties":[
-                        {
-                         "name":"segments",
-                         "type":"int",
-                         "value":2
-                        }, 
-                        {
-                         "name":"speed",
-                         "type":"float",
-                         "value":0
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":30,
-                 "x":9248,
-                 "y":544
-                }, 
-                {
-                 "gid":5662,
-                 "height":30,
                  "id":243,
                  "name":"Pokey",
                  "properties":[
@@ -2764,7 +2741,7 @@
                  "type":"",
                  "visible":true,
                  "width":30,
-                 "x":9056,
+                 "x":9184,
                  "y":544
                 }],
          "opacity":1,

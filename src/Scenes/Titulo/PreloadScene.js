@@ -272,6 +272,10 @@ class PreloadScene extends Phaser.Scene {
         frameWidth: 128,
         frameHeight: 126
     });
+    this.load.spritesheet('pilar_arenaTiles', 'GameSprites/ObjetosBosses/PilarFuego.png', {
+        frameWidth: 128,
+        frameHeight: 126
+    });
     this.load.spritesheet('water_tileset', 'GameSprites/Tilesets/Water.png', {
         frameWidth: 32,
         frameHeight: 32
@@ -369,8 +373,8 @@ class PreloadScene extends Phaser.Scene {
             repeat: -1
         });
         this.anims.create({
-            key: 'pilar_f',
-            frames: this.anims.generateFrameNumbers('pilar_fuegoTiles', { start: 0, end: 10 }),
+            key: 'pilar_arena',
+            frames: this.anims.generateFrameNumbers('pilar_arenaTiles', { start: 0, end: 16 }),
             frameRate: 20,
             repeat: -1
         });
