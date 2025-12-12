@@ -1,24 +1,52 @@
-// HorusColums.js (HorusTileColumn.js)
-
-// Categorías de colisión
+/**
+ * Categorías de colisión para el sistema de física Matter.js
+ * @constant {number}
+ */
 const CATEGORY_PLAYER  = 0x0001;
 const CATEGORY_ENEMY   = 0x0002;
 const CATEGORY_TERRAIN = 0x0004;
 
+/**
+ * Clase que representa una columna segmentada de Horus
+ * Crea una columna vertical compuesta por múltiples tiles con física,
+ * con un hueco configurable en el medio. La columna emerge desde abajo
+ * con una animación de tween.
+ */
 export default class HorusColumn {
     /**
-     * @param {Phaser.Scene} scene
-     * @param {Phaser.Tilemaps.Tilemap} map
-     * @param {Phaser.Tilemaps.TilemapLayer} groundLayer
-     * @param {number} xWorld      - posición X mundo donde spawnea la columna
-     * @param {number} baseWorldY  - Y en mundo donde empieza la columna (suelo)
-     * @param {number} tileCount   - cuántas tiles sube la columna
-     * @param {number} gapTiles    - hueco en tiles
-     * @param {number} gapOffset   - desplazamiento del hueco desde arriba
-     * @param {string} textureKey  - key del spritesheet de la columna (preload)
-     * @param {{bottom:number, middle:number, top:number}} frameConfig
-     *        bottom: frame de la base, middle: tramo medio, top: parte superior
-     * @param {{fromOffsetY?:number, duration?:number, ease?:string}} tweenConfig
+     * Constructor de la columna de Horus
+     * @param {Phaser.Scene} scene - La escena de Phaser donde se crea la columna
+     * @param {Phaser.Tilemaps.Tilemap} map - El tilemap del nivel
+     * @param {Phaser.Tilemaps.TilemapLayer} groundLayer - Capa de terreno del tilemap
+     * @param {number} xWorld - Posición X en coordenadas del mundo donde aparece la columna
+     * @param {number} baseWorldY - Posición Y en el mundo donde empieza la columna (suelo/base)
+     * @param {number} tileCount - Número total de tiles que componen la altura de la columna
+     * @param {number} gapTiles - Cantidad de tiles que forman el hueco/gap
+     * @param {number} gapOffset - Desplazamiento del hueco desde la parte superior (en tiles)
+     * @param {string} textureKey - Key del spritesheet de la columna (debe estar precargado)
+     * @param {Object} frameConfig - Configuración de frames del spritesheet
+     * @param {number} frameConfig.bottom - Frame para la base/parte inferior de la columna
+     * @param {number} frameConfig.middle - Frame para las secciones intermedias
+     * @param {number} frameConfig.top - Frame para la parte superior de la columna
+     * @param {Object} [tweenConfig={}] - Configuración de la animación de aparición
+     * @param {number} [tweenConfig.fromOffsetY] - Offset Y inicial antes de la animación (por defecto: tileSize * 3)
+     * @param {number} [tweenConfig.duration=450] - Duración de la animación en milisegundos
+     * @param {string} [tweenConfig.ease='Back.easeOut'] - Tipo de easing para la animación
+     * 
+     * @example
+     * const column = new HorusColumn(
+     *   this,                    // scene
+     *   this.map,                // map
+     *   this.groundLayer,        // groundLayer
+     *   800,                     // xWorld
+     *   600,                     // baseWorldY
+     *   10,                      // tileCount (10 tiles de alto)
+     *   3,                       // gapTiles (3 tiles de hueco)
+     *   4,                       // gapOffset (hueco empieza en tile 4 desde arriba)
+     *   'horus_column_tiles',    // textureKey
+     *   { bottom: 0, middle: 1, top: 2 },  // frameConfig
+     *   { fromOffsetY: 96, duration: 600, ease: 'Cubic.easeOut' }  // tweenConfig
+     * );
      */
     constructor(
         scene,
@@ -42,9 +70,13 @@ export default class HorusColumn {
         this.frameConfig = frameConfig;
         this.tweenConfig = tweenConfig;
 
+        /** 
+         * Array de objetos que contienen el sprite y cuerpo físico de cada tile
+         * @type {Array<{body: MatterJS.BodyType, sprite: Phaser.GameObjects.Sprite}>}
+         */
         this.tiles = [];
 
-        // Pasar de coordenada mundo X a tile X
+        // Convertir coordenada mundo X a coordenada tile X
         const tileX = this.map.worldToTileX(xWorld);
 
         // Cuánto más abajo empieza el sprite para el tween
@@ -62,12 +94,12 @@ export default class HorusColumn {
             // Elegir frame según posición en la columna
             let frame = frameConfig.middle;
             if (i === 0) {
-                frame = frameConfig.bottom;           // parte de abajo
+                frame = frameConfig.bottom;
             } else if (i === tileCount - 1) {
-                frame = frameConfig.top;              // parte de arriba
+                frame = frameConfig.top;
             }
 
-            // Cuerpo por tile (físico)
+            // Cuerpo físico por tile (estático)
             const tileBody = this.scene.matter.add.rectangle(
                 worldX,
                 worldY,
@@ -104,7 +136,7 @@ export default class HorusColumn {
                 ease: this.tweenConfig.ease ?? "Back.easeOut",
             });
 
-            // Guardar ambos como un objeto
+            // Guardar sprite y cuerpo como un objeto
             this.tiles.push({
                 body: tileBody,
                 sprite,

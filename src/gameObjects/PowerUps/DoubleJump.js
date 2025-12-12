@@ -4,6 +4,7 @@ import { PowerUp, POWERUP_TYPES } from './PowerUps.js';
  * PowerUp de tipo Doble Salto.
  * Permite al jugador realizar un segundo salto en el aire.
  * No altera el tamaño del jugador (compatible con estado Super).
+ * @extends PowerUp
  */
 export default class DoubleJump extends PowerUp {
 
@@ -21,7 +22,7 @@ export default class DoubleJump extends PowerUp {
      * Se ejecuta cuando el jugador recoge el power-up de doble salto.
      * Activa la habilidad de hacer doble salto y reinicia el estado
      * de si ya ha realizado el segundo salto.
-     * @param {Player} player - Jugador que recoge el power-up.
+     * @param {Object} player - Jugador que recoge el power-up.
      */
     collect(player) {
         super.collect(player);

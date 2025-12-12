@@ -1,3 +1,4 @@
+import SceneBlocks from "./SceneBlocks.js";
 import{
     CATEGORY_PLAYER,
     CATEGORY_ENEMY,
@@ -5,20 +6,32 @@ import{
     CATEGORY_FALLOFF,
     CATEGORY_TERRAIN
 } from "../collisionCategories.js"
-import SceneBlocks from "./SceneBlocks.js";
-
+/**
+ * Bloque que pausa al jugador hasta que salte
+ * Útil para crear puntos de espera o sincronización en el nivel
+ * @extends SceneBlocks
+ */
 export class PauseBlock extends SceneBlocks {
     /**
-     * @param {scene} scene 
-     * @param {gameObject} obj 
+     * Constructor del bloque de pausa
+     * @param {Phaser.Scene} scene - La escena donde se crea el bloque
+     * @param {Object} obj - Objeto con datos del tilemap
+     * @param {number} obj.x - Posición X
+     * @param {number} obj.y - Posición Y
+     * @param {number} obj.width - Ancho del bloque
+     * @param {number} obj.height - Alto del bloque
      */
     constructor(scene, obj) {
         super(scene, obj, 'Resume');
 
+        /** 
+         * Indica si el jugador está actualmente sobre el bloque
+         * @type {boolean}
+         */
         this.hasPlayer = false;
         this.setBody({
             type: 'rectangle',
-            width: obj.width, // Para que se pare un poco centrado
+            width: obj.width,
             height: obj.height,
         });
 
@@ -29,13 +42,17 @@ export class PauseBlock extends SceneBlocks {
         this.setCollidesWith([CATEGORY_PLAYER, CATEGORY_ENEMY, CATEGORY_POWERUP]);
         this.setUpCollisions();
     }
+
+    /**
+     * Configura el sistema de colisiones para activar la pausa
+     * @private
+     */
     setUpCollisions()
     {        
         this.setOnCollide((data)=>
         {
             const { bodyA, bodyB } = data;
 
-            // detectar al jugador
             const player = (bodyA.label === "Mario") ? bodyA : 
                            (bodyB.label === "Mario") ? bodyB : null;
 
@@ -54,21 +71,22 @@ export class PauseBlock extends SceneBlocks {
             }
         });
     }
+
+    /**
+     * Actualización por frame - maneja la liberación de la pausa
+     * @param {number} time - Tiempo total del juego
+     * @param {number} delta - Delta time
+     */
     update(time, delta) {
         if (this.scene.enPausa)
         {
             let player = this.scene.jugador;
             if (player.isJumping) {
-                // Reanudar al jugador
-                this.setTexture('Resume'); // Cambiar textura a bloque vacío
-                // player.setVelocityY(-6);
-                player.resume(); // Si tienes animaciones pausadas
+                this.setTexture('Resume');
+                player.resume();
                 this.scene.enPausa = false;
-
-                // Restaurar bloque
                 this.hasPlayer = false;
             } else {
-                // Mientras está en pausa, mantener al jugador detenido
                 player.setVelocity(0, 0);
             }
         }

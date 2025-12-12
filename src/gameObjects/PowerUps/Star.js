@@ -11,6 +11,7 @@ const STAR_DURATION = 8000; // ms
  * Otorga invencibilidad temporal al jugador, aumenta su velocidad,
  * reproduce música especial, aplica efecto arcoíris y gestiona temporizadores
  * de advertencia y finalización.
+ * @extends PowerUp
  */
 export default class Star extends PowerUp {
 
@@ -27,8 +28,8 @@ export default class Star extends PowerUp {
     /**
      * Se ejecuta cuando el jugador recoge la estrella.
      * Activa invencibilidad, aumenta velocidad, cambia música,
-     * aplica efecto arcoíris y lanza temporizadores.
-     * @param {Player} player - Jugador que recoge el power-up.
+     * aplica efecto arcoíris y lanza temporizadores de advertencia y finalización.
+     * @param {Object} player - Jugador que recoge el power-up.
      */
     collect(player) {
         player.activePowerUp = this.type;
@@ -102,6 +103,7 @@ export default class Star extends PowerUp {
     /**
      * Finaliza el estado de invencibilidad de la estrella.
      * Cancela temporizadores, restaura velocidad, música y apariencia del jugador.
+     * @param {Object} player - Jugador al que se le termina el efecto.
      */
     endStarInvincibility(player) {
 

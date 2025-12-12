@@ -1,41 +1,53 @@
-// import Button from '../../../gameObjects/UI/Button.js';
-// import Mario from '../../../gameObjects/Player/Mario.js';
-// import Fin from '../../../gameObjects/LevelBlockObjects/BarraFin.js';
-// import Goomba from '../../../gameObjects/Enemies/Goomba.js';
-// import Koopa from '../../../gameObjects/Enemies/Koopa.js';
-// import PiranhaPlant from '../../../gameObjects/Enemies/PiranhaPlant.js';
-// import Pokey from '../../../gameObjects/Enemies/Pokey.js';
-// import TransitionCode from '../../../gameObjects/UI/Transition.js'
-// import { PowerUp, POWERUP_TYPES } from '../../../gameObjects/PowerUps/PowerUps.js';
-// import { DIE_TYPES } from '../../../gameObjects/Enemies/Goomba.js';
+/**
+ * @fileoverview Nivel de Roma.
+ * @module Scenes/Nivel_R
+ */
+
 import GameScenes from '../GameScenes.js';
 
-class Nivel_R extends GameScenes
-{
-    constructor(){
-        super('Nivel_R', ()=>
-            {
+/**
+ * @class Nivel_R
+ * @extends GameScenes
+ * @description Escena del nivel de Roma.
+ * Configura el mapa temático romano con arquitectura imperial.
+ */
+class Nivel_R extends GameScenes {
+    /**
+     * Crea una instancia del Nivel R (Roma).
+     */
+    constructor() {
+        super('Nivel_R', () => {
             const tilesetBG = this.map.addTilesetImage('bg', 'bg_tileset');
-
-            // Capa de suelo
             const bgLayer = this.map.createLayer('CapaFondo', tilesetBG, 0, 0);
-            }, false);
+        }, false);
     }
     
-    init(){
-
+    /**
+     * Inicializa las propiedades del nivel antes de precarga.
+     */
+    init() {
+        // Inicialización personalizada del nivel
     }
 
-    preload(){
+    /**
+     * Precarga los recursos específicos del nivel de Roma.
+     */
+    preload() {
         console.log('=== INICIO ===');
         this.load.tilemapTiledJSON(this.mapKey, 'MapaDeTiled/ElMapa.json');
-        this.score=0;
+        this.score = 0;
         this.coinScore = 0;
         this.purpleCoinScore = 0;
         this.timer = 60;
     }
-    create(){
+
+    /**
+     * Crea e inicializa el nivel de Roma.
+     * Configura la música específica del nivel romano.
+     */
+    create() {
         super.create();
+        
         // Música de fondo del nivel
         if (!this.levelMusic || !this.levelMusic.isPlaying) {
             this.levelMusic = this.sound.add('level_music', { loop: true, volume: 1 });

@@ -1,7 +1,23 @@
 import { DIE_TYPES } from "./Goomba.js";
 
+/**
+ * Clase que representa una Planta Piraña en el juego.
+ * Las plantas piraña emergen y se ocultan periódicamente desde tuberías,
+ * dañando al jugador si hace contacto con ellas cuando están visibles.
+ * @extends Phaser.GameObjects.Sprite
+ */
 class PiranhaPlant extends Phaser.GameObjects.Sprite
 {
+    /**
+     * Constructor de la Planta Piraña
+     * @param {Phaser.Scene} scene - La escena de Phaser donde se añade la planta
+     * @param {number} x - Posición X inicial
+     * @param {number} y - Posición Y inicial (posición oculta)
+     * @param {string} texture - Clave de la textura a usar
+     * @param {number} [hideTime=2000] - Tiempo en milisegundos que permanece oculta
+     * @param {number} [showTime=2000] - Tiempo en milisegundos que permanece visible
+     * @param {boolean} inverse - Si es true, la planta sale hacia abajo en lugar de hacia arriba
+     */
     constructor(scene, x, y, texture, hideTime = 2000, showTime = 2000, inverse) {
         super(scene, x, y, texture);
 
@@ -9,26 +25,26 @@ class PiranhaPlant extends Phaser.GameObjects.Sprite
         scene.matter.add.gameObject(this);
 
         // Propiedades de comportamiento
-        this.hideTime = hideTime; // Tiempo oculta (ms)
-        this.showTime = showTime; // Tiempo visible (ms)
-        this.isHidden = true; // Empieza oculta
-        this.isMoving = false; // Está en transición
+        this.hideTime = hideTime;
+        this.showTime = showTime;
+        this.isHidden = true;
+        this.isMoving = false;
         this.isAlive = true;
         this.shouldBeDestroyed = false;
-        this.isEnemy = true; // Marca como enemigo
+        this.isEnemy = true;
 
         // Posiciones
-        this.hiddenY = y; // Posición cuando está oculta (dentro de la tubería)
+        this.hiddenY = y;
         if(!inverse)
         {
-            this.visibleY = y - 56; // Posición cuando está visible (sale 64px)
+            this.visibleY = y - 56;
         }
         else
         {
-            this.visibleY = y + 56; // Posición cuando está visible (sale 64px)
+            this.visibleY = y + 56;
             this.flipY = true;
         }
-        this.y = this.hiddenY; // Empieza oculta
+        this.y = this.hiddenY;
 
         // Configuración de física
         const sx = this.width / 2;
@@ -37,10 +53,9 @@ class PiranhaPlant extends Phaser.GameObjects.Sprite
         const h = this.height;
         const M = Phaser.Physics.Matter.Matter;
 
-        // Cuerpo principal (más pequeño para que sea justo)
         this.plantBody = M.Bodies.rectangle(sx, sy, w * 0.6, h * 0.8, { 
             chamfer: { radius: 5 },
-            isSensor: true, // Es un sensor para detectar colisiones sin física
+            isSensor: true,
             label: "Piranha"
         });
 
@@ -58,25 +73,30 @@ class PiranhaPlant extends Phaser.GameObjects.Sprite
         this.setCollidesWith([CATEGORY_PLAYER,CATEGORY_TERRAIN]);
 
         this.setExistingBody(compoundBody);
-        this.setStatic(true); // La planta no se mueve por física
+        this.setStatic(true);
         this.setFixedRotation();
  
-        // Posicionar el cuerpo
         M.Body.setPosition(compoundBody, { x, y: this.hiddenY });
         this.setPosition(x, this.hiddenY);
 
-        // Iniciar el ciclo de aparición/ocultación
         this.startCycle();
 
         this.biteSound = scene.sound.add('aplastar');
     }
 
+    /**
+     * Método llamado cuando la planta muere
+     * @param {string} [killType=DIE_TYPES.STOMP] - Tipo de muerte
+     */
     die(killType = DIE_TYPES.STOMP) {
         this.safeDestroy();
     }
 
+    /**
+     * Inicia el ciclo de aparición y ocultación de la planta
+     * Añade un retraso inicial aleatorio para crear variedad
+     */
     startCycle() {
-        // Esperar un tiempo aleatorio antes de empezar (para variedad)
         const initialDelay = Phaser.Math.Between(0, 1000);
         
         this.scene.time.delayedCall(initialDelay, () => {
@@ -84,36 +104,39 @@ class PiranhaPlant extends Phaser.GameObjects.Sprite
         });
     }
 
+    /**
+     * Programa la siguiente acción (emerger u ocultarse) según el estado actual
+     */
     scheduleNextAction() {
         if (!this.isAlive || this.shouldBeDestroyed) return;
 
         if (this.isHidden) {
-            // Está oculta, programar para salir
             this.scene.time.delayedCall(this.hideTime, () => {
                 this.emerge();
             });
         } else {
-            // Está visible, programar para ocultarse
             this.scene.time.delayedCall(this.showTime, () => {
                 this.hide();
             });
         }
     }
 
+    /**
+     * Hace emerger la planta desde su posición oculta
+     * Reproduce una animación suave y actualiza el cuerpo de física
+     */
     emerge() {
         if (!this.isAlive || this.shouldBeDestroyed || this.isMoving) return;
 
         this.isMoving = true;
         this.isHidden = false;
 
-        // Animación de salida
         this.scene.tweens.add({
             targets: this,
             y: this.visibleY,
             duration: 800,
             ease: 'Sine.easeInOut',
             onUpdate: () => {
-                // Actualizar la posición del cuerpo de Matter
                 if (this.body) {
                     const M = Phaser.Physics.Matter.Matter;
                     M.Body.setPosition(this.body, { x: this.x, y: this.y });
@@ -125,26 +148,27 @@ class PiranhaPlant extends Phaser.GameObjects.Sprite
             }
         });
 
-        // Reproducir animación de morder si existe
         if (this.scene.anims.exists('piranha_movement')) {
             this.play('piranha_movement');
         }
     }
 
+    /**
+     * Oculta la planta moviéndola a su posición escondida
+     * Detiene las animaciones y actualiza el cuerpo de física
+     */
     hide() {
         if (!this.isAlive || this.shouldBeDestroyed || this.isMoving) return;
 
         this.isMoving = true;
         this.isHidden = true;
 
-        // Animación de entrada
         this.scene.tweens.add({
             targets: this,
             y: this.hiddenY,
             duration: 800,
             ease: 'Sine.easeInOut',
             onUpdate: () => {
-                // Actualizar la posición del cuerpo de Matter
                 if (this.body) {
                     const M = Phaser.Physics.Matter.Matter;
                     M.Body.setPosition(this.body, { x: this.x, y: this.y });
@@ -156,24 +180,24 @@ class PiranhaPlant extends Phaser.GameObjects.Sprite
             }
         });
 
-        // Detener animación
         if (this.anims.isPlaying) {
             this.anims.stop();
         }
     }
 
+    /**
+     * Maneja la colisión con el jugador
+     * La planta solo daña cuando está visible. El jugador no puede saltarla.
+     * @param {Object} player - Referencia al objeto jugador
+     */
     handlePlayerCollision(player) {
-        // Solo daña si está visible (no oculta)
         if (this.isHidden || !this.isAlive) return;
 
-        // Si el jugador es invencible, no hace nada
         if (player.isInvincible) {
             return;
         }
 
-        // La planta piraña siempre daña (no se puede saltar sobre ella)
         if (!player.isBeingPushed && !player.isInvulnerable) {
-            // Determinar dirección del empuje
             let pushDirection = 0;
             if (player.x < this.x) {
                 pushDirection = -1;
@@ -187,7 +211,6 @@ class PiranhaPlant extends Phaser.GameObjects.Sprite
             } else if (!playerWasSuperSize && !this.scene.endTimer) {
                 this.scene.sound.play('muerte');
                 
-                // Detener cualquier movimiento de Mario antes de la burbuja
                 player.setVelocity(0, 0);
                 if (player.body) {
                     player.body.velocity.x = 0;
@@ -197,11 +220,11 @@ class PiranhaPlant extends Phaser.GameObjects.Sprite
                 if (!this.scene.isBoss)
                 {
                     if (player.bubblesLeft > 0) {
-                        player.Bubble(); // Entra en burbuja
+                        player.Bubble();
                     } else {
                         player.hurt();
                         player.setStatic(true);
-                        this.body.collisionFilter.mask = 0; // Desactivar completamente las colisiones
+                        this.body.collisionFilter.mask = 0;
                         this.setStatic(true);
                         this.scene.doubleEndTransition(()=>{this.scene.scene.launch('LevelSelection');
                             this.scene.scene.stop();});
@@ -223,6 +246,10 @@ class PiranhaPlant extends Phaser.GameObjects.Sprite
         }
     }
 
+    /**
+     * Verifica si la planta está dentro del área visible de la cámara
+     * @returns {boolean} true si la planta es visible en cámara, false en caso contrario
+     */
     checkVisibility() {
         if (this.shouldBeDestroyed) return false;
         
@@ -238,21 +265,22 @@ class PiranhaPlant extends Phaser.GameObjects.Sprite
         return isVisible;
     }
 
+    /**
+     * Destruye la planta de forma segura
+     * Limpia todos los tweens, animaciones y cuerpos de física antes de destruir el objeto
+     */
     safeDestroy() {
         if (this.shouldBeDestroyed) return;
         
         this.shouldBeDestroyed = true;
         this.isAlive = false;
         
-        // Cancelar todos los tweens
         this.scene.tweens.killTweensOf(this);
         
-        // Detener animaciones
         if (this.anims) {
             this.anims.stop();
         }
         
-        // Deshabilitar cuerpo
         if (this.body) {
             this.body.enable = false;
         }
@@ -262,12 +290,17 @@ class PiranhaPlant extends Phaser.GameObjects.Sprite
         this.destroy();
     }
 
+    /**
+     * Método de actualización llamado cada frame
+     * Verifica si la planta ha salido del área de la cámara por la izquierda
+     * @param {number} time - Tiempo total transcurrido desde el inicio del juego
+     * @param {number} delta - Tiempo transcurrido desde el último frame
+     */
     update(time, delta) {
         if (!this.isAlive || this.shouldBeDestroyed) return;
 
         const camera = this.scene.cameras.main;
 
-        // Destruir si se sale por la izquierda de la cámara
         if (this.x < camera.scrollX - 50) {
             this.safeDestroy();
             return;

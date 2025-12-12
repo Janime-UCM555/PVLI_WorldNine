@@ -4,6 +4,7 @@ import { PowerUp, POWERUP_TYPES } from './PowerUps.js';
  * PowerUp de tipo Martillo.
  * Permite al jugador lanzar martillos como ataque ofensivo.
  * No altera el tamaño del jugador (compatible con estado Super).
+ * @extends PowerUp
  */
 export default class Hammer extends PowerUp {
 
@@ -21,7 +22,7 @@ export default class Hammer extends PowerUp {
      * Se ejecuta cuando el jugador recoge el martillo.
      * Activa la habilidad de lanzar martillos y establece
      * este power-up como ofensivo activo.
-     * @param {Player} player - Jugador que recoge el power-up.
+     * @param {Object} player - Jugador que recoge el power-up.
      */
     collect(player) {
         super.collect(player);

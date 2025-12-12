@@ -12,14 +12,18 @@ import Star from "./Star.js";
  * @param {Phaser.Scene} scene - La escena donde se creará el PowerUp.
  * @param {number} x - Coordenada X de aparición.
  * @param {number} y - Coordenada Y de aparición.
- * @param {POWERUP_TYPES} type - Tipo de PowerUp a generar.
+ * @param {string} type - Tipo de PowerUp a generar (debe coincidir con POWERUP_TYPES).
  * 
- * @returns {Phaser.GameObjects.GameObject} El PowerUp generado.
+ * @returns {PowerUp} El PowerUp generado.
  * 
  * @description
  * Crea una instancia del PowerUp adecuado según el tipo recibido,
  * aplica una velocidad inicial para que salga "expulsado" del bloque
  * y lo añade al grupo `scene.powerups`.
+ * 
+ * @example
+ * // Spawnear una seta en la posición (100, 200)
+ * spawnPowerUp(this, 100, 200, POWERUP_TYPES.MUSHROOM);
  */
 export const spawnPowerUp = (scene, x, y, type) =>
 {

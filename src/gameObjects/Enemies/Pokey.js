@@ -10,8 +10,23 @@ import{
 } from "../collisionCategories.js"
 const M = Phaser.Physics.Matter.Matter;
 
+/**
+ * Clase que representa un enemigo Pokey (cactus segmentado) en el juego.
+ * El Pokey está compuesto por múltiples segmentos corporales apilados y una cabeza.
+ * Se mueve horizontalmente, detecta bordes y colisiones, y se desintegra al morir.
+ * Incluye una animación de balanceo para simular movimiento natural.
+ * @extends Phaser.GameObjects.Container
+ */
 class Pokey extends Phaser.GameObjects.Container
 {
+    /**
+     * Constructor del Pokey
+     * @param {Phaser.Scene} scene - La escena de Phaser donde se añade el Pokey
+     * @param {number} x - Posición X inicial
+     * @param {number} y - Posición Y inicial
+     * @param {number} [segments=5] - Número de segmentos corporales (sin contar la cabeza)
+     * @param {number} speed - Velocidad de movimiento horizontal
+     */
     constructor(scene, x, y, segments = 5, speed) {
         super(scene, x, y);
 
@@ -31,9 +46,9 @@ class Pokey extends Phaser.GameObjects.Container
         this.isCrumbling = false;
 
         // Propiedades para la animación
-        this.animationTime = 0; // Tiempo acumulado para la animación
-        this.swayAmplitude = 7; // Amplitud del movimiento lateral (píxeles)
-        this.swaySpeed = 5; // Velocidad de la oscilación
+        this.animationTime = 0;
+        this.swayAmplitude = 7;
+        this.swaySpeed = 5;
 
         // Sensores para detección de colisiones
         this.blocked = {
@@ -56,20 +71,20 @@ class Pokey extends Phaser.GameObjects.Container
         this.bodyBodies = [];
         this.fallingSegments = [];
 
-        // Crear los segmentos visuales
         this.createSegments();
-
-        // Configurar Matter.js para todo el Pokey
         this.setupPhysics();
 
         this.setDepth(3);
 
         this.hitSound = scene.sound.add('aplastar');
         
-        // Configurar colisión con los bordes del mundo
         this.setUpWorldBoundsCollision();
     }
     
+    /**
+     * Configura los listeners de colisión con el mundo de Matter.js
+     * Establece los manejadores para beforeupdate, collisionactive y afterupdate
+     */
     setUpWorldBoundsCollision() {
         const world = this.scene.matter.world;
 
@@ -82,6 +97,11 @@ class Pokey extends Phaser.GameObjects.Container
         world.on('afterupdate', this.handleAfterUpdate, this);
     }
 
+    /**
+     * Manejador llamado antes de cada actualización de física
+     * Resetea los contadores de colisiones de todos los sensores
+     * @param {Object} event - Evento de Matter.js
+     */
     handleBeforeUpdate(event) {
         this.numTouching.left = 0;
         this.numTouching.right = 0;
@@ -90,6 +110,11 @@ class Pokey extends Phaser.GameObjects.Container
         this.numTouching.bottomRight = 0;
     }
 
+    /**
+     * Manejador de colisiones activas
+     * Detecta colisiones con los sensores laterales e inferiores del Pokey
+     * @param {Object} event - Evento que contiene pares de colisión
+     */
     handleCollisionActive(event) {
         for (let i = 0; i < event.pairs.length; i++)
         {
@@ -130,6 +155,11 @@ class Pokey extends Phaser.GameObjects.Container
         };
     }
 
+    /**
+     * Manejador llamado después de cada actualización de física
+     * Actualiza el estado de bloqueo basándose en los contadores de colisiones
+     * @param {Object} event - Evento de Matter.js
+     */
     handleAfterUpdate(event) {
         const wasGrounded = this.isGrounded;
 
@@ -140,10 +170,18 @@ class Pokey extends Phaser.GameObjects.Container
         this.blocked.bottomRight = this.numTouching.bottomRight > 0;
     }
 
+    /**
+     * Método llamado cuando el Pokey muere
+     * @param {string} [killType=DIE_TYPES.STOMP] - Tipo de muerte
+     */
     die(killType = DIE_TYPES.STOMP) {
         this.crumble();
     }
 
+    /**
+     * Desintegra el Pokey en segmentos individuales que caen
+     * Cada segmento se convierte en un cuerpo físico independiente con velocidad aleatoria
+     */
     crumble() {
         if (this.isCrumbling || !this.isAlive) return;
         
@@ -217,6 +255,10 @@ class Pokey extends Phaser.GameObjects.Container
         });
     }
     
+    /**
+     * Limpia todos los segmentos que están cayendo
+     * Elimina los cuerpos de física y sprites, luego destruye el contenedor
+     */
     cleanupFallingSegments() {
         this.fallingSegments.forEach(segment => {
             if (segment.body) {
@@ -233,6 +275,10 @@ class Pokey extends Phaser.GameObjects.Container
         this.destroy();
     }
     
+    /**
+     * Actualiza las posiciones y rotaciones de los segmentos que están cayendo
+     * Sincroniza los sprites con sus cuerpos físicos correspondientes
+     */
     updateFallingSegments() {
         this.fallingSegments.forEach(segment => {
             if (segment.sprite && segment.body) {
@@ -243,26 +289,24 @@ class Pokey extends Phaser.GameObjects.Container
         });
     }
 
-    // Nuevo método: actualizar la animación de balanceo
+    /**
+     * Actualiza la animación de balanceo del Pokey
+     * Cada segmento se balancea con un desfase para crear un movimiento ondulante
+     * @param {number} delta - Tiempo transcurrido desde el último frame en milisegundos
+     */
     updateSwayAnimation(delta) {
         if (!this.isAlive || this.isCrumbling) return;
 
-        // Incrementar el tiempo de animación
-        this.animationTime += delta * 0.001; // Convertir a segundos
+        this.animationTime += delta * 0.001;
 
-        // Animar cada segmento del cuerpo con un desfase
         this.bodySegments.forEach((segment, index) => {
-            // Cada segmento tiene un desfase basado en su índice
-            const phaseOffset = index * 0.5; // Ajusta este valor para más/menos desfase
+            const phaseOffset = index * 0.5;
             
-            // Calcular el desplazamiento lateral usando seno
             const swayOffset = Math.sin(this.animationTime * this.swaySpeed + phaseOffset) * this.swayAmplitude;
             
-            // Aplicar el desplazamiento manteniendo la posición Y original
             segment.x = swayOffset;
         });
 
-        // La cabeza también se mueve pero con menor amplitud
         if (this.head) {
             const headPhaseOffset = (this.bodySegments.length) * 0.5;
             const headSwayOffset = Math.sin(this.animationTime * this.swaySpeed + headPhaseOffset) * (this.swayAmplitude * 0.7);
@@ -270,6 +314,10 @@ class Pokey extends Phaser.GameObjects.Container
         }
     }
 
+    /**
+     * Crea los segmentos visuales del Pokey (cuerpo y cabeza)
+     * Los segmentos se apilan verticalmente desde la base hasta la cabeza
+     */
     createSegments() {
         let currentY = 0;
         
@@ -304,6 +352,10 @@ class Pokey extends Phaser.GameObjects.Container
         this.totalHeight = currentY + this.headSegmentHeight;
     }
 
+    /**
+     * Configura el sistema de física de Matter.js para el Pokey
+     * Crea un cuerpo compuesto con sensores laterales e inferiores para detección de colisiones
+     */
     setupPhysics() {
         const totalWidth = 24;
         const mask = CATEGORY_PLAYER | CATEGORY_TERRAIN | CATEGORY_ENEMY;
@@ -365,6 +417,11 @@ class Pokey extends Phaser.GameObjects.Container
         M.Body.setVelocity(this.compoundBody, { x: this.speed * this.direction, y: 0 });
     }
 
+    /**
+     * Maneja la colisión con el jugador
+     * Determina si el jugador recibe daño o si el Pokey se desintegra (si el jugador es invencible)
+     * @param {Object} player - Referencia al objeto jugador
+     */
     handlePlayerCollision(player) {
         if (!this.isAlive || this.isCrumbling) return;
 
@@ -422,11 +479,19 @@ class Pokey extends Phaser.GameObjects.Container
         }
     }
 
+    /**
+     * Cambia la dirección de movimiento del Pokey
+     * Invierte la velocidad horizontal del cuerpo físico
+     */
     changeDirection() {
         this.direction *= -1;
         M.Body.setVelocity(this.compoundBody, { x: this.compoundBody.velocity.x * this.direction, y: this.compoundBody.velocity.y });
     }
 
+    /**
+     * Actualiza el movimiento del Pokey
+     * Solo se mueve si está visible en cámara. Sincroniza la posición del contenedor con el cuerpo físico
+     */
     updateMovement() {
         if (this.shouldBeDestroyed || !this.isAlive) return;
 
@@ -451,6 +516,10 @@ class Pokey extends Phaser.GameObjects.Container
         this.setPosition(this.compoundBody.position.x, this.compoundBody.position.y + this.totalHeight/2);
     }
 
+    /**
+     * Maneja la detección de bordes/precipicios
+     * Cambia de dirección si detecta que no hay suelo adelante para evitar caerse
+     */
     handleLedges() {
         if ((this.direction === 1 && !this.blocked.bottomRight) || (this.direction === -1 && !this.blocked.bottomLeft)) 
         {
@@ -458,6 +527,10 @@ class Pokey extends Phaser.GameObjects.Container
         }
     }
 
+    /**
+     * Maneja las colisiones con paredes
+     * Cambia de dirección cuando choca lateralmente con un objeto estático u otro enemigo
+     */
     handleWallCollision() {
         if (!this.isAlive) return;
 
@@ -470,6 +543,10 @@ class Pokey extends Phaser.GameObjects.Container
         }
     }
 
+    /**
+     * Verifica si el Pokey está dentro del área visible de la cámara
+     * @returns {boolean} true si el Pokey es visible en cámara, false en caso contrario
+     */
     checkVisibility() {
         if (this.shouldBeDestroyed) return false;
         
@@ -485,6 +562,10 @@ class Pokey extends Phaser.GameObjects.Container
         return isVisible;
     }
 
+    /**
+     * Destruye el Pokey de forma segura
+     * Elimina el cuerpo físico, destruye todos los segmentos y limpia el contenedor
+     */
     safeDestroy() {
         if (this.shouldBeDestroyed) return;
         
@@ -503,6 +584,12 @@ class Pokey extends Phaser.GameObjects.Container
         this.destroy();
     }
 
+    /**
+     * Método de actualización llamado cada frame
+     * Gestiona la animación de balanceo, verifica límites del mundo, maneja colisiones y movimiento
+     * @param {number} time - Tiempo total transcurrido desde el inicio del juego
+     * @param {number} delta - Tiempo transcurrido desde el último frame en milisegundos
+     */
     update(time, delta) {
         if (this.isCrumbling) {
             this.updateFallingSegments();
@@ -511,7 +598,6 @@ class Pokey extends Phaser.GameObjects.Container
         
         if (!this.isAlive || this.shouldBeDestroyed) return;
 
-        // Actualizar la animación de balanceo
         this.updateSwayAnimation(delta);
 
         const camera = this.scene.cameras.main;

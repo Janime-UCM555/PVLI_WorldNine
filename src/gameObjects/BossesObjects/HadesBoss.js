@@ -2,51 +2,57 @@ import Goomba from '../../gameObjects/Enemies/Goomba.js';
 import Koopa from '../../gameObjects/Enemies/Koopa.js';
 import BossBase, { BOSS_STATE } from './BaseBoss.js';
 
+/**
+ * Boss Hades - Dios del inframundo
+ * Este boss se mantiene en una posición fija con movimiento oscilatorio vertical,
+ * lanza fuegos fatuos hacia el jugador y genera enemigos constantemente.
+ * @extends BossBase
+ */
 export default class HadesBoss extends BossBase { 
     /**
-     * @param {Phaser.Scene} scene
-     * @param {number} x
-     * @param {number} y
-     * @param {object} config  - igual que BossBase (player, onBattleEnd, etc.)
+     * Constructor de Hades
+     * @param {Phaser.Scene} scene - La escena de Phaser
+     * @param {number} x - Posición X inicial
+     * @param {number} y - Posición Y inicial
+     * @param {Object} [config={}] - Configuración (igual que BossBase: player, onBattleEnd, etc.)
      */
     constructor(scene, x, y, config = {}) {
         super(scene, x, y, 'Hades', {
             ...config,
-            // Valores por defecto específicos de Hades:
-            introDuration: 750,   // duración de la animación de entrada
-            neutralMoveSpeed: 0,   // Velocidad de Hades (no la necesita)
-            attackCooldown: 2500,  // cada 2.5s lanza un ataque
+            introDuration: 750,
+            neutralMoveSpeed: 0,
+            attackCooldown: 2500,
         });
 
-        // Asegurar referencia al jugador
         this.player = this.scene.jugador;
 
-        // Se puede ajustar escala, depth, etc.
         this.setDepth(10);
         this.setScale(4);
         this.setAlpha(0);
 
-        // Propiedades para movimiento
-        this.offsetX = 100;  // Distancia del borde derecho de la cámara
-        this.amplitude = 150; // Amplitud del movimiento vertical
-        this.frequency = 0.001; // Frecuencia del movimiento vertical
+        // Propiedades para movimiento oscilatorio
+        this.offsetX = 100;
+        this.amplitude = 150;
+        this.frequency = 0.001;
 
         this.originalX = x;
         this.originalY = y;
         this.oscillationTime = 0;
 
-        // Spawn de enemigos cada 1.5 segundos
-        this.enemySpawnCooldown = 1500; // ms
+        // Propiedades para spawn de enemigos
+        this.enemySpawnCooldown = 1500;
         this.timeSinceLastEnemySpawn = 0;
-        this.canSpawnEnemies = false; // Se activará después de la intro
+        this.canSpawnEnemies = false;
     }
 
-    // ---------- INTRO ESPECÍFICA DE HADES ----------
+    /**
+     * Lógica al entrar en estado INTRO
+     * Realiza fade-in y reproduce animación de Hades en bucle
+     */
     onEnterIntro() {
         this.setAlpha(0);
-        this.canSpawnEnemies = false; // Asegurar que no spawnea enemigos durante la intro
+        this.canSpawnEnemies = false;
 
-        // Reproducir animación de Hades en bucle
         this.play('HadesAnim', true);
 
         this.scene.tweens.add({
@@ -54,100 +60,109 @@ export default class HadesBoss extends BossBase {
             alpha: 1,
             duration: this.introDuration,
             onComplete: () => {
-                // Cuando termina la intro, pasa a estado NEUTRAL
                 this.changeState(BOSS_STATE.NEUTRAL);
             }
         });
     }
 
-    // No se necesita el updateIntro por tiempo porque se usa el tween
+    /**
+     * Actualización durante estado INTRO
+     * @param {number} time - Tiempo total del juego
+     * @param {number} delta - Delta time
+     */
     updateIntro(time, delta) {
-        // Algo extra durante la intro se pone aquí.
+        // Lógica extra durante la intro si es necesaria
     }
 
-    // ---------- NEUTRAL ----------
+    /**
+     * Lógica al entrar en estado NEUTRAL
+     * Activa spawn de enemigos y reproduce animación
+     */
     onEnterNeutral() {
         super.onEnterNeutral();
-        // Activar spawn de enemigos al entrar en NEUTRAL (después de la intro)
         this.canSpawnEnemies = true;
         this.timeSinceLastEnemySpawn = 0;
-        // Reproducir animación de Hades en bucle
         this.play('HadesAnim', true);
     }
     
+    /**
+     * Actualización durante estado NEUTRAL
+     * Maneja el temporizador de ataque y actualiza la posición del boss
+     * @param {number} time - Tiempo total del juego
+     * @param {number} delta - Delta time
+     */
     updateNeutral(time, delta) {
-        // Llamar al método base primero para manejar el temporizador de ataque
         super.updateNeutral(time, delta);
-    
-        // Actualizar movimiento oscilatorio en estado NEUTRAL
         this.updateBossPosition(time, delta);
     }
 
-    // ---------- ATAQUE ESPECÍFICO DE HADES ----------
+    /**
+     * Lógica al entrar en estado ATTACK
+     * Mantiene la animación y ejecuta el ataque
+     */
     onEnterAttack() {
-        // Mantener animación de Hades durante el ataque
         this.play('HadesAnim', true);
-        // Llamar al método base que ejecuta performAttack()
         super.onEnterAttack();
     }
 
+    /**
+     * Actualización durante estado ATTACK
+     * Continúa actualizando la posición del boss
+     * @param {number} time - Tiempo total del juego
+     * @param {number} delta - Delta time
+     */
     updateAttack(time, delta) {
         this.updateBossPosition(time, delta);
     }
 
+    /**
+     * Ejecuta el ataque específico de Hades: lanzar fuego fatuo
+     * Crea un proyectil de fuego que viaja hacia el jugador con detección de colisión
+     */
     performAttack() {
-        // Crear el fuego fatuo en la posición de Hades
         const fire = this.scene.add.sprite(this.x, this.y, 'WispFire');
-        fire.setDepth(16); // Un depth mayor que Hades para que se vea por encima
-        fire.name = 'hades_fire'; // Identificador para las colisiones
+        fire.setDepth(16);
+        fire.name = 'hades_fire';
 
-        // Propiedades adicionales para controlar el comportamiento
-        fire.hasHitPlayer = false; // Propiedad para controlar si ha colisionado con el jugador
-        fire.isFadingOut = false; // Propiedad para controlar si se está desvaneciendo
-        fire.currentTexture = 'WispFire'; // Textura actual
-        fire.damageApplied = false; // Propiedad para controlar daño una sola vez
+        // Propiedades de control del fuego
+        fire.hasHitPlayer = false;
+        fire.isFadingOut = false;
+        fire.currentTexture = 'WispFire';
+        fire.damageApplied = false;
 
-        // Definir radio de colisión para el fuego (más pequeño que el sprite)
-        fire.hitRadius = fire.displayWidth * 0.5; // Radio de colisión basado en el tamaño del sprite
+        // Configuración de hitbox
+        fire.hitRadius = fire.displayWidth * 0.5;
+        fire.hitboxOffsetX = -fire.displayWidth * 0.3;
+        fire.hitboxOffsetY = fire.displayHeight * 0.07;
 
-        // Offset de la hitbox: más a la izquierda y abajo
-        // Valores negativos para izquierda, positivos para abajo
-        fire.hitboxOffsetX = -fire.displayWidth * 0.3;  // 30% del ancho a la izquierda
-        fire.hitboxOffsetY = fire.displayHeight * 0.07;  // 7% del alto hacia abajo
-
-        // Añadir referencia al boss y jugador
         fire.boss = this;
         fire.player = this.player;
     
-        // Calcular posición destino: 50px a la izquierda de Mario, misma Y
+        // Calcular trayectoria hacia el jugador
         const targetX = this.player.x - 50;
         const targetY = this.player.y;
     
-        // Calcular dirección y velocidad
         const dx = targetX - this.x;
         const dy = targetY - this.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         const speed = 300;
         const travelDuration = (distance / speed) * 1000;
-        const fadeDuration = 1500; // Duración del desvanecimiento
+        const fadeDuration = 1500;
 
-        // Calcular ángulo de rotación basado en la dirección
-        const angle = Math.atan2(dy, dx) - 2; // Ángulo en radianes
-        fire.setRotation(angle); // Rotar el sprite
-        fire.setOrigin(0.5, 0.5); // Asegurar que rota desde el centro
+        const angle = Math.atan2(dy, dx) - 2;
+        fire.setRotation(angle);
+        fire.setOrigin(0.5, 0.5);
 
-        // Calcular velocidad normalizada para mantener la dirección después del golpe
         fire.directionX = dx / distance;
         fire.directionY = dy / distance;
         fire.originalSpeed = speed;
-        fire.fadeDuration = fadeDuration; // Guardar la duración
+        fire.fadeDuration = fadeDuration;
 
-        // Iniciar animación del fuego fatuo normal
         if (this.scene.anims.exists('WispFireAnim')) {
             fire.play('WispFireAnim');
         }
     
-        // 1. Fase de vuelo: Mover hacia el jugador
+        // Tween de movimiento con detección de colisión
         const flightTween = this.scene.tweens.add({
             targets: fire,
             x: targetX,
@@ -155,40 +170,32 @@ export default class HadesBoss extends BossBase {
             duration: travelDuration,
             ease: 'Linear',
             onUpdate: (tween, target) => {
-                // Verificar colisión con el jugador
                 if (!fire.damageApplied && !fire.player.isInvincible) {
-                    // Calcular la posición del centro de la hitbox con offset
                     const hitboxCenterX = fire.x + fire.hitboxOffsetX;
                     const hitboxCenterY = fire.y + fire.hitboxOffsetY;
 
-                    // Obtener bounds del jugador (rectangular)
                     const playerBounds = fire.player.getBounds();
                 
-                    // Calcular el punto más cercano en el rectángulo del jugador al círculo del fuego
                     let closestX = hitboxCenterX;
                     let closestY = hitboxCenterY;
                 
-                    // Encontrar el punto X más cercano dentro del rectángulo del jugador
                     if (hitboxCenterX < playerBounds.left) {
                         closestX = playerBounds.left;
                     } else if (hitboxCenterX > playerBounds.right) {
                         closestX = playerBounds.right;
                     }
                 
-                    // Encontrar el punto Y más cercano dentro del rectángulo del jugador
                     if (hitboxCenterY < playerBounds.top) {
                         closestY = playerBounds.top;
                     } else if (hitboxCenterY > playerBounds.bottom) {
                         closestY = playerBounds.bottom;
                     }
                 
-                    // Calcular distancia entre el centro del fuego y el punto más cercano del jugador
                     const distanceToClosest = Phaser.Math.Distance.Between(
                         hitboxCenterX, hitboxCenterY,
                         closestX, closestY
                     );
                 
-                    // Detectar colisión si la distancia es menor que el radio del fuego
                     if (distanceToClosest < fire.hitRadius) {
                         fire.damageApplied = true;
                         this.handleFireHitPlayer(fire);
@@ -196,17 +203,14 @@ export default class HadesBoss extends BossBase {
                 }
             },
             onComplete: () => {
-                // Comenzar desvanecimiento automáticamente al llegar al destino
                 if (!fire.isFadingOut) {
                     this.startFadeOut(fire);
                 }
             }
         });
 
-        // Guardar referencia al tween
         fire.flightTween = flightTween;
 
-        // 2. Desvanecimiento automático (por si no golpea al jugador)
         this.scene.time.delayedCall(travelDuration + fadeDuration, () => {
             if (fire && !fire.isFadingOut) {
                 this.startFadeOut(fire);
@@ -214,43 +218,39 @@ export default class HadesBoss extends BossBase {
         });
     }
 
-    // Método para iniciar desvanecimiento
+    /**
+     * Inicia el desvanecimiento del fuego fatuo
+     * Cambia textura, reduce escala y velocidad mientras desaparece
+     * @param {Phaser.GameObjects.Sprite} fire - Sprite del fuego a desvanecer
+     */
     startFadeOut(fire) {
         if (fire.isFadingOut) return;
     
         fire.isFadingOut = true;
     
-        // Detener el tween de vuelo si existe
         if (fire.flightTween) {
             fire.flightTween.stop();
             fire.flightTween.remove();
         }
     
-        // Detener la animación actual de WispFireAnim
         fire.anims.stop();
     
-        // Cambiar a la textura de fuego desvaneciéndose
         fire.setTexture('WispFireFading');
         fire.currentTexture = 'WispFireFading';
-        fire.setRotation(0); // Restablecer rotación
+        fire.setRotation(0);
     
-        // Reproducir animación de WispFireFading
         if (this.scene.anims.exists('WispFireFadingAnim')) {
             fire.play('WispFireFadingAnim');
         }
 
-        // Calcular movimiento continuo durante el desvanecimiento
-        // Velocidad reducida al 10% de la original
         const reducedSpeed = fire.originalSpeed * 0.1;
         
-        // Calcular desplazamiento basado en dirección y duración
         const travelDistanceX = fire.directionX * reducedSpeed * (fire.fadeDuration / 500);
         const travelDistanceY = fire.directionY * reducedSpeed * (fire.fadeDuration / 500);
         
         const targetX = fire.x + travelDistanceX;
         const targetY = fire.y + travelDistanceY;
 
-        // 1. Tween para movimiento continuo durante el desvanecimiento
         this.scene.tweens.add({
             targets: fire,
             x: targetX,
@@ -262,7 +262,6 @@ export default class HadesBoss extends BossBase {
             }
         });
     
-        // 2. Tween para desvanecimiento gradual
         const fadeTween = this.scene.tweens.add({
             targets: fire,
             alpha: 0,
@@ -271,12 +270,10 @@ export default class HadesBoss extends BossBase {
             duration: fire.fadeDuration,
             ease: 'Power2',
             onComplete: () => {
-                // Destruir el fuego cuando esté completamente transparente
                 if (fire) {
                     fire.destroy();
                 }
             
-                // Si el boss estaba esperando a que termine el ataque, finalizarlo
                 if (this.state === BOSS_STATE.ATTACK) {
                     super.finishAttack();
                 }
@@ -286,38 +283,35 @@ export default class HadesBoss extends BossBase {
         fire.fadeTween = fadeTween;
     }
 
-    // Manejar el golpe del fuego al jugador
+    /**
+     * Maneja el impacto del fuego fatuo con el jugador
+     * Aplica efecto visual de parpadeo y reduce la velocidad del jugador temporalmente
+     * @param {Phaser.GameObjects.Sprite} fire - Sprite del fuego que golpeó
+     */
     handleFireHitPlayer(fire) {
-        // Marcar como que ya golpeó al jugador
         fire.hasHitPlayer = true;
         fire.damageApplied = true;
 
-        // Iniciar desvanecimiento
         this.scene.time.delayedCall(75, () => {
             if (fire && !fire.isFadingOut) {
                 this.startFadeOut(fire);
             }
         });
 
-        // Aplicar reducción de velocidad al jugador
         if (!this.player.isInvincible && !this.player.isHurt) {
-            // Parpadeo visual usando tween
-            const blinkDuration = 1000; // 1 segundo de parpadeo
-            const blinkInterval = 200; // Parpadear cada 200ms
+            const blinkDuration = 1000;
+            const blinkInterval = 200;
         
-            // Calcular número de parpadeos
             const blinkCount = Math.floor(blinkDuration / blinkInterval);
         
-            // Tween de parpadeo
             this.blinkTween = this.scene.tweens.add({
                 targets: this.player,
-                alpha: 0.3, // Hacer semi-transparente
-                duration: blinkInterval / 2, // Mitad del tiempo para ir a transparente
-                yoyo: true, // Volver al estado original
-                repeat: blinkCount - 1, // Repetir
+                alpha: 0.3,
+                duration: blinkInterval / 2,
+                yoyo: true,
+                repeat: blinkCount - 1,
                 ease: 'Linear',
                 onUpdate: () => {
-                    // Alternar visibilidad basado en alpha
                     if (this.player.alpha < 0.5) {
                         this.player.setVisible(false);
                     } else {
@@ -325,70 +319,69 @@ export default class HadesBoss extends BossBase {
                     }
                 },
                 onComplete: () => {
-                    // Asegurar que vuelva a ser visible
                     this.player.setAlpha(1);
                     this.player.setVisible(true);
                 }
             });
 
-            // Guardar velocidad original del jugador
             const originalPlayerSpeed = this.player.speed;
-
-            // Reducir velocidad al 50%
             this.player.speed *= 0.5;
 
-            // Restaurar velocidad original después de un delay de 1 segundo
             this.scene.time.delayedCall(1000, () => {
                 this.player.speed = originalPlayerSpeed;
             });
         }
     }
 
-    // ---------- DERROTA ----------
-    // Se puede sobreescribir onEnterDead / playDeathAnimation para una muerte distinta
-
+    /**
+     * Lógica al entrar en estado DEAD
+     * Detiene spawn de enemigos y reproduce animación de muerte
+     */
     onEnterDead() {
-        // Detener spawn de enemigos al morir
         this.canSpawnEnemies = false;
-
-        // Detener cualquier animación actual
         this.stop();
         
-        // Reproducir animación de muerte específica de Hades
         if (this.scene.anims.exists('HadesDeadAnim')) {
             this.play('HadesDeadAnim', true);
         }
         
-        // Llamar al método base para manejar la lógica de muerte
         super.onEnterDead();
     }
 
+    /**
+     * Reproduce la animación de muerte específica de Hades
+     */
     playDeathAnimation() {
-        // Llamar al método padre con la key específica
         super.playDeathAnimation('hades_death');
     }
 
-    // ---------- UPDATE GENERAL ----------
+    /**
+     * Método de actualización principal de Hades
+     * Maneja la máquina de estados, spawn de enemigos y posición
+     * @param {number} time - Tiempo total del juego
+     * @param {number} delta - Delta time
+     */
     update(time, delta) {
-        // Llamar al update del padre para la máquina de estados base
         super.update(time, delta);
 
-        // Manejar spawn de enemigos (independiente del estado, excepto DEAD)
         this.handleEnemySpawn(time, delta);
         
-        // Actualizar posición en todos los estados excepto DEAD
         if (this.state !== BOSS_STATE.DEAD) {
             this.updateBossPosition(time, delta);
         }
     }
 
-    // Método de movimiento
+    /**
+     * Actualiza la posición de Hades con movimiento oscilatorio
+     * Mantiene una distancia fija del borde derecho de la cámara y oscila verticalmente
+     * @param {number} time - Tiempo total del juego
+     * @param {number} delta - Delta time
+     */
     updateBossPosition(time, delta) {
         if (this.state === BOSS_STATE.DEAD || !this.player || !this.isBattleActive) return;
 
         const camera = this.scene.cameras.main;
 
-        // Configuración de distancias
         const cameraWidth = camera.width / camera.zoom;
         const cameraHeight = camera.height / camera.zoom;
         const cameraLeft = camera.scrollX;
@@ -396,78 +389,70 @@ export default class HadesBoss extends BossBase {
         const cameraTop = camera.scrollY;
         const cameraBottom = cameraTop + cameraHeight;
         
-        // 1. Posición X: distancia fija del borde derecho de la cámara
         const margin = 100;
         const minX = cameraLeft - margin;
         const maxX = cameraRight + margin;
         
-        // Calcular la posición X objetivo - distancia fija del borde derecho
         let targetX = cameraRight + this.offsetX;
         targetX = Phaser.Math.Clamp(targetX, minX, maxX);
         
-        // Asignar directamente la posición X (sin suavizado)
         this.x = targetX;
 
-        // 2. Movimiento oscilatorio en el eje Y
-        const minY = cameraTop + 275; // 275 píxeles desde el borde superior
-        const maxY = cameraBottom - 25; // 25 píxeles desde el borde inferior
+        const minY = cameraTop + 275;
+        const maxY = cameraBottom - 25;
         const centerY = (minY + maxY) / 2;
         const amplitude = Math.min(this.amplitude, (maxY - minY) / 2);
         
-        // Usar el tiempo acumulado para oscilación suave
         this.oscillationTime += delta * this.frequency;
         
-        // Calcular posición Y con oscilación senoidal
         const targetY = centerY + Math.sin(this.oscillationTime) * amplitude;
         
-        // Asignar directamente la posición Y
         this.y = targetY;
 
-        // 3. Actualizar dirección para mirar hacia Mario
         this.flipX = this.player.x > this.x;
     }
 
-    // Manejar spawn de enemigos independientemente del estado
+    /**
+     * Maneja el spawn periódico de enemigos
+     * Genera enemigos cada 1.5 segundos cuando está activo
+     * @param {number} time - Tiempo total del juego
+     * @param {number} delta - Delta time
+     */
     handleEnemySpawn(time, delta) {
-        // Solo spawnear enemigos si está permitido (después de intro, antes de muerte)
         if (!this.canSpawnEnemies || !this.isBattleActive || this.state === BOSS_STATE.DEAD) {
             return;
         }
 
-        // Actualizar temporizador
         this.timeSinceLastEnemySpawn += delta;
 
-        // Spawnear enemigo si ha pasado el cooldown
         if (this.timeSinceLastEnemySpawn >= this.enemySpawnCooldown) {
             this.spawnRandomEnemy();
             this.timeSinceLastEnemySpawn = 0;
         }
     }
 
-    // Spawn de enemigo aleatorio
+    /**
+     * Genera un enemigo aleatorio (Goomba o Koopa)
+     * El enemigo aparece 500px a la derecha del jugador con fade-in
+     */
     spawnRandomEnemy() {
         if (!this.player || !this.scene || !this.isBattleActive) return;
 
-        // Calcular posición de spawn: 500px a la derecha de Mario, 100px arriba
         let spawnX = this.player.x + 500;
         let spawnY = 500;
 
-        // Obtener límites del mapa
         const map = this.scene.map;
         const mapWidth = map.widthInPixels;
         const mapHeight = map.heightInPixels;
 
-        // Asegurar que el spawn esté dentro de los límites del mapa con un margen de 50 píxeles
         const margin = 50;
         spawnX = Phaser.Math.Clamp(spawnX, margin, mapWidth - margin);
         spawnY = Phaser.Math.Clamp(spawnY, margin, mapHeight - margin);
 
-        // Elegir aleatoriamente entre Goomba (0) y Koopa (1)
         const enemyType = Phaser.Math.Between(0, 1);
 
         let enemy;
         if (enemyType === 0) {
-            // Spawnear Goomba
             enemy = new Goomba(
                 this.scene,
                 spawnX,
@@ -478,10 +463,9 @@ export default class HadesBoss extends BossBase {
                 3
             );
             console.log("Goomba spawneado - Type:", enemy.type, "Texture:", enemy.texture.key);
-            enemy.direction = -1; // Ir hacia la izquierda (hacia Mario)
+            enemy.direction = -1;
             this.scene.goombas.add(enemy);
         } else {
-            // Spawnear Koopa
             enemy = new Koopa(
                 this.scene,
                 spawnX,
@@ -490,16 +474,14 @@ export default class HadesBoss extends BossBase {
                 1,
                 3
             );
-            enemy.direction = -1; // Ir hacia la izquierda (hacia Mario)
+            enemy.direction = -1;
             this.scene.koopas.add(enemy);
         }
 
-        // Configuración común
         enemy.setDepth(2);
-        enemy.setCollisionCategory(0x0002); // CATEGORY_ENEMY
-        enemy.setCollidesWith([0x0001, 0x0004, 0x0002]); // CATEGORY_PLAYER, CATEGORY_TERRAIN, CATEGORY_ENEMY
+        enemy.setCollisionCategory(0x0002);
+        enemy.setCollidesWith([0x0001, 0x0004, 0x0002]);
 
-        // Efecto visual al spawn (aparición gradual)
         enemy.setAlpha(0);
         this.scene.tweens.add({
             targets: enemy,
