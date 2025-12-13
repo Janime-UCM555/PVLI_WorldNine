@@ -738,7 +738,7 @@ class PreloadScene extends Phaser.Scene {
         // Ralentización Horus
         this.anims.create({
             key: 'lento_movement',
-            frames: this.anims.generateFrameNumbers('lento_tileset', { start: 0, end: 2 }),
+            frames: this.anims.generateFrameNumbers('lento_tileset', { start: 0, end: 1 }),
             frameRate: 8,
             repeat: -1
         });

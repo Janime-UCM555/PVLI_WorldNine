@@ -25,9 +25,9 @@ class Nivel_G extends GameScenes {
 
             // Crear capa de fondo del Coliseo
             let bgLayer = this.map?.createLayer('CapaFondo', [tilesetBGD, tilesetBGP, tilesetBGS], 0, 0);
-            let frontLayer = this.map?.createLayer('CapaFalsoSuelo2', tilesetBGP, 0, 0);
-            this.fakeFloorLayer?.setTint(0x666666);
-            this.fakeFloorLayer?.setDepth(0);
+            let fakeFloorLayer = this.map?.createLayer('CapaFalsoSuelo2', tilesetBGP, 0, 0);
+            fakeFloorLayer?.setTint(0x666666);
+            fakeFloorLayer?.setDepth(0);
             // Configuración de capas de fondo para Grecia
             // (Actualmente comentado, puede añadirse si se necesita)
         }, false);
