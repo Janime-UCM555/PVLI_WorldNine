@@ -5,6 +5,7 @@
 </head>
 
 #### Integrantes: Guillermo Isaac Ramos Medina, Ferrán Escribá Cufí, Rodigo Ceña, y Jaime Nieto.
+Este proyecto forma parte de un trabajo universitario de segundo año para el Grado de Desarrollo de Videojuegos de la UCM.
 
 ## $${\color{#F3D301}Objetivos}$$
 
