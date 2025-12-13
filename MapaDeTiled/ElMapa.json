@@ -179,24 +179,6 @@
                 {
                  "gid":369,
                  "height":32,
-                 "id":215,
-                 "name":"",
-                 "properties":[
-                        {
-                         "name":"Breakable",
-                         "type":"bool",
-                         "value":true
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":32,
-                 "x":6304,
-                 "y":576
-                }, 
-                {
-                 "gid":369,
-                 "height":32,
                  "id":216,
                  "name":"",
                  "properties":[
@@ -503,81 +485,9 @@
                  "y":544
                 }, 
                 {
-                 "gid":369,
-                 "height":32,
-                 "id":301,
-                 "name":"",
-                 "properties":[
-                        {
-                         "name":"Breakable",
-                         "type":"bool",
-                         "value":true
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":32,
-                 "x":3808,
-                 "y":416
-                }, 
-                {
-                 "gid":369,
-                 "height":32,
-                 "id":302,
-                 "name":"",
-                 "properties":[
-                        {
-                         "name":"Breakable",
-                         "type":"bool",
-                         "value":true
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":32,
-                 "x":3840,
-                 "y":416
-                }, 
-                {
-                 "gid":369,
-                 "height":32,
-                 "id":303,
-                 "name":"",
-                 "properties":[
-                        {
-                         "name":"Breakable",
-                         "type":"bool",
-                         "value":true
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":32,
-                 "x":2112,
-                 "y":576
-                }, 
-                {
-                 "gid":369,
-                 "height":32,
-                 "id":304,
-                 "name":"",
-                 "properties":[
-                        {
-                         "name":"Breakable",
-                         "type":"bool",
-                         "value":true
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":32,
-                 "x":2208,
-                 "y":576
-                }, 
-                {
                  "gid":370,
                  "height":32,
-                 "id":305,
+                 "id":307,
                  "name":"?",
                  "properties":[
                         {
@@ -594,30 +504,7 @@
                  "type":"",
                  "visible":true,
                  "width":32,
-                 "x":2144,
-                 "y":576
-                }, 
-                {
-                 "gid":370,
-                 "height":32,
-                 "id":306,
-                 "name":"?",
-                 "properties":[
-                        {
-                         "name":"PowerUp",
-                         "type":"string",
-                         "value":"star"
-                        }, 
-                        {
-                         "name":"Spawn",
-                         "type":"bool",
-                         "value":true
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":32,
-                 "x":2176,
+                 "x":6304,
                  "y":576
                 }],
          "opacity":1,
@@ -2546,7 +2433,7 @@
          "y":0
         }],
  "nextlayerid":15,
- "nextobjectid":307,
+ "nextobjectid":308,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.2",
