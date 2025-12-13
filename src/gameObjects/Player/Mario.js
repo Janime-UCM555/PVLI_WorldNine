@@ -31,8 +31,20 @@ import{
 /**
  * Clase principal del jugador (Mario)
  * @extends Phaser.GameObjects.Sprite
+ * @property {Phaser.Scene} scene - Escena a la que pertenece
+ * @property {number} x - Posición X inicial
+ * @property {number} y - Posición Y inicial
+ * @property {string} texture - Textura/animación base
+ * @property {number} [speed=200] - Velocidad base de movimiento horizontal
+ * @property {number} [jumpForce=-225] - Fuerza base del salto (negativa hacia arriba)
+ * @property {boolean} [flipHorizontal=true] - Si el sprite debe voltearse horizontalmente
+ * @property {boolean} [inBoss=false] - Si está en un nivel de jefe (cambia animaciones)
+ * @property {PlayerBubbleController} bubble - Controlador del estado de burbuja
+ * @property {PowerUpController} powerUps - Controlador de power-ups
+ * @property {boolean} isGrounded - Indica si está tocando el suelo
+ * @property {boolean} isInBubble - Indica si está en estado de burbuja
+ * @property {string|null} activePowerUp - Tipo de PowerUp activo actualmente
  */
-
 class Mario extends Phaser.GameObjects.Sprite
 {
     /**
@@ -45,12 +57,6 @@ class Mario extends Phaser.GameObjects.Sprite
      * @param {number} [jumpForce=-225] - Fuerza base del salto (negativa hacia arriba)
      * @param {boolean} [flipHorizontal=true] - Si el sprite debe voltearse horizontalmente
      * @param {boolean} [inBoss=false] - Si está en un nivel de jefe (cambia animaciones)
-     * 
-     * @property {PlayerBubbleController} bubble - Controlador del estado de burbuja
-     * @property {PowerUpController} powerUps - Controlador de power-ups
-     * @property {boolean} isGrounded - Indica si está tocando el suelo
-     * @property {boolean} isInBubble - Indica si está en estado de burbuja
-     * @property {string|null} activePowerUp - Tipo de power-up activo actualmente
      */
     constructor(scene, x, y, texture, speed = 200, jumpForce = -225, flipHorizontal = true, inBoss=false) {
         super(scene, x, y, texture);
@@ -225,6 +231,7 @@ class Mario extends Phaser.GameObjects.Sprite
         this.blinkEvent = null;
 
         this.activePowerUp = null;
+        this.powerUpKey = '';
 
         //Parametros Estrella
         this.isInvincible = false;
@@ -481,12 +488,13 @@ class Mario extends Phaser.GameObjects.Sprite
         if (this.body) {
             this.setVelocityX(0);
         }
+        this.updateActivePowerUpKey();
         // Cambiar a animación idle cuando se detiene
-        if (this.scene.anims.exists('mario_idle') && this.isGrounded) {
-            this.play('mario_idle', true);
+        if (this.scene.anims.exists(('mario_idle' + this.powerUpKey)) && this.isGrounded) {
+            this.play(('mario_idle' + this.powerUpKey), true);
         }
-        else if(this.scene.anims.exists('mario_fall') && !this.inBoss){
-            this.play('mario_fall', true);
+        else if(this.scene.anims.exists(('mario_fall' + this.powerUpKey)) && !this.inBoss){
+            this.play(('mario_fall' + this.powerUpKey), true);
         }
         else if (this.scene.anims.exists('mario_panicfall') && this.inBoss)
         {
@@ -714,6 +722,21 @@ class Mario extends Phaser.GameObjects.Sprite
     }
 
     /**
+     * Actualiza la clave de PowerUp activo para las animaciones
+     */
+    updateActivePowerUpKey() {
+        if (this.activePowerUp === POWERUP_TYPES.DOUBLE_JUMP) {
+            this.powerUpKey = '_dj';
+        } else if (this.activePowerUp === POWERUP_TYPES.HAMMER) {
+            this.powerUpKey = '_hammer';
+        } else if (this.activePowerUp === POWERUP_TYPES.JUMP_BOOTS) {
+            this.powerUpKey = '_jump';
+        } else {
+            this.powerUpKey = '';
+        }
+    }
+
+    /**
      * Maneja las animaciones del jugador según su estado
      */
     handleAnimations() {
@@ -735,253 +758,67 @@ class Mario extends Phaser.GameObjects.Sprite
             }
             return; // Salir inmediatamente - no permitir otras animaciones
         }
-        
-        if (this.activePowerUp === POWERUP_TYPES.DOUBLE_JUMP) {
-            // Animaciones de salto y caída (si está en el aire)
-            if (!this.isGrounded) {
-                // Saltando (velocidad Y negativa)
-                if (this.body.velocity.y < 0) {
-                    if (this.anims.currentAnim?.key !== 'mario_jump_dj' && !this.isGrounded && !this.inBoss) {
-                        this.play('mario_jump_dj', true);
-                    }
-                    else if (this.anims.currentAnim?.key !== 'mario_panicjump' && !this.isGrounded&&this.inBoss)
-                    {
-                        this.play('mario_panicjump', true);
-                    }
-                    return; // Salir temprano - no verificar otras animaciones
+
+        this.updateActivePowerUpKey();
+
+        // Animaciones de salto y caída (si está en el aire)
+        if (!this.isGrounded) {
+            // Saltando (velocidad Y negativa)
+            if (this.body.velocity.y < 0) {
+                if (this.anims.currentAnim?.key !== ('mario_jump' + this.powerUpKey) && !this.isGrounded && !this.inBoss) {
+                    this.play(('mario_jump' + this.powerUpKey), true);
                 }
-                // Cayendo (velocidad Y positiva)
-                else if (this.body.velocity.y > 0) {
-                    if (this.anims.currentAnim?.key !== 'mario_fall_dj' && !this.isGrounded && !this.inBoss) {
-                        this.play('mario_fall_dj', true);
-                    }
-                    else if (this.anims.currentAnim?.key !== 'mario_panicfall' && !this.isGrounded&&this.inBoss)
-                    {
-                        this.play('mario_panicfall', true);
-                    }
-                    return; // Salir temprano - no verificar otras animaciones
+                else if (this.anims.currentAnim?.key !== 'mario_panicjump' && !this.isGrounded&&this.inBoss)
+                {
+                    this.play('mario_panicjump', true);
                 }
+                return; // Salir temprano - no verificar otras animaciones
             }
-        
-            // Animaciones en el suelo
-            if (this.isGrounded) {
-                if (this.body.velocity.x !== 0 && !this.isStopped) {
-                    if (this.anims.currentAnim?.key !== 'mario_run_dj' && !this.inBoss) {
-                        this.play('mario_run_dj', true);
-                    }
-                    else if(this.anims.currentAnim?.key !== 'mario_panicrun'&&this.inBoss){
-                        this.play('mario_panicrun', true);
-                    }
-                    if (this.footstepCooldown <= 0) {
-                        if (!this.paso1.isPlaying && !this.paso2.isPlaying) {
-                            if (this.nextFootstep === 1) {
-                                this.paso1.play();
-                                this.nextFootstep = 2;
-                        } else {
-                            this.paso2.play();
-                            this.nextFootstep = 1;
-                        }
-                        }
-                    this.footstepCooldown = 300;
-                    }
-                } else {
-                    if (this.anims.currentAnim?.key !== 'mario_idle_dj') {
-                        this.play('mario_idle_dj', true);
-                    }
-                    else if (this.anims.currentAnim?.key !== 'mario_fall_dj' && !this.isGrounded && !this.inBoss)
-                    {
-                        this.play('mario_fall_dj', true);
-                    }
-                    else if (this.anims.currentAnim?.key !== 'mario_panicfall' && !this.isGrounded&&this.inBoss)
-                    {
-                        this.play('mario_panicfall', true);   
-                    }
+            // Cayendo (velocidad Y positiva)
+            else if (this.body.velocity.y > 0) {
+                if (this.anims.currentAnim?.key !== ('mario_fall' + this.powerUpKey) && !this.isGrounded && !this.inBoss) {
+                    this.play(('mario_fall' + this.powerUpKey), true);
                 }
+                else if (this.anims.currentAnim?.key !== 'mario_panicfall' && !this.isGrounded&&this.inBoss)
+                {
+                    this.play('mario_panicfall', true);
+                }
+                return; // Salir temprano - no verificar otras animaciones
             }
-        } else if (this.activePowerUp === POWERUP_TYPES.HAMMER) {
-            // Animaciones de salto y caída (si está en el aire)
-            if (!this.isGrounded) {
-                // Saltando (velocidad Y negativa)
-                if (this.body.velocity.y < 0) {
-                    if (this.anims.currentAnim?.key !== 'mario_jump_hammer' && !this.isGrounded && !this.inBoss) {
-                        this.play('mario_jump_hammer', true);
-                    }
-                    else if (this.anims.currentAnim?.key !== 'mario_panicjump' && !this.isGrounded&&this.inBoss)
-                    {
-                        this.play('mario_panicjump', true);
-                    }
-                    return; // Salir temprano - no verificar otras animaciones
+        }
+    
+        // Animaciones en el suelo
+        if (this.isGrounded) {
+            if (this.body.velocity.x !== 0 && !this.isStopped) {
+                if (this.anims.currentAnim?.key !== ('mario_run' + this.powerUpKey) && !this.inBoss) {
+                    this.play(('mario_run' + this.powerUpKey), true);
                 }
-                // Cayendo (velocidad Y positiva)
-                else if (this.body.velocity.y > 0) {
-                    if (this.anims.currentAnim?.key !== 'mario_fall_hammer' && !this.isGrounded && !this.inBoss) {
-                        this.play('mario_fall_hammer', true);
-                    }
-                    else if (this.anims.currentAnim?.key !== 'mario_panicfall' && !this.isGrounded&&this.inBoss)
-                    {
-                        this.play('mario_panicfall', true);
-                    }
-                    return; // Salir temprano - no verificar otras animaciones
+                else if(this.anims.currentAnim?.key !== 'mario_panicrun'&&this.inBoss){
+                    this.play('mario_panicrun', true);
                 }
-            }
-        
-            // Animaciones en el suelo
-            if (this.isGrounded) {
-                if (this.body.velocity.x !== 0 && !this.isStopped) {
-                    if (this.anims.currentAnim?.key !== 'mario_run_hammer' && !this.inBoss) {
-                        this.play('mario_run_hammer', true);
+                if (this.footstepCooldown <= 0) {
+                    if (!this.paso1.isPlaying && !this.paso2.isPlaying) {
+                        if (this.nextFootstep === 1) {
+                            this.paso1.play();
+                            this.nextFootstep = 2;
+                    } else {
+                        this.paso2.play();
+                        this.nextFootstep = 1;
                     }
-                    else if(this.anims.currentAnim?.key !== 'mario_panicrun'&&this.inBoss){
-                        this.play('mario_panicrun', true);
                     }
-                    if (this.footstepCooldown <= 0) {
-                        if (!this.paso1.isPlaying && !this.paso2.isPlaying) {
-                            if (this.nextFootstep === 1) {
-                                this.paso1.play();
-                                this.nextFootstep = 2;
-                        } else {
-                            this.paso2.play();
-                            this.nextFootstep = 1;
-                        }
-                        }
-                    this.footstepCooldown = 300;
-                    }
-                } else {
-                    if (this.anims.currentAnim?.key !== 'mario_idle_hammer') {
-                        this.play('mario_idle_hammer', true);
-                    }
-                    else if (this.anims.currentAnim?.key !== 'mario_fall_hammer' && !this.isGrounded && !this.inBoss)
-                    {
-                        this.play('mario_fall_hammer', true);
-                    }
-                    else if (this.anims.currentAnim?.key !== 'mario_panicfall' && !this.isGrounded&&this.inBoss)
-                    {
-                        this.play('mario_panicfall', true);   
-                    }
+                this.footstepCooldown = 300;
                 }
-            }
-        } else if (this.activePowerUp === POWERUP_TYPES.JUMP_BOOTS) {
-            // Animaciones de salto y caída (si está en el aire)
-            if (!this.isGrounded) {
-                // Saltando (velocidad Y negativa)
-                if (this.body.velocity.y < 0) {
-                    if (this.anims.currentAnim?.key !== 'mario_jump_jump' && !this.isGrounded && !this.inBoss) {
-                        this.play('mario_jump_jump', true);
-                    }
-                    else if (this.anims.currentAnim?.key !== 'mario_panicjump' && !this.isGrounded&&this.inBoss)
-                    {
-                        this.play('mario_panicjump', true);
-                    }
-                    return; // Salir temprano - no verificar otras animaciones
+            } else {
+                if (this.anims.currentAnim?.key !== ('mario_idle' + this.powerUpKey)) {
+                    this.play(('mario_idle' + this.powerUpKey), true);
                 }
-                // Cayendo (velocidad Y positiva)
-                else if (this.body.velocity.y > 0) {
-                    if (this.anims.currentAnim?.key !== 'mario_fall_jump' && !this.isGrounded && !this.inBoss) {
-                        this.play('mario_fall_jump', true);
-                    }
-                    else if (this.anims.currentAnim?.key !== 'mario_panicfall' && !this.isGrounded&&this.inBoss)
-                    {
-                        this.play('mario_panicfall', true);
-                    }
-                    return; // Salir temprano - no verificar otras animaciones
+                else if (this.anims.currentAnim?.key !== ('mario_fall' + this.powerUpKey) && !this.isGrounded && !this.inBoss)
+                {
+                    this.play(('mario_fall' + this.powerUpKey), true);
                 }
-            }
-        
-            // Animaciones en el suelo
-            if (this.isGrounded) {
-                if (this.body.velocity.x !== 0 && !this.isStopped) {
-                    if (this.anims.currentAnim?.key !== 'mario_run_jump' && !this.inBoss) {
-                        this.play('mario_run_jump', true);
-                    }
-                    else if(this.anims.currentAnim?.key !== 'mario_panicrun'&&this.inBoss){
-                        this.play('mario_panicrun', true);
-                    }
-                    if (this.footstepCooldown <= 0) {
-                        if (!this.paso1.isPlaying && !this.paso2.isPlaying) {
-                            if (this.nextFootstep === 1) {
-                                this.paso1.play();
-                                this.nextFootstep = 2;
-                        } else {
-                            this.paso2.play();
-                            this.nextFootstep = 1;
-                        }
-                        }
-                    this.footstepCooldown = 300;
-                    }
-                } else {
-                    if (this.anims.currentAnim?.key !== 'mario_idle_jump') {
-                        this.play('mario_idle_jump', true);
-                    }
-                    else if (this.anims.currentAnim?.key !== 'mario_fall_jump' && !this.isGrounded && !this.inBoss)
-                    {
-                        this.play('mario_fall_jump', true);
-                    }
-                    else if (this.anims.currentAnim?.key !== 'mario_panicfall' && !this.isGrounded&&this.inBoss)
-                    {
-                        this.play('mario_panicfall', true);   
-                    }
-                }
-            }
-        } else {
-            // Animaciones de salto y caída (si está en el aire)
-            if (!this.isGrounded) {
-                // Saltando (velocidad Y negativa)
-                if (this.body.velocity.y < 0) {
-                    if (this.anims.currentAnim?.key !== 'mario_jump' && !this.isGrounded && !this.inBoss) {
-                        this.play('mario_jump', true);
-                    }
-                    else if (this.anims.currentAnim?.key !== 'mario_panicjump' && !this.isGrounded&&this.inBoss)
-                    {
-                        this.play('mario_panicjump', true);
-                    }
-                    return; // Salir temprano - no verificar otras animaciones
-                }
-                // Cayendo (velocidad Y positiva)
-                else if (this.body.velocity.y > 0) {
-                    if (this.anims.currentAnim?.key !== 'mario_fall' && !this.isGrounded && !this.inBoss) {
-                        this.play('mario_fall', true);
-                    }
-                    else if (this.anims.currentAnim?.key !== 'mario_panicfall' && !this.isGrounded&&this.inBoss)
-                    {
-                        this.play('mario_panicfall', true);
-                    }
-                    return; // Salir temprano - no verificar otras animaciones
-                }
-            }
-        
-            // Animaciones en el suelo
-            if (this.isGrounded) {
-                if (this.body.velocity.x !== 0 && !this.isStopped) {
-                    if (this.anims.currentAnim?.key !== 'mario_run' && !this.inBoss) {
-                        this.play('mario_run', true);
-                    }
-                    else if(this.anims.currentAnim?.key !== 'mario_panicrun'&&this.inBoss){
-                        this.play('mario_panicrun', true);
-                    }
-                    if (this.footstepCooldown <= 0) {
-                        if (!this.paso1.isPlaying && !this.paso2.isPlaying) {
-                            if (this.nextFootstep === 1) {
-                                this.paso1.play();
-                                this.nextFootstep = 2;
-                        } else {
-                            this.paso2.play();
-                            this.nextFootstep = 1;
-                        }
-                        }
-                    this.footstepCooldown = 300;
-                    }
-                } else {
-                    if (this.anims.currentAnim?.key !== 'mario_idle') {
-                        this.play('mario_idle', true);
-                    }
-                    else if (this.anims.currentAnim?.key !== 'mario_fall' && !this.isGrounded && !this.inBoss)
-                    {
-                        this.play('mario_fall', true);
-                    }
-                    else if (this.anims.currentAnim?.key !== 'mario_fall' && !this.isGrounded&&this.inBoss)
-                    {
-                        this.play('mario_panicfall', true);   
-                    }
+                else if (this.anims.currentAnim?.key !== 'mario_panicfall' && !this.isGrounded && this.inBoss)
+                {
+                    this.play('mario_panicfall', true);
                 }
             }
         }
