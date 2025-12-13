@@ -358,6 +358,11 @@ class PreloadScene extends Phaser.Scene {
         frameWidth: 32,
         frameHeight: 32
     });
+    // Ralentización
+    this.load.spritesheet('lento_tileset', 'GameSprites/ObjetosBosses/Ralentizacion.png', {
+        frameWidth: 96,
+        frameHeight: 260
+    });
     this.load.image('water', 'GameSprites/Tilesets/Water.png');
     // this.load.tilemapTiledJSON('water_ts', 'MapaDeTiled/Water.tsx')
 
@@ -405,10 +410,22 @@ class PreloadScene extends Phaser.Scene {
         this.load.audio('starman', 'sonidos/BGM/Starman.wav');
         this.load.audio('iris-out', 'sonidos/SE/MenuSFX/smw_goal_iris-out.wav');
 
+        this.cameras.main.setBackgroundColor("#ffc045");
+        document.fonts.load('32px aku-kamu').then(() => {});
+
+        const width = this.cameras.main.width;
+        const height = this.cameras.main.height;
+        
+        // Texto de carga 1
+        this.add.text(width / 2, height / 2, 'CARGANDO', {
+            fontFamily: 'chlorinap',
+            fontSize: '32px',
+            fill: '#ffffffff'
+        }).setOrigin(0.5);
+        
         // Callback al completar la carga
         this.load.on('complete', () => {
             this.time.delayedCall(500, () => {
-                document.fonts.load('32px aku-kamu').then(() => {});
                 this.showPlayButton();
             });
         });
@@ -714,6 +731,14 @@ class PreloadScene extends Phaser.Scene {
         this.anims.create({
             key: 'piranha_movement',
             frames: this.anims.generateFrameNumbers('piranha_movement', { start: 0, end: 3 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        // Ralentización Horus
+        this.anims.create({
+            key: 'lento_movement',
+            frames: this.anims.generateFrameNumbers('lento_tileset', { start: 0, end: 2 }),
             frameRate: 8,
             repeat: -1
         });

@@ -18,7 +18,7 @@ export default class HorusWindZone extends Phaser.GameObjects.Rectangle {
         this.scene = scene;
         this.player = player;
         this.speedX = speedX;
-
+        this.setVisible(false);
         scene.add.existing(this);
         scene.matter.add.gameObject(this, {
             isSensor: true,
@@ -29,6 +29,13 @@ export default class HorusWindZone extends Phaser.GameObjects.Rectangle {
         this.setIgnoreGravity(true);
         this.setStatic(false);
         this.setVelocityX(this.speedX);
+
+        // Sprite
+        this.effect = scene.add.sprite(x, y, 'lento_movement');
+        this.effect.setDepth(9);
+        this.effect.play('lento_movement');
+        this.effect.setDisplaySize(width, height);
+
 
         // Para poder identificarla fácilmente si quieres en depuración
         if (this.body) {
@@ -46,32 +53,30 @@ export default class HorusWindZone extends Phaser.GameObjects.Rectangle {
     preUpdate(time, delta) {
         super.preUpdate?.(time, delta);
 
+        if (this.effect) {
+            this.effect.setPosition(this.x, this.y);
+        }
+
         const cam = this.scene.cameras.main;
 
-        // Si sale de la pantalla hacia la izquierda, la destruimos
         if (this.x + this.width < cam.scrollX - 150) {
+            this.effect?.destroy();
             this.destroy();
             return;
         }
 
-        // Mantener la velocidad constante
         if (this.body) {
             this.setVelocityX(this.speedX);
         }
 
-        // Si no hay jugador o no tiene cuerpo, no hacemos nada
         if (!this.player || !this.player.body) return;
 
-        // Comprobar solapamiento a nivel AABB simple
         const windBounds = this.getBounds();
         const playerBounds = this.player.getBounds();
 
         if (Phaser.Geom.Intersects.RectangleToRectangle(windBounds, playerBounds)) {
-            const body = this.player.body;
-            const vx = body.velocity.x || 0;
+            const vx = this.player.body.velocity.x || 0;
 
-            // Si Mario va hacia la derecha → viento en contra (ralentiza)
-            // Si va hacia la izquierda → viento a favor (acelera)
             if (vx > 0) {
                 this.player.setVelocityX(vx * 0.6);
             } else if (vx < 0) {
@@ -79,4 +84,5 @@ export default class HorusWindZone extends Phaser.GameObjects.Rectangle {
             }
         }
     }
+
 }

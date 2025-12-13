@@ -618,7 +618,7 @@ export default class HorusBoss extends BossBase {
 
     }
 
-        // Patrón 2: zonas de viento atravesables + Koopas
+    // Patrón 2: zonas de viento atravesables + Koopas
     performWindAttack() {
         const scene = this.scene;
         const player = this.player;

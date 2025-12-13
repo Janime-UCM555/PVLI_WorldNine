@@ -80,9 +80,7 @@ export class OneWay extends SceneBlocks {
                 (bodyB.label === "oneWay"  && bodyB=== this.sensor&& bodyA.label === "Mario" )))
             {
                 const player = this.scene.jugador.body;
-                if (player.velocity.y >= 0 && (player.position.y < this.body.position.y - 5 && !this.scene.jugador.isSuperSize||
-                    player.position.y < this.body.position.y - 25 && this.scene.jugador.isSuperSize
-                ))
+                if (player.velocity.y >= 0 && (player.position.y < this.body.position.y - 5))
                 {
                     this.setCollidesWith([CATEGORY_ENEMY, CATEGORY_PLAYER]);
                     // this.scene?.jugador.setVelocityX(-0.1);

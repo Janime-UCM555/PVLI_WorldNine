@@ -261,7 +261,7 @@ class EscenaBase extends Phaser.Scene {
         this.groundLayer = this.map.createLayer('CapaSuelo', tileset, 0, 0);
         this.groundLayer?.setDepth(1);
         this.barraFinLayer = this.createObjectsFromLayer('BarraFin');
-        this.barraFinLayer?.setDepth(8);
+        this.barraFinLayer?.setDepth(3);
 
         // Configurar colisiones en las tiles del suelo
         this.map.setCollisionByExclusion([-1, 0]);
@@ -952,7 +952,7 @@ class EscenaBase extends Phaser.Scene {
             hammer.setFixedRotation();
             hammer.isHammer = true;
             hammer.used = false;
-            hammer.setDepth(6);
+            hammer.setDepth(5);
 
             hammer._bounces = 0;
             hammer._maxBounces = 3;
@@ -994,7 +994,7 @@ class EscenaBase extends Phaser.Scene {
         hammer.setVisible(true);
         hammer.setVelocity(0, 0);
         hammer.setAngularVelocity(0);
-        hammer.setDepth(6);
+        hammer.setDepth(5);
 
         return hammer;
     }
