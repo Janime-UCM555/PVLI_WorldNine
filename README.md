@@ -12,6 +12,7 @@ Este proyecto forma parte de un trabajo universitario de segundo año para el Gr
 El objetivo del juego es superar **todos** los niveles y conseguir la mayor cantidad de puntos posible.
 En cada nivel habrá enemigos que derrotar que darán puntos que se sumarán al total. 
 También se pueden esquivar, pero entonces no sumarán puntos.
+Además se pueden conseguir unas monedas ocultas en cada nivel para completar el juego al **100%**.
 
 <div align='center'>
 <img width="767" height="192" alt="eee" src="https://github.com/user-attachments/assets/3b8c5903-5a6d-4d92-9e31-82c063941267" />
@@ -24,11 +25,12 @@ El juego termina al completar todos los niveles, derrotar a los bosses y haber r
 
 ## $${\color{#F3D301}Inspiración}$$
 
-Nos inspiramos de la estética Romana, Egipcia y Griega. De momento tenemos diseños de la Romana y la Egipcia. Con acueductos y edificios.
-<img width="550" height="303" alt="image" src="https://github.com/user-attachments/assets/54faa2bd-e346-47ca-a139-a294de7ae4f6" />
-<img width="440" height="303" alt="image" src="https://github.com/user-attachments/assets/6fb84b05-b52c-4bfd-906a-ef27015e45fe" />
-<img width="848" height="292" alt="NivelEjemplo" src="https://github.com/user-attachments/assets/44d802f1-5b59-4dfe-8990-2e95d6722a5b" />
-
+Nos inspiramos de la estética Romana, Egipcia y Griega. Ya tenemos elementos de todas las mitologías. Con acueductos, edificios, naumaquias, esfinges y panteones.
+<img width="550" height="303" alt="Edificios" src="https://github.com/user-attachments/assets/54faa2bd-e346-47ca-a139-a294de7ae4f6" />
+<img width="440" height="303" alt="Acueducto" src="https://github.com/user-attachments/assets/6fb84b05-b52c-4bfd-906a-ef27015e45fe" />
+<img width="661" height="259" alt="Naumaquias" src="https://github.com/user-attachments/assets/ca82e46a-8009-402e-82d8-599c2ec218cf" />
+<img width="818" height="359" alt="Esfinge" src="https://github.com/user-attachments/assets/8f2ef46a-9dab-4373-bb53-441374112a89" />
+<img width="897" height="408" alt="Panteón de Yoshi" src="https://github.com/user-attachments/assets/5b32bcb8-a50c-4635-9823-c67b283b11f8" />
 
 ## $${\color{#F3D301}¿ Cómo\space se\space juega\space ?}$$ 
 
