@@ -405,6 +405,8 @@ class PreloadScene extends Phaser.Scene {
         this.load.audio('starman', 'sonidos/BGM/Starman.wav');
         this.load.audio('iris-out', 'sonidos/SE/MenuSFX/smw_goal_iris-out.wav');
 
+
+        this.stars = this.add.tileSprite(0, 0, width, height, 'star_pattern');
         // Callback al completar la carga
         this.load.on('complete', () => {
             this.time.delayedCall(500, () => {
@@ -767,7 +769,6 @@ class PreloadScene extends Phaser.Scene {
         const height = this.cameras.main.height;
 
         // Fondo de estrellas animado
-        this.stars = this.add.tileSprite(0, 0, width, height, 'star_pattern');
         this.stars.setOrigin(0, 0);
         this.stars.setDisplaySize(width, height);
         
