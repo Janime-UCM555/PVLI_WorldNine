@@ -132,11 +132,8 @@ bloque se destruirá.
 ### 3.2  **Movimiento Horizontal**
 
 El personaje controlado por el jugador se moverá automáticamente en la
-dirección hacia la derecha. En caso de encontrarse con un obstáculo
-pequeño (como un desnivel no muy alto, un goomba o un koopa.) lo saltará
-automáticamente con una pequeña acrobacia. En caso de que el obstáculo
-sea de mayor tamaño Mario se detendrá esperando que el jugador salte. En
-caso de que el obstáculo tenga pinchos Mario caerá en la burbuja.
+dirección hacia la derecha. En caso de que el obstáculo sea de mayor tamaño Mario se detendrá esperando que el jugador salte. En
+caso de que el obstáculo tenga pinchos Mario será metido en la burbuja.
 
 | Parámetro            | Descripción                                                             | Unidad |
 |-----------------------|-------------------------------------------------------------|-----------|        
@@ -153,10 +150,7 @@ burbuja, y continuar el nivel en su posición actual. Siempre que el
 jugador caiga dentro de la burbuja su tamaño será el más pequeño (Ver
 [Tamaños de Mario]).
 
-Hay 2 burbujas por cada nivel.
-
-Cuando el jugador se queda sin burbujas y muere, se reinicia totalmente
-el nivel.
+Hay ilimitadas burbujas por cada nivel.
 
 | Parámetro            | Descripción                                                             | Unidad |
 |-----------------------|-------------------------------------------------------------|-----------|        
@@ -294,8 +288,6 @@ El HUD contiene información sobre:
 -   Nº de Monedas Moradas
 
 -   Puntuación actual
-
--   Nº de burbujas restantes
 
 ### 4.4  **Menús**
 
@@ -475,8 +467,8 @@ burbuja en su estado reducido al pulsar el botón de salto.
 | Bloques destructibles    | Bloques que al saltar contra ellos se destruyen. Solo se pueden destruir si Mario es de tamaño grande. |
 | Pinchos| Al entrar en contacto, si Mario era de tamaño grande pasa a ser de tamaño pequeño, si Mario era de tamaño pequeño se va en una burbuja hacia atrás hasta que el jugador pulse la tecla de salto para salir de esta.                       |
 | Rampas       | Hacia arriba, los personajes jugables y no jugables caminarán más lento. Hacia abajo, irán más rápido.   |
-| Plataformas que se caen       | Plataformas que se caen cuando Mario pasa sobre ellas, estas se regeneran si Mario entra en su estado burbuja.   |
-| Bloque Pausa       | Al estar sobre este bloque, Mario se detiene un instante para ver la parte derecha de la pantalla, el temporizador del nivel se detendrá también.   |
+| Plataformas que se caen       | Plataformas que se caen cuando Mario pasa sobre ellas, estas se regeneran si se caen bajo los límites del mapa   |
+| Bloque Pausa       | Al estar sobre este bloque, Mario se detiene un instante para ver la parte derecha de la pantalla, el temporizador del nivel se detendrá también. Se podrá salir de este bloque saltando   |
 | Bloque que al pasar sobre él muestra un camino de monedas       | Cuando Mario colisiona sobre este bloque (no tiene físicas, se atravesará), se muestra un camino de monedas. Si no se pasa sobre este bloque, esas monedas no se podrán conseguir.   |
 | Orbe de salto extra (tres intensidades)       | Al pulsar el botón de salto sobre alguno de estos orbes Mario realizará un salto extra. Habrá tres intensidades con diferentes alturas.   |
 
@@ -498,14 +490,10 @@ caminar.
 
 Cada elemento que sale en la interfaz de la pantalla aumenta cuando se
 realiza una determinada acción como derrotar enemigos, recoger
-[monedas] y objetos. Las
-[burbujas] sólo podrán disminuir, ya
-sea cuando el jugador es dañado en su estado pequeño o cuando se caiga
-al vacío.
+[monedas] y objetos.
 
 En la siguiente imagen se muestra una idea de lo que podrá ver el
-jugador durante el nivel, se mostrarán el número de
-[burbujas] que tiene, su
+jugador durante el nivel, se mostrarán su
 [puntuación], número de
 [monedas], secretas y generales de
 cada nivel, y, el tiempo que tiene para completar el nivel.
@@ -524,7 +512,8 @@ recoger [monedas especiales].
 
 <img src="./assets/GDD_Images/Monedas.png" width=70 height=70>**Monedas generales del nivel**
 
-<img src="./assets/GDD_Images/Burbujas.png" width=70 height=70>**Límite de burbujas del nivel**
+Hay un número ilimitado de burbujas por lo que no se incluirá el contador
+
 
 <img src="./assets/GDD_Images/Martillo.png" width=50 height=70>**Recogida de
 power-ups a partir de un bloque**

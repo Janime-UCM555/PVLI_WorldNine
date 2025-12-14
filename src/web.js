@@ -2,8 +2,10 @@
  * Importación de las monedas moradas del nivel
  * @module Scenes/Juego/GameScenes
  */
-import { purpleCoinsByLevel } from "./Scenes/Juego/GameScenes.js";
+import { purpleCoinsByLevel, collectedPurpleCoinsByLevel } from "./Scenes/Juego/GameScenes.js";
 
+
+import PURPLE_COIN_IDS_BY_LEVEL from "./gameObjects/PurplecoinsIds.js"
 /**
  * Mapa del progreso de monedas moradas por nivel.
  *
@@ -176,6 +178,72 @@ window.resetPurpleCoins = () => {
   localStorage.removeItem("w9_collectedPurpleCoinsByLevel");
   location.reload();
 };
+
+/**
+ * Resetea todo el progreso de monedas moradas.
+ * - Elimina los datos guardados en localStorage
+ * - Recarga la página para reflejar el estado inicial
+ *
+ * @function resetPurpleCoins
+ */
+export const resetPurpleCoins = () => {
+  // Elimina el contador de monedas moradas por nivel
+  localStorage.removeItem("w9_purpleCoinsByLevel");
+
+  // Elimina el listado de monedas moradas recogidas por nivel
+  localStorage.removeItem("w9_collectedPurpleCoinsByLevel");
+
+  // Recarga la página para aplicar el reseteo
+  location.reload();
+};
+
+export default resetPurpleCoins;
+
+/**
+ * Desbloquea todas las monedas moradas del juego.
+ * - Marca todas las monedas como recogidas en cada nivel
+ * - Actualiza los contadores internos
+ * - Guarda el progreso en localStorage
+ * - Fuerza la actualización de la UI global
+ *
+ * @function unlockAllPurpleCoins
+ */
+export const unlockAllPurpleCoins = () => {
+  // Recorre todos los niveles definidos
+  for (const level in PURPLE_COIN_IDS_BY_LEVEL) {
+    const ids = PURPLE_COIN_IDS_BY_LEVEL[level];
+
+    // Marca el contador del nivel como completo
+    purpleCoinsByLevel[level] = ids.length;
+
+    // Marca todas las monedas del nivel como recogidas
+    collectedPurpleCoinsByLevel[level] = [...ids];
+  }
+
+  // Guarda los datos actualizados en localStorage
+  try {
+    localStorage.setItem(
+      "w9_purpleCoinsByLevel",
+      JSON.stringify(purpleCoinsByLevel)
+    );
+    localStorage.setItem(
+      "w9_collectedPurpleCoinsByLevel",
+      JSON.stringify(collectedPurpleCoinsByLevel)
+    );
+  } catch (e) {
+    console.error("No se pudo guardar en localStorage:", e);
+  }
+
+  // Actualiza el estado global de la UI si existe el método
+  if (window.updateWebStatus) {
+    window.updateWebStatus({
+      sceneKey: "Global",
+      purpleCoins: 0
+    });
+  }
+};
+
+
 
 /**
  * Inicializa el estado de la interfaz al cargarse el documento.

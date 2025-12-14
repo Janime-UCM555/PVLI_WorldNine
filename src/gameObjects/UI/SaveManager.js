@@ -1,3 +1,4 @@
+import {resetPurpleCoins, unlockAllPurpleCoins} from "../../web.js"
 /**
  * Clase que gestiona el sistema de guardado y carga de progreso del juego.
  * Maneja el almacenamiento persistente de datos de niveles, puntuaciones y progreso de desbloqueo.
@@ -222,6 +223,7 @@ class SaveManager {
      */
     resetAllData() {
         this.data = JSON.parse(JSON.stringify(this.defaultData));
+        resetPurpleCoins();
         this.save();
     }
 
@@ -268,6 +270,8 @@ class SaveManager {
             }
         });
     
+        unlockAllPurpleCoins();
+
         this.save();
     }
 }

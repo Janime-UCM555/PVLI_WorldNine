@@ -230,7 +230,8 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
    */
   collect(player) {
     if (!this.active) return;
-
+    
+    player.powerUpSound?.play();
     player.powerUps.deactivatePowerUp({ keepSize: player.isSuperSize });
     if (!player.isSuperSize) this.enableSuperSize?.(player);
 
@@ -248,8 +249,6 @@ export class PowerUp extends Phaser.GameObjects.Sprite {
   enableSuperSize(player) {
     // Evita duplicar
     if (player.isSuperSize) return;
-
-    player.powerUpSound?.play();
 
     const k = player.scaleMultiplier;
     player.isSuperSize = true;
