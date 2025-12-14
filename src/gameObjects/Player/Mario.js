@@ -556,6 +556,7 @@ class Mario extends Phaser.GameObjects.Sprite
             // Tenías martillo / doble salto / dash / botas
             // → Pierdes ese power-up ofensivo, pero te quedas como Super Mario
             this.powerUps.deactivatePowerUp({ keepSize: true });
+            this.hurtSound.play();
 
             // Nos aseguramos de marcar que ahora estás en estado "solo champiñón"
             if (hasMushroom || this.isSuperSize) {
