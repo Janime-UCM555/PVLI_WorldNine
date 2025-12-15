@@ -150,7 +150,7 @@ class MainMenu extends Phaser.Scene {
         this.buttonReset = new Button(
             this, 
             -300, 
-            B_SPACING * 2.6, 
+            this.cameras.main.height / 2.5, 
             "Resetear \nProgreso",
             () => {
                 saveManager.resetAllData();
@@ -161,20 +161,19 @@ class MainMenu extends Phaser.Scene {
             0xffffff
         );
 
-        // Botón para desbloquear todos los niveles (debug)
-        this.buttonUnlockAll = new Button(
-            this, 
-            -300, 
-            B_SPACING * 3.4, 
-            "Desbloquear\nTodo", 
-            () => {
+        // Atajo de teclado: Presionar U para desbloquear todo (función oculta/debug)
+        this.unlockKeyListener = (event) => {
+            if (event.key === 'u' || event.key === 'U') {
+                // Desbloquear todos los niveles y reiniciar la escena
                 saveManager.unlockAllLevelsAndBosses();
+                // Limpiar el listener antes de reiniciar
+                this.input.keyboard.off('keydown', this.unlockKeyListener);
                 this.scene.restart();
-            }, 
-            0x387999, 
-            0x285f7a, 
-            0xffffff
-        );
+            }
+        };
+
+        // Usar 'keydown' para mayor compatibilidad
+        this.input.keyboard.on('keydown', this.unlockKeyListener);
 
         // Contenedor de UI centrado
         this.ui = this.add.container(
@@ -185,9 +184,15 @@ class MainMenu extends Phaser.Scene {
         this.ui.add([
             this.buttonFullScreen,
             this.buttonMove,
-            this.buttonReset,
-            this.buttonUnlockAll
+            this.buttonReset
         ]);
+
+        // Limpiar listeners al cerrar la escena
+        this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+            if (this.unlockKeyListener) {
+                this.input.keyboard.off('keydown', this.unlockKeyListener);
+            }
+        });
 
         // Eventos de redimensionado de ventana
         this.scale.on('resize', (gameSize) => {
