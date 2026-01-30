@@ -18,17 +18,23 @@ import BossHades from './Scenes/Juego/BossesLevels/BossHades.js';
  * Inicio del juego en Phaser. Creamos el archivo de configuración del juego y creamos
  * la clase Game de Phaser, encargada de crear e iniciar el juego.
  */
-let config = {
-	type: Phaser.AUTO,
-	pixelArt: true,
-	snapToPixels: true,
-	parent: 'game',
-	fps: 300,
-	scale: {
-		autoCenter: Phaser.Scale.CENTER_BOTH,
-		mode: Phaser.Scale.FIT,
-		fullscreenTarget: 'game'
-	},
+const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+
+const config = {
+    type: isMobile ? Phaser.CANVAS : Phaser.AUTO,
+
+    pixelArt: true,
+    snapToPixels: true,
+    parent: 'game',
+    fps: {
+        target: 300
+    },
+    scale: {
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        mode: Phaser.Scale.FIT,
+        fullscreenTarget: 'game'
+    },
 	scene:[PreloadScene, MainMenu, LevelSelection, MapScene, Nivel_T, Nivel_R, Nivel_TO, Nivel_D, BossJ, BossH, BossHades, Nivel_G],	// Decimos a Phaser cual es nuestra escena
 	physics: { 
 		default: 'matter', 
